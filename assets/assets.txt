@@ -1,0 +1,3 @@
+Font FutureMillennium assets/0Fonts/FutureMillennium.ttf
+Texture TexPlayerIdle assets/1Biker/Biker_idle.png
+Animation PlayerIdle TexPlayerIdle 4 10
