@@ -1,0 +1,4 @@
+Tile PlayerIdle 4 4
+Tile PlayerIdle 6 5
+Tile PlayerIdle 8 6
+Tile PlayerIdle 10 7

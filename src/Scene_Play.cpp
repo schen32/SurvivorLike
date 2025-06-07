@@ -37,13 +37,14 @@ void Scene_Play::init(const std::string& levelPath)
 {
 	registerAction(sf::Keyboard::Scan::P, "PAUSE");
 	registerAction(sf::Keyboard::Scan::Escape, "QUIT");
+	registerAction(sf::Keyboard::Scan::H, "DISPLAY_HITBOX");
 
 	registerAction(sf::Keyboard::Scan::A, "LEFT");
 	registerAction(sf::Keyboard::Scan::D, "RIGHT");
 	registerAction(sf::Keyboard::Scan::W, "UP");
 	registerAction(sf::Keyboard::Scan::S, "DOWN");
 
-	m_playerConfig = { (float)width() / 2, (float)height() / 2, 0, 0, 10.0f, 0, ""};
+	m_playerConfig = { 0, 0, 0, 0, 5.0f, 0, ""};
 
 	m_gridText.setCharacterSize(60);
 	m_gridText.setFont(m_game->assets().getFont("FutureMillennium"));
@@ -73,7 +74,7 @@ void Scene_Play::loadLevel(const std::string& filename)
 	spawnPlayer();
 	m_entityManager.update();
 
-	/*std::ifstream file(m_levelPath);
+	std::ifstream file(m_levelPath);
 	std::string tileType;
 	while (file >> tileType)
 	{
@@ -89,7 +90,7 @@ void Scene_Play::loadLevel(const std::string& filename)
 			tile->add<CTransform>(gridToMidPixel(gridX, gridY, tile), Vec2f(0, 0), 0);
 			tile->add<CBoundingBox>(eAnimation.animation.m_size);
 		}
-	}*/
+	}
 }
 
 std::shared_ptr<Entity> Scene_Play::player()
@@ -153,13 +154,13 @@ void Scene_Play::sMovement()
 
 	pTransform.velocity = { 0, 0 };
 	if (pInput.left)
-		pTransform.velocity.x -= 5;
+		pTransform.velocity.x -= m_playerConfig.SPEED;
 	if (pInput.right)
-		pTransform.velocity.x += 5;
+		pTransform.velocity.x += m_playerConfig.SPEED;
 	if (pInput.up)
-		pTransform.velocity.y -= 5;
+		pTransform.velocity.y -= m_playerConfig.SPEED;
 	if (pInput.down)
-		pTransform.velocity.y += 5;
+		pTransform.velocity.y += m_playerConfig.SPEED;
 
 	for (auto& entity : m_entityManager.getEntities())
 	{
@@ -195,11 +196,7 @@ void Scene_Play::sCollision()
 			{
 				pTransform.velocity.y = 0;
 				if (pTransform.prevPos.y < tileTransform.pos.y)
-				{
 					pTransform.pos.y -= overlap.y;
-					player()->get<CInput>().canJump = true;
-					player()->get<CState>().state = "running";
-				}
 				else
 					pTransform.pos.y += overlap.y;
 			}
@@ -243,6 +240,10 @@ void Scene_Play::sDoAction(const Action& action)
 		else if (action.m_name == "PAUSE")
 		{
 			m_paused = !m_paused;
+		}
+		else if (action.m_name == "DISPLAY_HITBOX")
+		{
+			pInput.displayHitbox = !pInput.displayHitbox;
 		}
 	}
 	else if (action.m_type == "END")
@@ -303,10 +304,22 @@ void Scene_Play::sRender()
 	for (auto& entity : m_entityManager.getEntities())
 	{
 		auto& transform = entity->get<CTransform>();
-		auto& sprite = entity->get<CAnimation>().animation.m_sprite;
+		auto& animation = entity->get<CAnimation>().animation;
 
-		sprite.setPosition(transform.pos);
-		window.draw(sprite);
+		animation.m_sprite.setPosition(transform.pos);
+		window.draw(animation.m_sprite);
+
+		if (player()->get<CInput>().displayHitbox)
+		{
+			auto& boundingBox = entity->get<CBoundingBox>();
+			sf::RectangleShape hitbox(boundingBox.size);
+			hitbox.setOrigin(boundingBox.halfSize);
+			hitbox.setPosition(transform.pos);
+			hitbox.setFillColor(sf::Color(255, 0, 0, 50));
+			hitbox.setOutlineColor(sf::Color::Red);
+			hitbox.setOutlineThickness(1.f);
+			window.draw(hitbox);
+		}
 	}
 
 	m_gridText.setString("Hello World");

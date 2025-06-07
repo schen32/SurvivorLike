@@ -26,7 +26,6 @@ public:
 	{
 		// m_size = Vec2f(t.getSize().x / frameCount, t.getSize().y);
 		m_size = Vec2f(t.getSize().x, t.getSize().y / frameCount);
-		m_sprite.setScale({ 2, 2 });
 		m_sprite.setOrigin(m_size / 2);
 		m_sprite.setTextureRect(sf::IntRect({ 0, 0 }, m_size));
 	}

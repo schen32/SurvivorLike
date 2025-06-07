@@ -49,6 +49,7 @@ public:
 	bool shoot = false;
 	bool canShoot = true;
 	bool canJump = true;
+	bool displayHitbox = false;
 
 	CInput() = default;
 };
