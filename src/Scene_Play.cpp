@@ -37,16 +37,13 @@ void Scene_Play::init(const std::string& levelPath)
 {
 	registerAction(sf::Keyboard::Scan::P, "PAUSE");
 	registerAction(sf::Keyboard::Scan::Escape, "QUIT");
-	registerAction(sf::Keyboard::Scan::T, "TOGGLE_TEXTURE");
-	registerAction(sf::Keyboard::Scan::C, "TOGGLE_COLLISION");
-	registerAction(sf::Keyboard::Scan::G, "TOGGLE_GRID");
 
 	registerAction(sf::Keyboard::Scan::A, "LEFT");
 	registerAction(sf::Keyboard::Scan::D, "RIGHT");
 	registerAction(sf::Keyboard::Scan::W, "UP");
 	registerAction(sf::Keyboard::Scan::S, "DOWN");
 
-	m_playerConfig = { 300, 400, 0, 0, 30.0f, 0, "" };
+	m_playerConfig = { (float)width() / 2, (float)height() / 2, 0, 0, 10.0f, 0, ""};
 
 	m_gridText.setCharacterSize(60);
 	m_gridText.setFont(m_game->assets().getFont("FutureMillennium"));
@@ -73,8 +70,10 @@ Vec2f Scene_Play::gridToMidPixel(float gridX, float gridY, std::shared_ptr<Entit
 void Scene_Play::loadLevel(const std::string& filename)
 {
 	m_entityManager = EntityManager();
+	spawnPlayer();
+	m_entityManager.update();
 
-	std::ifstream file(m_levelPath);
+	/*std::ifstream file(m_levelPath);
 	std::string tileType;
 	while (file >> tileType)
 	{
@@ -90,10 +89,7 @@ void Scene_Play::loadLevel(const std::string& filename)
 			tile->add<CTransform>(gridToMidPixel(gridX, gridY, tile), Vec2f(0, 0), 0);
 			tile->add<CBoundingBox>(eAnimation.animation.m_size);
 		}
-	}
-
-	spawnPlayer();
-	m_entityManager.update();
+	}*/
 }
 
 std::shared_ptr<Entity> Scene_Play::player()

@@ -13,7 +13,7 @@ public:
 	std::unordered_map<std::string, sf::Font> m_fontMap;
 
 	void addTexture(const std::string& textureName, const std::string& path,
-		bool smooth = true)
+		bool smooth = false)
 	{
 		m_textureMap[textureName] = sf::Texture();
 
@@ -23,7 +23,7 @@ public:
 			return;
 		}
 
-		m_textureMap[textureName].setSmooth(true);
+		m_textureMap[textureName].setSmooth(smooth);
 	}
 
 	void addAnimation(const std::string& animationName, const std::string& textureName,

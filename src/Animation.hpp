@@ -24,7 +24,9 @@ public:
 		: m_name(name), m_texture(t), m_sprite(t)
 		, m_frameCount(frameCount), m_currentFrame(0), m_speed(speed)
 	{
-		m_size = Vec2f(t.getSize().x / frameCount, t.getSize().y);
+		// m_size = Vec2f(t.getSize().x / frameCount, t.getSize().y);
+		m_size = Vec2f(t.getSize().x, t.getSize().y / frameCount);
+		m_sprite.setScale({ 2, 2 });
 		m_sprite.setOrigin(m_size / 2);
 		m_sprite.setTextureRect(sf::IntRect({ 0, 0 }, m_size));
 	}
@@ -35,7 +37,8 @@ public:
 		{
 			m_currentFrame++;
 			size_t animFrame = (m_currentFrame / m_speed) % m_frameCount;
-			m_sprite.setTextureRect(sf::IntRect({ (int)(animFrame * m_size.x), 0 }, m_size));
+			// m_sprite.setTextureRect(sf::IntRect({ (int)(animFrame * m_size.x), 0 }, m_size));
+			m_sprite.setTextureRect(sf::IntRect({ 0, (int)(animFrame * m_size.y) }, m_size));
 		}
 	}
 
