@@ -29,6 +29,7 @@ protected:
 	sf::Text                 m_gridText = sf::Text(m_fontText);
 	Vec2f					 m_mousePos = { 0, 0 };
 	ParticleSystem			 m_particleSystem;
+	sf::View				 m_cameraView;
 
 	void init(const std::string& levelPath);
 	void loadLevel(const std::string& filename);

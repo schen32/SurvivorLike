@@ -46,12 +46,14 @@ void Scene_Play::init(const std::string& levelPath)
 
 	m_playerConfig = { 0, 0, 0, 0, 5.0f, 0, ""};
 
-	m_gridText.setCharacterSize(60);
+	m_gridText.setCharacterSize(30);
 	m_gridText.setFont(m_game->assets().getFont("FutureMillennium"));
-	m_gridText.setOutlineThickness(5.0f);
+	m_gridText.setOutlineThickness(3.0f);
 	m_gridText.setOutlineColor(sf::Color(86, 106, 137));
 
 	m_particleSystem.init(m_game->window().getSize());
+	m_cameraView.setSize({ (float)width(), (float)height() });
+	m_cameraView.zoom(0.5f);
 
 	loadLevel(levelPath);
 }
@@ -88,7 +90,7 @@ void Scene_Play::loadLevel(const std::string& filename)
 			auto tile = m_entityManager.addEntity("Tile");
 			auto& eAnimation = tile->add<CAnimation>(m_game->assets().getAnimation(aniName), true);
 			tile->add<CTransform>(gridToMidPixel(gridX, gridY, tile), Vec2f(0, 0), 0);
-			tile->add<CBoundingBox>(eAnimation.animation.m_size);
+			tile->add<CBoundingBox>(eAnimation.animation.m_size / 4);
 		}
 	}
 }
@@ -106,7 +108,7 @@ void Scene_Play::spawnPlayer()
 	p->add<CTransform>(Vec2f(m_playerConfig.X, m_playerConfig.Y));
 	auto& eAnimation = p->add<CAnimation>(m_game->assets().getAnimation("PlayerIdle"), true);
 	p->add<CInput>();
-	p->add<CBoundingBox>(Vec2f(eAnimation.animation.m_size.x, eAnimation.animation.m_size.y));
+	p->add<CBoundingBox>(Vec2f(eAnimation.animation.m_size.x / 4, eAnimation.animation.m_size.y / 4));
 
 }
 
@@ -119,6 +121,7 @@ void Scene_Play::update()
 		sCollision();
 	}
 	sAnimation();
+	sCamera();
 }
 
 void Scene_Play::sScore()
@@ -128,7 +131,7 @@ void Scene_Play::sScore()
 
 void Scene_Play::sDrag()
 {
-	for (auto& entity : m_entityManager.getEntities())
+	/*for (auto& entity : m_entityManager.getEntities())
 	{
 		if (entity->has<CDraggable>() && entity->get<CDraggable>().dragging)
 		{
@@ -139,7 +142,7 @@ void Scene_Play::sDrag()
 				eTransform.velocity = { 0, 0 };
 			}
 		}
-	}
+	}*/
 }
 
 void Scene_Play::sDespawn()
@@ -283,7 +286,9 @@ void Scene_Play::sAnimation()
 
 void Scene_Play::sCamera()
 {
-
+	auto& pTransform = player()->get<CTransform>();
+	m_cameraView.setCenter(pTransform.pos);
+	m_game->window().setView(m_cameraView);
 }
 
 void Scene_Play::onEnd()
@@ -322,8 +327,9 @@ void Scene_Play::sRender()
 		}
 	}
 
-	m_gridText.setString("Hello World");
-	window.draw(m_gridText);
+	/*m_gridText.setString("Hello World");
+	m_gridText.setPosition(m_cameraView.getCenter() - m_cameraView.getSize() / 2.0f);
+	window.draw(m_gridText);*/
 
 	/*m_particleSystem.update();
 	m_particleSystem.draw(window);*/
