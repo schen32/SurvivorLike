@@ -53,7 +53,7 @@ void Scene_Play::init(const std::string& levelPath)
 
 	m_particleSystem.init(m_game->window().getSize());
 	m_cameraView.setSize({ (float)width(), (float)height() });
-	// m_cameraView.zoom(0.5f);
+	m_cameraView.zoom(0.5f);
 
 	loadLevel(levelPath);
 }
@@ -90,7 +90,7 @@ void Scene_Play::spawnPlayer()
 {
 	auto p = m_entityManager.addEntity("player");
 	p->add<CTransform>(gridToMidPixel(m_playerConfig.X, m_playerConfig.Y, p));
-	auto& eAnimation = p->add<CAnimation>(m_game->assets().getAnimation("PlayerIdle"), true);
+	auto& eAnimation = p->add<CAnimation>(m_game->assets().getAnimation("StormheadIdle"), true);
 	p->add<CInput>();
 	p->add<CBoundingBox>(Vec2f(eAnimation.animation.m_size.x / 4, eAnimation.animation.m_size.y / 4));
 	p->add<CBasicAttack>(30, m_currentFrame);
@@ -102,7 +102,7 @@ void Scene_Play::spawnEnemies()
 	for (int i = 0; i < 4; i++)
 	{
 		auto enemy = m_entityManager.addEntity("enemy");
-		auto& eAnimation = enemy->add<CAnimation>(m_game->assets().getAnimation("PlayerIdle"), true);
+		auto& eAnimation = enemy->add<CAnimation>(m_game->assets().getAnimation("ChainBotIdle"), true);
 		enemy->add<CTransform>(gridToMidPixel(i, 1, enemy));
 		enemy->add<CBoundingBox>(eAnimation.animation.m_size / 4);
 		enemy->add<CHealth>(2);
@@ -133,12 +133,12 @@ void Scene_Play::spawnTiles(const std::string& filename)
 	for (int i = -10; i < 11; i++)
 	{
 		auto tile = m_entityManager.addEntity("tile");
-		auto& eAnimation = tile->add<CAnimation>(m_game->assets().getAnimation("PlayerIdle"), true);
+		auto& eAnimation = tile->add<CAnimation>(m_game->assets().getAnimation("StormheadIdle"), true);
 		tile->add<CTransform>(gridToMidPixel(i, -5, tile));
 		tile->add<CBoundingBox>(eAnimation.animation.m_size);
 
 		auto tile2 = m_entityManager.addEntity("tile");
-		auto& eAnimation2 = tile2->add<CAnimation>(m_game->assets().getAnimation("PlayerIdle"), true);
+		auto& eAnimation2 = tile2->add<CAnimation>(m_game->assets().getAnimation("StormheadIdle"), true);
 		tile2->add<CTransform>(gridToMidPixel(i, 5, tile2));
 		tile2->add<CBoundingBox>(eAnimation2.animation.m_size);
 	}
@@ -146,12 +146,12 @@ void Scene_Play::spawnTiles(const std::string& filename)
 	for (int i = -4; i < 5; i++)
 	{
 		auto tile = m_entityManager.addEntity("tile");
-		auto& eAnimation = tile->add<CAnimation>(m_game->assets().getAnimation("PlayerIdle"), true);
+		auto& eAnimation = tile->add<CAnimation>(m_game->assets().getAnimation("StormheadIdle"), true);
 		tile->add<CTransform>(gridToMidPixel(-10, i, tile));
 		tile->add<CBoundingBox>(eAnimation.animation.m_size);
 
 		auto tile2 = m_entityManager.addEntity("tile");
-		auto& eAnimation2 = tile2->add<CAnimation>(m_game->assets().getAnimation("PlayerIdle"), true);
+		auto& eAnimation2 = tile2->add<CAnimation>(m_game->assets().getAnimation("StormheadIdle"), true);
 		tile2->add<CTransform>(gridToMidPixel(10, i, tile2));
 		tile2->add<CBoundingBox>(eAnimation2.animation.m_size);
 	}
@@ -319,7 +319,7 @@ void Scene_Play::sPlayerAttacks()
 
 			auto basicAttack = m_entityManager.addEntity("playerAttack");
 			basicAttack->add<CTransform>(m_game->window().mapPixelToCoords(m_mousePos));
-			auto& baAnimation = basicAttack->add<CAnimation>(m_game->assets().getAnimation("PlayerIdle"), true).animation;
+			auto& baAnimation = basicAttack->add<CAnimation>(m_game->assets().getAnimation("StormheadIdle"), true).animation;
 			basicAttack->add<CBoundingBox>(baAnimation.m_size);
 			basicAttack->add<CLifespan>(30, m_currentFrame);
 			basicAttack->add<CHealth>(10);
