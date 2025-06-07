@@ -15,7 +15,9 @@ using ComponentTuple = std::tuple<
 	CGravity,
 	CState,
 	CScore,
-	CDraggable
+	CDraggable,
+	CBasicAttack,
+	CHealth
 >;
 
 class Entity

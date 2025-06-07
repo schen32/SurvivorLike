@@ -27,9 +27,9 @@ protected:
 	const Vec2f              m_gridSize = { 64, 64 };
 	sf::Font				 m_fontText;
 	sf::Text                 m_gridText = sf::Text(m_fontText);
-	Vec2f					 m_mousePos = { 0, 0 };
 	ParticleSystem			 m_particleSystem;
 	sf::View				 m_cameraView;
+	Vec2f					 m_mousePos;
 
 	void init(const std::string& levelPath);
 	void loadLevel(const std::string& filename);
@@ -45,7 +45,7 @@ protected:
 
 	void sScore();
 	void sDrag();
-	void sDespawn();
+	void sLifespan();
 	void sMovement();
 	void sAI();
 	void sStatus();
@@ -54,6 +54,7 @@ protected:
 	void sCamera();
 	void sGui();
 
+	void sPlayerAttacks();
 public:
 
 	Scene_Play() = default;

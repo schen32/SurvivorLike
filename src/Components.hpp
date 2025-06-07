@@ -28,6 +28,15 @@ public:
 		: pos(p), prevPos(pP), scale(s), velocity(v), angle(a) {}
 };
 
+class CHealth : public Component
+{
+public:
+	int health = 0;
+
+	CHealth() = default;
+	CHealth(int h) : health(h) {}
+};
+
 class CLifespan : public Component
 {
 public:
@@ -35,8 +44,8 @@ public:
 	int frameCreated = 0;
 
 	CLifespan() = default;
-	CLifespan(int duration, int frame)
-		: lifespan(duration), frameCreated(frame) {}
+	CLifespan(int lifespan, int frame)
+		: lifespan(lifespan), frameCreated(frame) {}
 };
 
 class CInput : public Component
@@ -46,12 +55,21 @@ public:
 	bool left = false;
 	bool right = false;
 	bool down = false;
-	bool shoot = false;
-	bool canShoot = true;
-	bool canJump = true;
 	bool displayHitbox = false;
+	bool basicAttack = false;
 
 	CInput() = default;
+};
+
+class CBasicAttack : public Component
+{
+public:
+	int cooldown = 0;
+	int lastAttackTime = 0;
+
+	CBasicAttack() = default;
+	CBasicAttack(int c, int lat)
+		: cooldown(c), lastAttackTime(lat) { }
 };
 
 class CBoundingBox : public Component

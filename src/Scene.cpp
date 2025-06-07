@@ -45,6 +45,7 @@ void Scene::simulate(const size_t frames)
 	{
 		update();
 	}
+	m_currentFrame++;
 }
 
 void Scene::doAction(const Action& action)

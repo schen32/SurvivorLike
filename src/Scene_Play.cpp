@@ -93,16 +93,20 @@ void Scene_Play::spawnPlayer()
 	auto& eAnimation = p->add<CAnimation>(m_game->assets().getAnimation("PlayerIdle"), true);
 	p->add<CInput>();
 	p->add<CBoundingBox>(Vec2f(eAnimation.animation.m_size.x / 4, eAnimation.animation.m_size.y / 4));
+	p->add<CBasicAttack>(30, m_currentFrame);
+	p->add<CHealth>(5);
 }
 
 void Scene_Play::spawnEnemies()
 {
 	for (int i = 0; i < 4; i++)
 	{
-		auto tile = m_entityManager.addEntity("enemy");
-		auto& eAnimation = tile->add<CAnimation>(m_game->assets().getAnimation("PlayerIdle"), true);
-		tile->add<CTransform>(gridToMidPixel(i, 1, tile));
-		tile->add<CBoundingBox>(eAnimation.animation.m_size / 4);
+		auto enemy = m_entityManager.addEntity("enemy");
+		auto& eAnimation = enemy->add<CAnimation>(m_game->assets().getAnimation("PlayerIdle"), true);
+		enemy->add<CTransform>(gridToMidPixel(i, 1, enemy));
+		enemy->add<CBoundingBox>(eAnimation.animation.m_size / 4);
+		enemy->add<CHealth>(2);
+
 	}
 }
 
@@ -158,6 +162,8 @@ void Scene_Play::update()
 	m_entityManager.update();
 	if (!m_paused)
 	{
+		sLifespan();
+		sPlayerAttacks();
 		sAI();
 		sMovement();
 		sCollision();
@@ -185,11 +191,6 @@ void Scene_Play::sDrag()
 			}
 		}
 	}*/
-}
-
-void Scene_Play::sDespawn()
-{
-	
 }
 
 void Scene_Play::sMovement()
@@ -237,26 +238,38 @@ void Scene_Play::sStatus()
 
 void Scene_Play::sCollision()
 {
-	for (auto& tile1 : m_entityManager.getEntities())
+	for (auto& e1 : m_entityManager.getEntities())
 	{
-		for (auto& tile2 : m_entityManager.getEntities())
+		for (auto& e2 : m_entityManager.getEntities())
 		{
-			if (tile1->id() == tile2->id())
+			if (e1->id() == e2->id())
 				continue;
 
-			Vec2f overlap = Physics::GetOverlap(tile1, tile2);
+			Vec2f overlap = Physics::GetOverlap(e1, e2);
 			if (overlap.x > 0 && overlap.y > 0)
 			{
-				if ((player()->id() == tile1->id() && tile2->tag() == "enemy") ||
-					(tile1->tag() == "enemy" && player()->id() == tile2->id()))
+				if (e1->has<CHealth>() && e2->has<CHealth>())
 				{
-					loadLevel();
-					return;
+					auto& e1Health = e1->get<CHealth>().health;
+					auto& e2Health = e2->get<CHealth>().health;
+					e1Health--;
+					e2Health--;
+
+					if (player()->get<CHealth>().health <= 0)
+					{
+						loadLevel("assets/play.txt");
+						return;
+					}
+
+					if (e1Health <= 0)
+						e1->destroy();
+					if (e2Health <= 0)
+						e2->destroy();
 				}
 
-				Vec2f prevOverlap = Physics::GetPreviousOverlap(tile1, tile2);
-				auto& pTransform = tile1->get<CTransform>();
-				auto& tileTransform = tile2->get<CTransform>();
+				Vec2f prevOverlap = Physics::GetPreviousOverlap(e1, e2);
+				auto& pTransform = e1->get<CTransform>();
+				auto& tileTransform = e2->get<CTransform>();
 
 				if (prevOverlap.x > 0)
 				{
@@ -275,6 +288,41 @@ void Scene_Play::sCollision()
 						pTransform.pos.x += overlap.x;
 				}
 			}
+		}
+	}
+}
+
+void Scene_Play::sLifespan()
+{
+	for (auto& entity : m_entityManager.getEntities())
+	{
+		if (!entity->has<CLifespan>())
+			continue;
+
+		auto& eLifespan = entity->get<CLifespan>();
+		if (m_currentFrame - eLifespan.frameCreated > eLifespan.lifespan)
+		{
+			entity->destroy();
+		}
+	}
+}
+
+void Scene_Play::sPlayerAttacks()
+{
+	auto& pInput = player()->get<CInput>();
+	if (pInput.basicAttack && player()->has<CBasicAttack>())
+	{
+		auto& pBA = player()->get<CBasicAttack>();
+		if ((m_currentFrame - pBA.lastAttackTime) > pBA.cooldown)
+		{
+			pBA.lastAttackTime = m_currentFrame;
+
+			auto basicAttack = m_entityManager.addEntity("playerAttack");
+			basicAttack->add<CTransform>(m_game->window().mapPixelToCoords(m_mousePos));
+			auto& baAnimation = basicAttack->add<CAnimation>(m_game->assets().getAnimation("PlayerIdle"), true).animation;
+			basicAttack->add<CBoundingBox>(baAnimation.m_size);
+			basicAttack->add<CLifespan>(30, m_currentFrame);
+			basicAttack->add<CHealth>(10);
 		}
 	}
 }
@@ -312,6 +360,15 @@ void Scene_Play::sDoAction(const Action& action)
 		{
 			pInput.displayHitbox = !pInput.displayHitbox;
 		}
+		else if (action.m_name == "LEFT_CLICK")
+		{
+			pInput.basicAttack = true;
+			m_mousePos = action.m_mousePos;
+		}
+		else if (action.m_name == "MOUSE_MOVE")
+		{
+			m_mousePos = action.m_mousePos;
+		}
 	}
 	else if (action.m_type == "END")
 	{
@@ -330,6 +387,10 @@ void Scene_Play::sDoAction(const Action& action)
 		else if (action.m_name == "DOWN")
 		{
 			pInput.down = false;
+		}
+		else if (action.m_name == "LEFT_CLICK")
+		{
+			pInput.basicAttack = false;
 		}
 	}
 }
@@ -391,11 +452,13 @@ void Scene_Play::sRender()
 			window.draw(hitbox);
 		}
 	}
+	window.setView(window.getDefaultView());
 
 	m_gridText.setString("Hello World");
-	m_gridText.setPosition(m_cameraView.getCenter() - m_cameraView.getSize() / 2.0f);
 	window.draw(m_gridText);
 
 	/*m_particleSystem.update();
 	m_particleSystem.draw(window);*/
+
+	window.setView(m_cameraView);
 }
