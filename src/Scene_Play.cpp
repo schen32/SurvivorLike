@@ -319,7 +319,7 @@ void Scene_Play::sPlayerAttacks()
 
 			auto basicAttack = m_entityManager.addEntity("playerAttack");
 			basicAttack->add<CTransform>(m_game->window().mapPixelToCoords(m_mousePos));
-			auto& baAnimation = basicAttack->add<CAnimation>(m_game->assets().getAnimation("StormheadIdle"), true).animation;
+			auto& baAnimation = basicAttack->add<CAnimation>(m_game->assets().getAnimation("BasicAttack"), true).animation;
 			basicAttack->add<CBoundingBox>(baAnimation.m_size);
 			basicAttack->add<CLifespan>(30, m_currentFrame);
 			basicAttack->add<CHealth>(10);

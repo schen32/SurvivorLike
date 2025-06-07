@@ -16,16 +16,21 @@ public:
 	size_t m_speed = 0; // the speed or duration to play this animation
 	Vec2f m_size = { 1, 1 }; // size of the animation frame
 	std::string m_name = "none";
+	std::string m_horizontalOrVertical = "h";
 
 	Animation() = default;
 	Animation(const std::string& name, const sf::Texture& t)
-		: Animation(name, t, 1, 0) { }
-	Animation(const std::string& name, const sf::Texture& t, size_t frameCount, size_t speed)
+		: Animation(name, t, 1, 0, "h") { }
+	Animation(const std::string& name, const sf::Texture& t, size_t frameCount, size_t speed, const std::string& horizontalOrVertical)
 		: m_name(name), m_texture(t), m_sprite(t)
 		, m_frameCount(frameCount), m_currentFrame(0), m_speed(speed)
+		, m_horizontalOrVertical(horizontalOrVertical)
 	{
-		// m_size = Vec2f(t.getSize().x / frameCount, t.getSize().y);
-		m_size = Vec2f(t.getSize().x, t.getSize().y / frameCount);
+		if (horizontalOrVertical == "h")
+			m_size = Vec2f(t.getSize().x / frameCount, t.getSize().y);
+		else if (horizontalOrVertical == "v")
+			m_size = Vec2f(t.getSize().x, t.getSize().y / frameCount);
+
 		m_sprite.setOrigin(m_size / 2);
 		m_sprite.setTextureRect(sf::IntRect({ 0, 0 }, m_size));
 	}
@@ -37,7 +42,10 @@ public:
 			m_currentFrame++;
 			size_t animFrame = (m_currentFrame / m_speed) % m_frameCount;
 			// m_sprite.setTextureRect(sf::IntRect({ (int)(animFrame * m_size.x), 0 }, m_size));
-			m_sprite.setTextureRect(sf::IntRect({ 0, (int)(animFrame * m_size.y) }, m_size));
+			if (m_horizontalOrVertical == "h")
+				m_sprite.setTextureRect(sf::IntRect({ (int)(animFrame * m_size.x), 0 }, m_size));
+			else if (m_horizontalOrVertical == "v")
+				m_sprite.setTextureRect(sf::IntRect({ 0, (int)(animFrame * m_size.y) }, m_size));
 		}
 	}
 

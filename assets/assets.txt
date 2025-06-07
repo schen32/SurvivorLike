@@ -1,7 +1,10 @@
 Font FutureMillennium assets/0Fonts/FutureMillennium.ttf
 
 Texture TexStormheadIdle assets/stormhead/idle.png
-Animation StormheadIdle TexStormheadIdle 9 10
+Animation StormheadIdle TexStormheadIdle 9 10 v
 
 Texture TexChainBotIdle assets/Ball_and_Chain_Bot/idle.png
-Animation ChainBotIdle TexChainBotIdle 5 10
+Animation ChainBotIdle TexChainBotIdle 5 10 v
+
+Texture TexBasicAttack assets/attacks/basic_attack.png
+Animation BasicAttack TexBasicAttack 3 10 h
