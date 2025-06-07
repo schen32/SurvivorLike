@@ -74,25 +74,8 @@ void Scene_Play::loadLevel(const std::string& filename)
 {
 	m_entityManager = EntityManager();
 	spawnPlayer();
+	spawnEnemies(filename);
 	m_entityManager.update();
-
-	std::ifstream file(m_levelPath);
-	std::string tileType;
-	while (file >> tileType)
-	{
-		std::string aniName, gridXstr, gridYstr;
-		file >> aniName >> gridXstr >> gridYstr;
-		float gridX = std::stof(gridXstr);
-		float gridY = std::stof(gridYstr);
-
-		if (tileType == "Tile")
-		{
-			auto tile = m_entityManager.addEntity("Tile");
-			auto& eAnimation = tile->add<CAnimation>(m_game->assets().getAnimation(aniName), true);
-			tile->add<CTransform>(gridToMidPixel(gridX, gridY, tile), Vec2f(0, 0), 0);
-			tile->add<CBoundingBox>(eAnimation.animation.m_size / 4);
-		}
-	}
 }
 
 std::shared_ptr<Entity> Scene_Play::player()
@@ -109,7 +92,27 @@ void Scene_Play::spawnPlayer()
 	auto& eAnimation = p->add<CAnimation>(m_game->assets().getAnimation("PlayerIdle"), true);
 	p->add<CInput>();
 	p->add<CBoundingBox>(Vec2f(eAnimation.animation.m_size.x / 4, eAnimation.animation.m_size.y / 4));
+}
 
+void Scene_Play::spawnEnemies(const std::string& filename)
+{
+	std::ifstream file(m_levelPath);
+	std::string tileType;
+	while (file >> tileType)
+	{
+		std::string aniName, gridXstr, gridYstr;
+		file >> aniName >> gridXstr >> gridYstr;
+		float gridX = std::stof(gridXstr);
+		float gridY = std::stof(gridYstr);
+
+		if (tileType == "Enemy")
+		{
+			auto tile = m_entityManager.addEntity("Enemy");
+			auto& eAnimation = tile->add<CAnimation>(m_game->assets().getAnimation(aniName), true);
+			tile->add<CTransform>(gridToMidPixel(gridX, gridY, tile), Vec2f(0, 0), 0);
+			tile->add<CBoundingBox>(eAnimation.animation.m_size / 4);
+		}
+	}
 }
 
 void Scene_Play::update()
@@ -117,6 +120,7 @@ void Scene_Play::update()
 	m_entityManager.update();
 	if (!m_paused)
 	{
+		sAI();
 		sMovement();
 		sCollision();
 	}
@@ -126,7 +130,7 @@ void Scene_Play::update()
 
 void Scene_Play::sScore()
 {
-	
+
 }
 
 void Scene_Play::sDrag()
@@ -176,7 +180,19 @@ void Scene_Play::sMovement()
 
 void Scene_Play::sAI()
 {
+	auto& pTransform = player()->get<CTransform>();
+	for (auto& entity : m_entityManager.getEntities())
+	{
+		if (player()->id() == entity->id())
+			continue;
 
+		const static float STEERING_SCALE = 0.1f;
+
+		auto& eTransform = entity->get<CTransform>();
+		Vec2f desired = (pTransform.pos - eTransform.pos).normalize();
+		Vec2f steering = (desired - eTransform.velocity) * STEERING_SCALE;
+		eTransform.velocity += steering;
+	}
 }
 
 void Scene_Play::sStatus()
@@ -186,30 +202,42 @@ void Scene_Play::sStatus()
 
 void Scene_Play::sCollision()
 {
-	for (auto& tile : m_entityManager.getEntities("Tile"))
+	for (auto& tile1 : m_entityManager.getEntities())
 	{
-		Vec2f overlap = Physics::GetOverlap(player(), tile);
-		if (overlap.x > 0 && overlap.y > 0)
+		for (auto& tile2 : m_entityManager.getEntities())
 		{
-			Vec2f prevOverlap = Physics::GetPreviousOverlap(player(), tile);
-			auto& pTransform = player()->get<CTransform>();
-			auto& tileTransform = tile->get<CTransform>();
+			if (tile1->id() == tile2->id())
+				continue;
 
-			if (prevOverlap.x > 0)
+			Vec2f overlap = Physics::GetOverlap(tile1, tile2);
+			if (overlap.x > 0 && overlap.y > 0)
 			{
-				pTransform.velocity.y = 0;
-				if (pTransform.prevPos.y < tileTransform.pos.y)
-					pTransform.pos.y -= overlap.y;
-				else
-					pTransform.pos.y += overlap.y;
-			}
-			else if (prevOverlap.y > 0)
-			{
-				pTransform.velocity.x = 0;
-				if (pTransform.prevPos.x < tileTransform.pos.x)
-					pTransform.pos.x -= overlap.x;
-				else
-					pTransform.pos.x += overlap.x;
+				if (player()->id() == tile1->id() || player()->id() == tile2->id())
+				{
+					loadLevel("assets/play.txt");
+					return;
+				}
+
+				Vec2f prevOverlap = Physics::GetPreviousOverlap(tile1, tile2);
+				auto& pTransform = tile1->get<CTransform>();
+				auto& tileTransform = tile2->get<CTransform>();
+
+				if (prevOverlap.x > 0)
+				{
+					pTransform.velocity.y = 0;
+					if (pTransform.prevPos.y < tileTransform.pos.y)
+						pTransform.pos.y -= overlap.y;
+					else
+						pTransform.pos.y += overlap.y;
+				}
+				else if (prevOverlap.y > 0)
+				{
+					pTransform.velocity.x = 0;
+					if (pTransform.prevPos.x < tileTransform.pos.x)
+						pTransform.pos.x -= overlap.x;
+					else
+						pTransform.pos.x += overlap.x;
+				}
 			}
 		}
 	}
@@ -279,6 +307,7 @@ void Scene_Play::sAnimation()
 
 		auto& eAnimation = entity->get<CAnimation>();
 		eAnimation.animation.update();
+
 		if (!eAnimation.repeat && eAnimation.animation.hasEnded())
 			entity->destroy();
 	}
@@ -327,9 +356,9 @@ void Scene_Play::sRender()
 		}
 	}
 
-	/*m_gridText.setString("Hello World");
+	m_gridText.setString("Hello World");
 	m_gridText.setPosition(m_cameraView.getCenter() - m_cameraView.getSize() / 2.0f);
-	window.draw(m_gridText);*/
+	window.draw(m_gridText);
 
 	/*m_particleSystem.update();
 	m_particleSystem.draw(window);*/

@@ -15,7 +15,7 @@ Scene_Menu::Scene_Menu(GameEngine* gameEngine)
 
 void Scene_Menu::init()
 {
-	m_title = "Cyber Runner";
+	m_title = "Alien Survivor";
 	m_menuStrings.push_back("Start");
 	m_menuStrings.push_back("Options");
 

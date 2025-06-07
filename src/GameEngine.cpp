@@ -16,7 +16,7 @@ void GameEngine::init(const std::string& path)
 {
 	m_assets.loadFromFile(path);
 
-	m_window.create(sf::VideoMode({ 1920, 1080 }), "Cyber Runner");
+	m_window.create(sf::VideoMode({ 1920, 1080 }), "Alien Survivor");
 	m_window.setFramerateLimit(60);
 
 	if (!ImGui::SFML::Init(m_window))
