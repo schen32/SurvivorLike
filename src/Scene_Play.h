@@ -37,7 +37,8 @@ protected:
 	void onEnd();
 	void update();
 	void spawnPlayer();
-	void spawnEnemies(const std::string& filename);
+	void spawnEnemies();
+	void spawnTiles(const std::string& filename);
 	std::shared_ptr<Entity> player();
 	void sDoAction(const Action& action);
 	Vec2f gridToMidPixel(float gridX, float gridY, std::shared_ptr<Entity> entity);

@@ -53,7 +53,7 @@ void Scene_Play::init(const std::string& levelPath)
 
 	m_particleSystem.init(m_game->window().getSize());
 	m_cameraView.setSize({ (float)width(), (float)height() });
-	m_cameraView.zoom(0.5f);
+	// m_cameraView.zoom(0.5f);
 
 	loadLevel(levelPath);
 }
@@ -70,11 +70,12 @@ Vec2f Scene_Play::gridToMidPixel(float gridX, float gridY, std::shared_ptr<Entit
 	);
 }
 
-void Scene_Play::loadLevel(const std::string& filename)
+void Scene_Play::loadLevel(const std::string& filename = "")
 {
 	m_entityManager = EntityManager();
 	spawnPlayer();
-	spawnEnemies(filename);
+	spawnEnemies();
+	spawnTiles(filename);
 	m_entityManager.update();
 }
 
@@ -88,15 +89,26 @@ std::shared_ptr<Entity> Scene_Play::player()
 void Scene_Play::spawnPlayer()
 {
 	auto p = m_entityManager.addEntity("player");
-	p->add<CTransform>(Vec2f(m_playerConfig.X, m_playerConfig.Y));
+	p->add<CTransform>(gridToMidPixel(m_playerConfig.X, m_playerConfig.Y, p));
 	auto& eAnimation = p->add<CAnimation>(m_game->assets().getAnimation("PlayerIdle"), true);
 	p->add<CInput>();
 	p->add<CBoundingBox>(Vec2f(eAnimation.animation.m_size.x / 4, eAnimation.animation.m_size.y / 4));
 }
 
-void Scene_Play::spawnEnemies(const std::string& filename)
+void Scene_Play::spawnEnemies()
 {
-	std::ifstream file(m_levelPath);
+	for (int i = 0; i < 4; i++)
+	{
+		auto tile = m_entityManager.addEntity("enemy");
+		auto& eAnimation = tile->add<CAnimation>(m_game->assets().getAnimation("PlayerIdle"), true);
+		tile->add<CTransform>(gridToMidPixel(i, 1, tile));
+		tile->add<CBoundingBox>(eAnimation.animation.m_size / 4);
+	}
+}
+
+void Scene_Play::spawnTiles(const std::string& filename)
+{
+	/*std::ifstream file(m_levelPath);
 	std::string tileType;
 	while (file >> tileType)
 	{
@@ -105,13 +117,39 @@ void Scene_Play::spawnEnemies(const std::string& filename)
 		float gridX = std::stof(gridXstr);
 		float gridY = std::stof(gridYstr);
 
-		if (tileType == "Enemy")
+		if (tileType == "Tile")
 		{
-			auto tile = m_entityManager.addEntity("Enemy");
+			auto tile = m_entityManager.addEntity("tile");
 			auto& eAnimation = tile->add<CAnimation>(m_game->assets().getAnimation(aniName), true);
 			tile->add<CTransform>(gridToMidPixel(gridX, gridY, tile), Vec2f(0, 0), 0);
 			tile->add<CBoundingBox>(eAnimation.animation.m_size / 4);
 		}
+	}*/
+
+	for (int i = -10; i < 11; i++)
+	{
+		auto tile = m_entityManager.addEntity("tile");
+		auto& eAnimation = tile->add<CAnimation>(m_game->assets().getAnimation("PlayerIdle"), true);
+		tile->add<CTransform>(gridToMidPixel(i, -5, tile));
+		tile->add<CBoundingBox>(eAnimation.animation.m_size);
+
+		auto tile2 = m_entityManager.addEntity("tile");
+		auto& eAnimation2 = tile2->add<CAnimation>(m_game->assets().getAnimation("PlayerIdle"), true);
+		tile2->add<CTransform>(gridToMidPixel(i, 5, tile2));
+		tile2->add<CBoundingBox>(eAnimation2.animation.m_size);
+	}
+
+	for (int i = -4; i < 5; i++)
+	{
+		auto tile = m_entityManager.addEntity("tile");
+		auto& eAnimation = tile->add<CAnimation>(m_game->assets().getAnimation("PlayerIdle"), true);
+		tile->add<CTransform>(gridToMidPixel(-10, i, tile));
+		tile->add<CBoundingBox>(eAnimation.animation.m_size);
+
+		auto tile2 = m_entityManager.addEntity("tile");
+		auto& eAnimation2 = tile2->add<CAnimation>(m_game->assets().getAnimation("PlayerIdle"), true);
+		tile2->add<CTransform>(gridToMidPixel(10, i, tile2));
+		tile2->add<CBoundingBox>(eAnimation2.animation.m_size);
 	}
 }
 
@@ -181,11 +219,8 @@ void Scene_Play::sMovement()
 void Scene_Play::sAI()
 {
 	auto& pTransform = player()->get<CTransform>();
-	for (auto& entity : m_entityManager.getEntities())
+	for (auto& entity : m_entityManager.getEntities("enemy"))
 	{
-		if (player()->id() == entity->id())
-			continue;
-
 		const static float STEERING_SCALE = 0.1f;
 
 		auto& eTransform = entity->get<CTransform>();
@@ -212,9 +247,10 @@ void Scene_Play::sCollision()
 			Vec2f overlap = Physics::GetOverlap(tile1, tile2);
 			if (overlap.x > 0 && overlap.y > 0)
 			{
-				if (player()->id() == tile1->id() || player()->id() == tile2->id())
+				if ((player()->id() == tile1->id() && tile2->tag() == "enemy") ||
+					(tile1->tag() == "enemy" && player()->id() == tile2->id()))
 				{
-					loadLevel("assets/play.txt");
+					loadLevel();
 					return;
 				}
 
