@@ -80,6 +80,7 @@ public:
 	bool displayHitbox = false;
 	bool autoAttack = false;
 	bool basicAttack = false;
+	bool specialAttack = false;
 
 	CInput() = default;
 };
@@ -87,14 +88,31 @@ public:
 class CBasicAttack : public Component
 {
 public:
-	int cooldown = 0;
+	int cooldown = 30;
 	int lastAttackTime = 0;
 	float scale = 3.0f;
 	int duration = 15;
+	int pierce = 10;
+	int distanceFromPlayer = 30;
 
 	CBasicAttack() = default;
-	CBasicAttack(int c, int lat)
-		: cooldown(c), lastAttackTime(lat) { }
+	CBasicAttack(int lat)
+		: lastAttackTime(lat) { }
+};
+
+class CSpecialAttack : public Component
+{
+public:
+	int cooldown = 90;
+	int lastAttackTime = 0;
+	float scale = 5.0f;
+	int duration = 120;
+	int pierce = 10;
+	int speed = 10;
+
+	CSpecialAttack() = default;
+	CSpecialAttack(int lat)
+		: lastAttackTime(lat) { }
 };
 
 class CBoundingBox : public Component

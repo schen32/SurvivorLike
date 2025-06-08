@@ -115,15 +115,17 @@ void Scene_Play::spawnPlayer()
 	auto& pAnimation = p->add<CAnimation>(m_game->assets().getAnimation("StormheadIdle"), true);
 	p->add<CBoundingBox>(Vec2f(pAnimation.animation.m_size.x / 4, pAnimation.animation.m_size.y / 4));
 	p->add<CTransform>(gridToMidPixel(m_playerConfig.X, m_playerConfig.Y, p));
-	p->add<CBasicAttack>(30, m_currentFrame);
 	p->add<CHealth>(5);
 	p->add<CInput>();
+
+	p->add<CBasicAttack>(m_currentFrame);
+	p->add<CSpecialAttack>(m_currentFrame);
 }
 
 void Scene_Play::spawnEnemies()
 {
 	static int lastEnemySpawnTime = 0;
-	static const int enemySpawnInterval = 60;
+	static const int enemySpawnInterval = 30;
 	if (m_currentFrame - lastEnemySpawnTime > enemySpawnInterval)
 	{
 		lastEnemySpawnTime = m_currentFrame;
@@ -310,115 +312,156 @@ void Scene_Play::sLifespan()
 
 void Scene_Play::sPlayerAttacks()
 {
-	if (!player()->has<CBasicAttack>())
-		return;
-
 	auto& pInput = player()->get<CInput>();
-	if (!pInput.basicAttack && !pInput.autoAttack)
-		return;
-
-	auto& pBA = player()->get<CBasicAttack>();
-	if ((m_currentFrame - pBA.lastAttackTime) < pBA.cooldown)
-		return;
-
-	auto& pTransform = player()->get<CTransform>();
-	Vec2f attackDir;
 	if (pInput.autoAttack)
 	{
 		auto nearestEnemy = getNearestEnemy(player());
 		if (!nearestEnemy)
 			return;
+		auto& neTransform = nearestEnemy->get<CTransform>();
 
-		attackDir = (nearestEnemy->get<CTransform>().pos - pTransform.pos).normalize() * 30;
+		spawnBasicAttack(neTransform.pos);
+		spawnSpecialAttack(neTransform.pos);
+		return;
 	}
-	else if (pInput.basicAttack)
-	{
-		attackDir = (m_mousePos - pTransform.pos).normalize() * 30;
-	}
+	
+	if (pInput.basicAttack)
+		spawnBasicAttack(m_mousePos);
+	if (pInput.specialAttack)
+		spawnSpecialAttack(m_mousePos);
+}
+
+void Scene_Play::spawnBasicAttack(const Vec2f& targetPos)
+{
+	if (!player()->has<CBasicAttack>())
+		return;
+
+	auto& pBasicAttack = player()->get<CBasicAttack>();
+	if ((m_currentFrame - pBasicAttack.lastAttackTime) < pBasicAttack.cooldown)
+		return;
+	pBasicAttack.lastAttackTime = m_currentFrame;
+
+	auto& pTransform = player()->get<CTransform>();
+
+	Vec2f attackDir = (targetPos - pTransform.pos).normalize();
 	auto basicAttack = m_entityManager.addEntity("playerAttack");
 
 	float attackAngle = std::atan2(attackDir.y, attackDir.x) * 180.0f / 3.14159f;
-	basicAttack->add<CTransform>(pTransform.pos + attackDir, Vec2f(0, 0), attackAngle + 225);
+	basicAttack->add<CTransform>(pTransform.pos + attackDir * pBasicAttack.distanceFromPlayer
+		, Vec2f(0, 0), attackAngle + 225);
 
 	auto& baAnimation = basicAttack->add<CAnimation>(m_game->assets().getAnimation("BasicAttack"), true).animation;
-	baAnimation.m_sprite.setScale({ pBA.scale, pBA.scale });
+	baAnimation.m_sprite.setScale({ pBasicAttack.scale, pBasicAttack.scale });
 
-	basicAttack->add<CBoundingBox>(baAnimation.m_size * pBA.scale);
-	basicAttack->add<CLifespan>(pBA.duration, m_currentFrame);
-	basicAttack->add<CHealth>(10);
+	basicAttack->add<CBoundingBox>(baAnimation.m_size * pBasicAttack.scale);
+	basicAttack->add<CLifespan>(pBasicAttack.duration, m_currentFrame);
+	basicAttack->add<CHealth>(pBasicAttack.pierce);
 	basicAttack->add<CMoveAtSameVelocity>(player());
+}
 
-	pBA.lastAttackTime = m_currentFrame;
+void Scene_Play::spawnSpecialAttack(const Vec2f& targetPos)
+{
+	if (!player()->has<CSpecialAttack>())
+		return;
+
+	auto& pSpecialAttack = player()->get<CSpecialAttack>();
+	if ((m_currentFrame - pSpecialAttack.lastAttackTime) < pSpecialAttack.cooldown)
+		return;
+	pSpecialAttack.lastAttackTime = m_currentFrame;
+
+	auto& pTransform = player()->get<CTransform>();
+
+	Vec2f attackDir = (targetPos - pTransform.pos).normalize();
+	auto basicAttack = m_entityManager.addEntity("playerAttack");
+
+	float attackAngle = std::atan2(attackDir.y, attackDir.x) * 180.0f / 3.14159f;
+	basicAttack->add<CTransform>(pTransform.pos + attackDir, attackDir * pSpecialAttack.speed, attackAngle + 225);
+
+	auto& baAnimation = basicAttack->add<CAnimation>(m_game->assets().getAnimation("BasicAttack"), true).animation;
+	baAnimation.m_sprite.setScale({ pSpecialAttack.scale, pSpecialAttack.scale });
+
+	basicAttack->add<CBoundingBox>(baAnimation.m_size * pSpecialAttack.scale);
+	basicAttack->add<CLifespan>(pSpecialAttack.duration, m_currentFrame);
+	basicAttack->add<CHealth>(pSpecialAttack.pierce);
 }
 
 void Scene_Play::sDoAction(const Action& action)
 {
-		auto& pInput = player()->get<CInput>();
-		if (action.m_type == "START")
+	auto& pInput = player()->get<CInput>();
+	if (action.m_type == "START")
+	{
+		if (action.m_name == "LEFT")
 		{
-			if (action.m_name == "LEFT")
-			{
-				pInput.left = true;
-			}
-			else if (action.m_name == "RIGHT")
-			{
-				pInput.right = true;
-			}
-			else if (action.m_name == "UP")
-			{
-				pInput.up = true;
-			}
-			else if (action.m_name == "DOWN")
-			{
-				pInput.down = true;
-			}
-			else if (action.m_name == "QUIT")
-			{
-				onEnd();
-			}
-			else if (action.m_name == "PAUSE")
-			{
-				m_paused = !m_paused;
-			}
-			else if (action.m_name == "DISPLAY_HITBOX")
-			{
-				pInput.displayHitbox = !pInput.displayHitbox;
-			}
-			else if (action.m_name == "LEFT_CLICK")
-			{
-				pInput.basicAttack = true;
-				m_mousePos = m_game->window().mapPixelToCoords(action.m_mousePos);
-			}
-			else if (action.m_name == "MOUSE_MOVE")
-			{
-				m_mousePos = m_game->window().mapPixelToCoords(action.m_mousePos);
-			}
-			else if (action.m_name == "TOGGLE_AUTO_ATTACK")
-			{
-				pInput.autoAttack = !pInput.autoAttack;
-			}
+			pInput.left = true;
 		}
-		else if (action.m_type == "END")
+		else if (action.m_name == "RIGHT")
 		{
-			if (action.m_name == "LEFT")
-			{
-				pInput.left = false;
-			}
-			else if (action.m_name == "RIGHT")
-			{
-				pInput.right = false;
-			}
-			if (action.m_name == "UP")
-			{
-				pInput.up = false;
-			}
-			else if (action.m_name == "DOWN")
-			{
-				pInput.down = false;
-			}
-			else if (action.m_name == "LEFT_CLICK")
-			{
-				pInput.basicAttack = false;
+			pInput.right = true;
+		}
+		else if (action.m_name == "UP")
+		{
+			pInput.up = true;
+		}
+		else if (action.m_name == "DOWN")
+		{
+			pInput.down = true;
+		}
+		else if (action.m_name == "QUIT")
+		{
+			onEnd();
+		}
+		else if (action.m_name == "PAUSE")
+		{
+			m_paused = !m_paused;
+		}
+		else if (action.m_name == "DISPLAY_HITBOX")
+		{
+			pInput.displayHitbox = !pInput.displayHitbox;
+		}
+		else if (action.m_name == "LEFT_CLICK")
+		{
+			pInput.basicAttack = true;
+			m_mousePos = m_game->window().mapPixelToCoords(action.m_mousePos);
+		}
+		else if (action.m_name == "RIGHT_CLICK")
+		{
+			pInput.specialAttack = true;
+			m_mousePos = m_game->window().mapPixelToCoords(action.m_mousePos);
+		}
+		else if (action.m_name == "MOUSE_MOVE")
+		{
+			m_mousePos = m_game->window().mapPixelToCoords(action.m_mousePos);
+		}
+		else if (action.m_name == "TOGGLE_AUTO_ATTACK")
+		{
+			pInput.autoAttack = !pInput.autoAttack;
+		}
+	}
+	else if (action.m_type == "END")
+	{
+		if (action.m_name == "LEFT")
+		{
+			pInput.left = false;
+		}
+		else if (action.m_name == "RIGHT")
+		{
+			pInput.right = false;
+		}
+		if (action.m_name == "UP")
+		{
+			pInput.up = false;
+		}
+		else if (action.m_name == "DOWN")
+		{
+			pInput.down = false;
+		}
+		else if (action.m_name == "LEFT_CLICK")
+		{
+			pInput.basicAttack = false;
+		}
+		else if (action.m_name == "RIGHT_CLICK")
+		{
+			pInput.specialAttack = false;
 		}
 	}
 }

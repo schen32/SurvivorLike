@@ -56,6 +56,8 @@ protected:
 	void sGui();
 
 	void sPlayerAttacks();
+	void spawnBasicAttack(const Vec2f& targetPos);
+	void spawnSpecialAttack(const Vec2f& targetPos);
 public:
 
 	Scene_Play() = default;
