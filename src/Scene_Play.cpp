@@ -107,14 +107,13 @@ void Scene_Play::spawnEnemies()
 
 		int spawnAngle = rand() % 360;
 		Vec2f spawnPoint = Vec2f(std::cos(spawnAngle), std::sin(spawnAngle)) * 500;
-		auto& pPos = player()->get<CTransform>().pos;
 
 		auto enemy = m_entityManager.addEntity("enemy");
 		auto& eAnimation = enemy->add<CAnimation>(m_game->assets().getAnimation("ChainBotIdle"), true);
-		enemy->add<CTransform>(pPos + spawnPoint);
+		enemy->add<CTransform>(player()->get<CTransform>().pos + spawnPoint);
 		enemy->add<CBoundingBox>(eAnimation.animation.m_size / 4);
 		enemy->add<CHealth>(2);
-
+		enemy->add<CFollow>(player());
 	}
 }
 
@@ -179,6 +178,13 @@ void Scene_Play::sMovement()
 	{
 		auto& eTransform = entity->get<CTransform>();
 
+		if (entity->has<CMoveAtSameVelocity>())
+		{
+			auto& target = entity->get<CMoveAtSameVelocity>().target;
+			auto& tTransform = target->get<CTransform>();
+			eTransform.velocity = tTransform.velocity;
+		}
+
 		eTransform.prevPos = eTransform.pos;
 		eTransform.pos += eTransform.velocity;
 	}
@@ -186,14 +192,16 @@ void Scene_Play::sMovement()
 
 void Scene_Play::sAI()
 {
-	auto& pTransform = player()->get<CTransform>();
-	for (auto& entity : m_entityManager.getEntities("enemy"))
+	for (auto& entity : m_entityManager.getEntities())
 	{
-		const static float STEERING_SCALE = 0.1f;
-
+		if (!entity->has<CFollow>())
+			continue;
+		auto& eFollow = entity->get<CFollow>();
+		auto& tTransform = eFollow.target->get<CTransform>();
 		auto& eTransform = entity->get<CTransform>();
-		Vec2f desired = (pTransform.pos - eTransform.pos).normalize();
-		Vec2f steering = (desired - eTransform.velocity) * STEERING_SCALE;
+
+		Vec2f desired = (tTransform.pos - eTransform.pos).normalize();
+		Vec2f steering = (desired - eTransform.velocity) * eFollow.steering_scale;
 		eTransform.velocity += steering;
 	}
 }
@@ -291,7 +299,6 @@ void Scene_Play::sPlayerAttacks()
 
 			auto& pTransform = player()->get<CTransform>();
 			Vec2f attackDir = (m_mousePos - pTransform.pos).normalize() * 30;
-
 			float attackAngle = std::atan2(attackDir.y, attackDir.x) * 180.0f / 3.14159f;
 			basicAttack->add<CTransform>(pTransform.pos + attackDir, Vec2f(0, 0), attackAngle + 225);
 
@@ -301,74 +308,75 @@ void Scene_Play::sPlayerAttacks()
 			basicAttack->add<CBoundingBox>(baAnimation.m_size * pBA.scale);
 			basicAttack->add<CLifespan>(pBA.duration, m_currentFrame);
 			basicAttack->add<CHealth>(10);
+			basicAttack->add<CMoveAtSameVelocity>(player());
 		}
 	}
 }
 
 void Scene_Play::sDoAction(const Action& action)
 {
-	auto& pInput = player()->get<CInput>();
-	if (action.m_type == "START")
-	{
-		if (action.m_name == "LEFT")
+		auto& pInput = player()->get<CInput>();
+		if (action.m_type == "START")
 		{
-			pInput.left = true;
+			if (action.m_name == "LEFT")
+			{
+				pInput.left = true;
+			}
+			else if (action.m_name == "RIGHT")
+			{
+				pInput.right = true;
+			}
+			else if (action.m_name == "UP")
+			{
+				pInput.up = true;
+			}
+			else if (action.m_name == "DOWN")
+			{
+				pInput.down = true;
+			}
+			else if (action.m_name == "QUIT")
+			{
+				onEnd();
+			}
+			else if (action.m_name == "PAUSE")
+			{
+				m_paused = !m_paused;
+			}
+			else if (action.m_name == "DISPLAY_HITBOX")
+			{
+				pInput.displayHitbox = !pInput.displayHitbox;
+			}
+			else if (action.m_name == "LEFT_CLICK")
+			{
+				pInput.basicAttack = true;
+				m_mousePos = m_game->window().mapPixelToCoords(action.m_mousePos);
+			}
+			else if (action.m_name == "MOUSE_MOVE")
+			{
+				m_mousePos = m_game->window().mapPixelToCoords(action.m_mousePos);
+			}
 		}
-		else if (action.m_name == "RIGHT")
+		else if (action.m_type == "END")
 		{
-			pInput.right = true;
-		}
-		else if (action.m_name == "UP")
-		{
-			pInput.up = true;
-		}
-		else if (action.m_name == "DOWN")
-		{
-			pInput.down = true;
-		}
-		else if (action.m_name == "QUIT")
-		{
-			onEnd();
-		}
-		else if (action.m_name == "PAUSE")
-		{
-			m_paused = !m_paused;
-		}
-		else if (action.m_name == "DISPLAY_HITBOX")
-		{
-			pInput.displayHitbox = !pInput.displayHitbox;
-		}
-		else if (action.m_name == "LEFT_CLICK")
-		{
-			pInput.basicAttack = true;
-			m_mousePos = m_game->window().mapPixelToCoords(action.m_mousePos);
-		}
-		else if (action.m_name == "MOUSE_MOVE")
-		{
-			m_mousePos = m_game->window().mapPixelToCoords(action.m_mousePos);
-		}
-	}
-	else if (action.m_type == "END")
-	{
-		if (action.m_name == "LEFT")
-		{
-			pInput.left = false;
-		}
-		else if (action.m_name == "RIGHT")
-		{
-			pInput.right = false;
-		}
-		if (action.m_name == "UP")
-		{
-			pInput.up = false;
-		}
-		else if (action.m_name == "DOWN")
-		{
-			pInput.down = false;
-		}
-		else if (action.m_name == "LEFT_CLICK")
-		{
-			pInput.basicAttack = false;
+			if (action.m_name == "LEFT")
+			{
+				pInput.left = false;
+			}
+			else if (action.m_name == "RIGHT")
+			{
+				pInput.right = false;
+			}
+			if (action.m_name == "UP")
+			{
+				pInput.up = false;
+			}
+			else if (action.m_name == "DOWN")
+			{
+				pInput.down = false;
+			}
+			else if (action.m_name == "LEFT_CLICK")
+			{
+				pInput.basicAttack = false;
 		}
 	}
 }

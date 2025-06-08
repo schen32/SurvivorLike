@@ -3,6 +3,9 @@
 #include "Animation.hpp"
 #include "Assets.hpp"
 #include "Vec2.hpp"
+#include "Entity.hpp"
+
+class Entity;
 
 class Component
 {
@@ -26,6 +29,25 @@ public:
 		: pos(p), velocity(v), angle(a) {}
 	CTransform(const Vec2f& p, const Vec2f& pP, const Vec2f s, const Vec2f& v, float a)
 		: pos(p), prevPos(pP), scale(s), velocity(v), angle(a) {}
+};
+
+class CMoveAtSameVelocity : public Component
+{
+public:
+	std::shared_ptr<Entity> target = nullptr;
+
+	CMoveAtSameVelocity() = default;
+	CMoveAtSameVelocity(std::shared_ptr<Entity> t) : target(t) {}
+};
+
+class CFollow : public Component
+{
+public:
+	std::shared_ptr<Entity> target = nullptr;
+	float steering_scale = 0.1f;
+
+	CFollow() = default;
+	CFollow(std::shared_ptr<Entity> t) : target(t) {}
 };
 
 class CHealth : public Component

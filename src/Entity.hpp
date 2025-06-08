@@ -17,7 +17,9 @@ using ComponentTuple = std::tuple<
 	CScore,
 	CDraggable,
 	CBasicAttack,
-	CHealth
+	CHealth,
+	CFollow,
+	CMoveAtSameVelocity
 >;
 
 class Entity
