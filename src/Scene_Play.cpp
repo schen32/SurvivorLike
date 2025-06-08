@@ -118,7 +118,8 @@ void Scene_Play::spawnPlayer()
 	p->add<CTransform>(gridToMidPixel(m_playerConfig.X, m_playerConfig.Y, p));
 	p->add<CHealth>(5);
 	p->add<CInput>();
-	p->add<CScore>();
+	p->add<CScore>(0);
+	p->add<CState>("idle");
 
 	p->add<CBasicAttack>(m_currentFrame);
 	p->add<CSpecialAttack>(m_currentFrame);
@@ -202,8 +203,11 @@ void Scene_Play::sMovement()
 	// Normalize if necessary
 	if (pTransform.velocity.x != 0.f || pTransform.velocity.y != 0.f)
 	{
+		player()->get<CState>().state = "running";
 		pTransform.velocity = pTransform.velocity.normalize() * m_playerConfig.SPEED;
 	}
+	else
+		player()->get<CState>().state = "idle";
 
 
 	for (auto& entity : m_entityManager.getEntities())
@@ -478,6 +482,17 @@ void Scene_Play::sDoAction(const Action& action)
 
 void Scene_Play::sAnimation()
 {
+	auto& pState = player()->get<CState>().state;
+	auto& pAnimation = player()->get<CAnimation>().animation;
+	if (pState == "idle" && pAnimation.m_name != "StormheadIdle")
+	{
+		player()->add<CAnimation>(m_game->assets().getAnimation("StormheadIdle"), true);
+	}
+	else if (pState == "running" && pAnimation.m_name != "StormheadRun")
+	{
+		player()->add<CAnimation>(m_game->assets().getAnimation("StormheadRun"), true);
+	}
+
 	for (auto& entity : m_entityManager.getEntities())
 	{
 		if (!entity->has<CAnimation>())
