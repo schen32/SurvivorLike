@@ -47,10 +47,11 @@ void Scene_Play::init(const std::string& levelPath)
 
 	m_playerConfig = { 0, 0, 0, 0, 4.0f, 0, ""};
 
-	m_gridText.setCharacterSize(30);
+	m_gridText.setCharacterSize(100);
 	m_gridText.setFont(m_game->assets().getFont("FutureMillennium"));
 	m_gridText.setOutlineThickness(3.0f);
 	m_gridText.setOutlineColor(sf::Color(86, 106, 137));
+	m_gridText.setPosition({ 20, 10 });
 
 	m_particleSystem.init(m_game->window().getSize());
 	m_cameraView.setSize({ (float)width(), (float)height() });
@@ -117,6 +118,7 @@ void Scene_Play::spawnPlayer()
 	p->add<CTransform>(gridToMidPixel(m_playerConfig.X, m_playerConfig.Y, p));
 	p->add<CHealth>(5);
 	p->add<CInput>();
+	p->add<CScore>();
 
 	p->add<CBasicAttack>(m_currentFrame);
 	p->add<CSpecialAttack>(m_currentFrame);
@@ -139,6 +141,7 @@ void Scene_Play::spawnEnemies()
 		enemy->add<CBoundingBox>(eAnimation.animation.m_size / 4);
 		enemy->add<CHealth>(2);
 		enemy->add<CFollow>(player());
+		enemy->add<CScore>(1);
 	}
 }
 
@@ -152,9 +155,9 @@ void Scene_Play::update()
 	m_entityManager.update();
 	if (!m_paused)
 	{
-		spawnEnemies();
 		sLifespan();
 		sPlayerAttacks();
+		spawnEnemies();
 		sAI();
 		sMovement();
 		sCollision();
@@ -189,15 +192,19 @@ void Scene_Play::sMovement()
 	auto& pInput = player()->get<CInput>();
 	auto& pTransform = player()->get<CTransform>();
 
-	pTransform.velocity = { 0, 0 };
-	if (pInput.left)
-		pTransform.velocity.x -= m_playerConfig.SPEED;
-	if (pInput.right)
-		pTransform.velocity.x += m_playerConfig.SPEED;
-	if (pInput.up)
-		pTransform.velocity.y -= m_playerConfig.SPEED;
-	if (pInput.down)
-		pTransform.velocity.y += m_playerConfig.SPEED;
+	pTransform.velocity = { 0.f, 0.f };
+
+	if (pInput.left)  pTransform.velocity.x -= 1.f;
+	if (pInput.right) pTransform.velocity.x += 1.f;
+	if (pInput.up)    pTransform.velocity.y -= 1.f;
+	if (pInput.down)  pTransform.velocity.y += 1.f;
+
+	// Normalize if necessary
+	if (pTransform.velocity.x != 0.f || pTransform.velocity.y != 0.f)
+	{
+		pTransform.velocity = pTransform.velocity.normalize() * m_playerConfig.SPEED;
+	}
+
 
 	for (auto& entity : m_entityManager.getEntities())
 	{
@@ -265,7 +272,10 @@ void Scene_Play::sCollision()
 					}
 
 					if (e1Health <= 0)
+					{
 						e1->destroy();
+						player()->get<CScore>().score += e1->get<CScore>().score;
+					}
 					if (e2Health <= 0)
 						e2->destroy();
 				}
@@ -526,7 +536,7 @@ void Scene_Play::sRender()
 	}
 	window.setView(window.getDefaultView());
 
-	m_gridText.setString("Hello World");
+	m_gridText.setString(std::to_string(player()->get<CScore>().score));
 	window.draw(m_gridText);
 
 	/*m_particleSystem.update();
