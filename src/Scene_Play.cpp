@@ -153,18 +153,19 @@ void Scene_Play::spawnTiles(const std::string& filename)
 
 void Scene_Play::update()
 {
-	m_entityManager.update();
 	if (!m_paused)
 	{
+		m_entityManager.update();
 		sLifespan();
-		sPlayerAttacks();
 		spawnEnemies();
+		sPlayerAttacks();
+		sKnockback();
 		sAI();
 		sMovement();
 		sCollision();
+		sAnimation();
+		sCamera();
 	}
-	sAnimation();
-	sCamera();
 }
 
 void Scene_Play::sScore()
@@ -250,6 +251,16 @@ void Scene_Play::sStatus()
 
 }
 
+void Scene_Play::applyKnockback(std::shared_ptr<Entity> target, const Vec2f& fromPos, float force, int duration) {
+	auto& tTransform = target->get<CTransform>();
+
+	Vec2f direction = (tTransform.pos - fromPos).normalize();
+	target->add<CKnockback>(direction, force, duration);
+
+	tTransform.velocity = direction * force;
+	tTransform.accel = -0.05f;
+}
+
 void Scene_Play::sCollision()
 {
 	for (auto& e1 : m_entityManager.getEntities("enemy"))
@@ -265,6 +276,9 @@ void Scene_Play::sCollision()
 			Vec2f overlap = Physics::GetOverlap(e1, e2);
 			if (overlap.x > 0 && overlap.y > 0)
 			{
+				auto& e1Transform = e1->get<CTransform>();
+				auto& e2Transform = e2->get<CTransform>();
+
 				if (e2->tag() != "enemy" && e2->has<CHealth>())
 				{
 					auto& e1Health = e1->get<CHealth>().health;
@@ -284,33 +298,57 @@ void Scene_Play::sCollision()
 						player()->get<CScore>().score += e1->get<CScore>().score;
 					}
 					if (e2Health <= 0)
+					{
 						e2->destroy();
+					}
+				}
+				if (e2->tag() == "playerAttack")
+				{
+					const static float force = 10.0f;
+					const static int duration = 10;
+					applyKnockback(e1, e2Transform.pos, force, duration);
+					continue;
 				}
 
 				Vec2f prevOverlap = Physics::GetPreviousOverlap(e1, e2);
-				auto& pTransform = e1->get<CTransform>();
-				auto& tileTransform = e2->get<CTransform>();
-
 				if (prevOverlap.x > 0)
 				{
-					pTransform.velocity.y = 0;
-					if (pTransform.prevPos.y < tileTransform.pos.y)
-						pTransform.pos.y -= overlap.y;
+					e1Transform.velocity.y = 0;
+					if (e1Transform.prevPos.y < e2Transform.pos.y)
+						e1Transform.pos.y -= overlap.y;
 					else
-						pTransform.pos.y += overlap.y;
+						e1Transform.pos.y += overlap.y;
 				}
 				else if (prevOverlap.y > 0)
 				{
-					pTransform.velocity.x = 0;
-					if (pTransform.prevPos.x < tileTransform.pos.x)
-						pTransform.pos.x -= overlap.x;
+					e1Transform.velocity.x = 0;
+					if (e1Transform.prevPos.x < e2Transform.pos.x)
+						e1Transform.pos.x -= overlap.x;
 					else
-						pTransform.pos.x += overlap.x;
+						e1Transform.pos.x += overlap.x;
 				}
 			}
 		}
 	}
 }
+
+void Scene_Play::sKnockback() {
+	for (auto& e : m_entityManager.getEntities()) {
+		if (!e->has<CKnockback>()) continue;
+
+		auto& kb = e->get<CKnockback>();
+		if (kb.duration > 0)
+			kb.duration--;
+		else
+		{
+			auto& transform = e->get<CTransform>();
+			transform.velocity = { 0, 0 };
+			transform.accel = 0;
+			e->remove<CKnockback>();
+		}
+	}
+}
+
 
 void Scene_Play::sLifespan()
 {
@@ -370,7 +408,7 @@ void Scene_Play::spawnBasicAttack(const Vec2f& targetPos)
 	auto& baAnimation = basicAttack->add<CAnimation>(m_game->assets().getAnimation("BasicAttack"), true).animation;
 	baAnimation.m_sprite.setScale({ pBasicAttack.scale, pBasicAttack.scale });
 
-	basicAttack->add<CBoundingBox>(baAnimation.m_size * pBasicAttack.scale);
+	basicAttack->add<CBoundingBox>(Vec2f(baAnimation.m_size.x, baAnimation.m_size.y / 2) * pBasicAttack.scale);
 	basicAttack->add<CLifespan>(pBasicAttack.duration, m_currentFrame);
 	basicAttack->add<CHealth>(pBasicAttack.pierce);
 	basicAttack->add<CMoveAtSameVelocity>(player());
@@ -399,7 +437,7 @@ void Scene_Play::spawnSpecialAttack(const Vec2f& targetPos)
 	auto& baAnimation = basicAttack->add<CAnimation>(m_game->assets().getAnimation("BasicAttack"), true).animation;
 	baAnimation.m_sprite.setScale({ pSpecialAttack.scale, pSpecialAttack.scale });
 
-	basicAttack->add<CBoundingBox>(baAnimation.m_size * pSpecialAttack.scale);
+	basicAttack->add<CBoundingBox>(Vec2f(baAnimation.m_size.x, baAnimation.m_size.y / 2) * pSpecialAttack.scale);
 	basicAttack->add<CLifespan>(pSpecialAttack.duration, m_currentFrame);
 	basicAttack->add<CHealth>(pSpecialAttack.pierce);
 }

@@ -18,6 +18,7 @@ using ComponentTuple = std::tuple<
 	CDraggable,
 	CBasicAttack,
 	CSpecialAttack,
+	CKnockback,
 	CHealth,
 	CFollow,
 	CMoveAtSameVelocity

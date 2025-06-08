@@ -115,6 +115,18 @@ public:
 		: lastAttackTime(lat) { }
 };
 
+class CKnockback : public Component
+{
+public:
+	Vec2f direction = { 0, 0 };
+	float magnitude = 0;
+	int duration = 0;
+
+	CKnockback() = default;
+	CKnockback(const Vec2f& dir, float m, int d)
+		: direction(dir), magnitude(m), duration(d) { }
+};
+
 class CBoundingBox : public Component
 {
 public:
