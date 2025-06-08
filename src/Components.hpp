@@ -21,14 +21,13 @@ public:
 	Vec2f scale = { 1.0, 1.0 };
 	Vec2f velocity = { 0.0, 0.0 };
 	float angle = 0;
+	float accel = 0;
 
 	CTransform() = default;
 	CTransform(const Vec2f& p)
 		: pos(p) {}
 	CTransform(const Vec2f& p, const Vec2f& v, float a)
 		: pos(p), velocity(v), angle(a) {}
-	CTransform(const Vec2f& p, const Vec2f& pP, const Vec2f s, const Vec2f& v, float a)
-		: pos(p), prevPos(pP), scale(s), velocity(v), angle(a) {}
 };
 
 class CMoveAtSameVelocity : public Component
@@ -109,6 +108,7 @@ public:
 	int duration = 60;
 	int pierce = 10;
 	int speed = 10;
+	float decel = -0.2f;
 
 	CSpecialAttack() = default;
 	CSpecialAttack(int lat)

@@ -220,8 +220,11 @@ void Scene_Play::sMovement()
 			auto& tTransform = target->get<CTransform>();
 			eTransform.velocity = tTransform.velocity;
 		}
-
 		eTransform.prevPos = eTransform.pos;
+		
+		float newSpeed = eTransform.velocity.length() + eTransform.accel;
+		eTransform.velocity = eTransform.velocity.normalize() * newSpeed;
+
 		eTransform.pos += eTransform.velocity;
 	}
 }
@@ -389,7 +392,9 @@ void Scene_Play::spawnSpecialAttack(const Vec2f& targetPos)
 	auto basicAttack = m_entityManager.addEntity("playerAttack");
 
 	float attackAngle = std::atan2(attackDir.y, attackDir.x) * 180.0f / 3.14159f;
-	basicAttack->add<CTransform>(pTransform.pos + attackDir, attackDir * pSpecialAttack.speed, attackAngle);
+	auto& baTransform = basicAttack->add<CTransform>(pTransform.pos + attackDir,
+		attackDir * pSpecialAttack.speed, attackAngle);
+	baTransform.accel = pSpecialAttack.decel;
 
 	auto& baAnimation = basicAttack->add<CAnimation>(m_game->assets().getAnimation("BasicAttack"), true).animation;
 	baAnimation.m_sprite.setScale({ pSpecialAttack.scale, pSpecialAttack.scale });
