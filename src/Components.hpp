@@ -78,6 +78,7 @@ public:
 	bool right = false;
 	bool down = false;
 	bool displayHitbox = false;
+	bool autoAttack = false;
 	bool basicAttack = false;
 
 	CInput() = default;

@@ -43,6 +43,7 @@ void Scene_Play::init(const std::string& levelPath)
 	registerAction(sf::Keyboard::Scan::D, "RIGHT");
 	registerAction(sf::Keyboard::Scan::W, "UP");
 	registerAction(sf::Keyboard::Scan::S, "DOWN");
+	registerAction(sf::Keyboard::Scan::Space, "TOGGLE_AUTO_ATTACK");
 
 	m_playerConfig = { 0, 0, 0, 0, 4.0f, 0, ""};
 
@@ -68,6 +69,28 @@ Vec2f Scene_Play::gridToMidPixel(float gridX, float gridY, std::shared_ptr<Entit
 		gridX * eAniSize.x + eAniSize.x / 2,
 		height() - gridY * eAniSize.y - eAniSize.y / 2
 	);
+}
+
+std::shared_ptr<Entity> Scene_Play::getNearestEnemy(std::shared_ptr<Entity> entity)
+{
+	float minDist = 1000;
+	std::shared_ptr<Entity> nearestEnemy = nullptr;
+
+	auto& eTransform = entity->get<CTransform>();
+	for (auto& enemy : m_entityManager.getEntities("enemy"))
+	{
+		if (enemy->id() == entity->id())
+			continue;
+
+		auto& enemyTransform = enemy->get<CTransform>();
+		float dist = (enemyTransform.pos - eTransform.pos).length();
+		if (dist < minDist)
+		{
+			minDist = dist;
+			nearestEnemy = enemy;
+		}
+	}
+	return nearestEnemy;
 }
 
 void Scene_Play::loadLevel(const std::string& filename = "")
@@ -287,30 +310,45 @@ void Scene_Play::sLifespan()
 
 void Scene_Play::sPlayerAttacks()
 {
+	if (!player()->has<CBasicAttack>())
+		return;
+
 	auto& pInput = player()->get<CInput>();
-	if (pInput.basicAttack && player()->has<CBasicAttack>())
+	if (!pInput.basicAttack && !pInput.autoAttack)
+		return;
+
+	auto& pBA = player()->get<CBasicAttack>();
+	if ((m_currentFrame - pBA.lastAttackTime) < pBA.cooldown)
+		return;
+
+	auto& pTransform = player()->get<CTransform>();
+	Vec2f attackDir;
+	if (pInput.autoAttack)
 	{
-		auto& pBA = player()->get<CBasicAttack>();
-		if ((m_currentFrame - pBA.lastAttackTime) > pBA.cooldown)
-		{
-			pBA.lastAttackTime = m_currentFrame;
+		auto nearestEnemy = getNearestEnemy(player());
+		if (!nearestEnemy)
+			return;
 
-			auto basicAttack = m_entityManager.addEntity("playerAttack");
-
-			auto& pTransform = player()->get<CTransform>();
-			Vec2f attackDir = (m_mousePos - pTransform.pos).normalize() * 30;
-			float attackAngle = std::atan2(attackDir.y, attackDir.x) * 180.0f / 3.14159f;
-			basicAttack->add<CTransform>(pTransform.pos + attackDir, Vec2f(0, 0), attackAngle + 225);
-
-			auto& baAnimation = basicAttack->add<CAnimation>(m_game->assets().getAnimation("BasicAttack"), true).animation;
-			baAnimation.m_sprite.setScale({ pBA.scale, pBA.scale });
-
-			basicAttack->add<CBoundingBox>(baAnimation.m_size * pBA.scale);
-			basicAttack->add<CLifespan>(pBA.duration, m_currentFrame);
-			basicAttack->add<CHealth>(10);
-			basicAttack->add<CMoveAtSameVelocity>(player());
-		}
+		attackDir = (nearestEnemy->get<CTransform>().pos - pTransform.pos).normalize() * 30;
 	}
+	else if (pInput.basicAttack)
+	{
+		attackDir = (m_mousePos - pTransform.pos).normalize() * 30;
+	}
+	auto basicAttack = m_entityManager.addEntity("playerAttack");
+
+	float attackAngle = std::atan2(attackDir.y, attackDir.x) * 180.0f / 3.14159f;
+	basicAttack->add<CTransform>(pTransform.pos + attackDir, Vec2f(0, 0), attackAngle + 225);
+
+	auto& baAnimation = basicAttack->add<CAnimation>(m_game->assets().getAnimation("BasicAttack"), true).animation;
+	baAnimation.m_sprite.setScale({ pBA.scale, pBA.scale });
+
+	basicAttack->add<CBoundingBox>(baAnimation.m_size * pBA.scale);
+	basicAttack->add<CLifespan>(pBA.duration, m_currentFrame);
+	basicAttack->add<CHealth>(10);
+	basicAttack->add<CMoveAtSameVelocity>(player());
+
+	pBA.lastAttackTime = m_currentFrame;
 }
 
 void Scene_Play::sDoAction(const Action& action)
@@ -354,6 +392,10 @@ void Scene_Play::sDoAction(const Action& action)
 			else if (action.m_name == "MOUSE_MOVE")
 			{
 				m_mousePos = m_game->window().mapPixelToCoords(action.m_mousePos);
+			}
+			else if (action.m_name == "TOGGLE_AUTO_ATTACK")
+			{
+				pInput.autoAttack = !pInput.autoAttack;
 			}
 		}
 		else if (action.m_type == "END")
