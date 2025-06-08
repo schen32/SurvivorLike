@@ -27,10 +27,10 @@ public:
 	}
 
 	void addAnimation(const std::string& animationName, const std::string& textureName,
-		size_t frameCount, size_t speed, std::string& horizontalOrVertical)
+		size_t rows, size_t cols, size_t frameCount, size_t speed)
 	{
 		m_animationMap[animationName] = Animation(animationName, m_textureMap[textureName],
-			frameCount, speed, horizontalOrVertical);
+			rows, cols, frameCount, speed);
 	}
 
 	void addFont(const std::string& fontName, const std::string& path)
@@ -59,10 +59,10 @@ public:
 			else if (str == "Animation")
 			{
 				std::string name, texture;
+				size_t rows, cols;
 				size_t frames, speed;
-				std::string horizontalOrVertical;
-				file >> name >> texture >> frames >> speed >> horizontalOrVertical;
-				addAnimation(name, texture, frames, speed, horizontalOrVertical);
+				file >> name >> texture >> rows >> cols >> frames >> speed;
+				addAnimation(name, texture, rows, cols, frames, speed);
 			}
 			else if (str == "Font")
 			{

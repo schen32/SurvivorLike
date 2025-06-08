@@ -90,9 +90,9 @@ class CBasicAttack : public Component
 public:
 	int cooldown = 30;
 	int lastAttackTime = 0;
-	float scale = 3.0f;
+	float scale = 1.0f;
 	int duration = 15;
-	int pierce = 10;
+	int pierce = 5;
 	int distanceFromPlayer = 30;
 
 	CBasicAttack() = default;
@@ -105,8 +105,8 @@ class CSpecialAttack : public Component
 public:
 	int cooldown = 90;
 	int lastAttackTime = 0;
-	float scale = 5.0f;
-	int duration = 120;
+	float scale = 1.0f;
+	int duration = 60;
 	int pierce = 10;
 	int speed = 10;
 

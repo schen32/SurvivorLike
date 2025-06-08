@@ -127,7 +127,7 @@ void Scene_Play::spawnPlayer()
 void Scene_Play::spawnEnemies()
 {
 	static int lastEnemySpawnTime = 0;
-	static const int enemySpawnInterval = 30;
+	static const int enemySpawnInterval = 15;
 	if (m_currentFrame - lastEnemySpawnTime > enemySpawnInterval)
 	{
 		lastEnemySpawnTime = m_currentFrame;
@@ -358,7 +358,7 @@ void Scene_Play::spawnBasicAttack(const Vec2f& targetPos)
 
 	float attackAngle = std::atan2(attackDir.y, attackDir.x) * 180.0f / 3.14159f;
 	basicAttack->add<CTransform>(pTransform.pos + attackDir * pBasicAttack.distanceFromPlayer
-		, Vec2f(0, 0), attackAngle + 225);
+		, Vec2f(0, 0), attackAngle);
 
 	auto& baAnimation = basicAttack->add<CAnimation>(m_game->assets().getAnimation("BasicAttack"), true).animation;
 	baAnimation.m_sprite.setScale({ pBasicAttack.scale, pBasicAttack.scale });
@@ -385,7 +385,7 @@ void Scene_Play::spawnSpecialAttack(const Vec2f& targetPos)
 	auto basicAttack = m_entityManager.addEntity("playerAttack");
 
 	float attackAngle = std::atan2(attackDir.y, attackDir.x) * 180.0f / 3.14159f;
-	basicAttack->add<CTransform>(pTransform.pos + attackDir, attackDir * pSpecialAttack.speed, attackAngle + 225);
+	basicAttack->add<CTransform>(pTransform.pos + attackDir, attackDir * pSpecialAttack.speed, attackAngle);
 
 	auto& baAnimation = basicAttack->add<CAnimation>(m_game->assets().getAnimation("BasicAttack"), true).animation;
 	baAnimation.m_sprite.setScale({ pSpecialAttack.scale, pSpecialAttack.scale });
