@@ -44,7 +44,7 @@ void Scene_Play::init(const std::string& levelPath)
 	registerAction(sf::Keyboard::Scan::W, "UP");
 	registerAction(sf::Keyboard::Scan::S, "DOWN");
 
-	m_playerConfig = { 0, 0, 0, 0, 5.0f, 0, ""};
+	m_playerConfig = { 0, 0, 0, 0, 4.0f, 0, ""};
 
 	m_gridText.setCharacterSize(30);
 	m_gridText.setFont(m_game->assets().getFont("FutureMillennium"));
@@ -74,7 +74,6 @@ void Scene_Play::loadLevel(const std::string& filename = "")
 {
 	m_entityManager = EntityManager();
 	spawnPlayer();
-	spawnEnemies();
 	spawnTiles(filename);
 	m_entityManager.update();
 }
@@ -89,21 +88,30 @@ std::shared_ptr<Entity> Scene_Play::player()
 void Scene_Play::spawnPlayer()
 {
 	auto p = m_entityManager.addEntity("player");
+	
+	auto& pAnimation = p->add<CAnimation>(m_game->assets().getAnimation("StormheadIdle"), true);
+	p->add<CBoundingBox>(Vec2f(pAnimation.animation.m_size.x / 4, pAnimation.animation.m_size.y / 4));
 	p->add<CTransform>(gridToMidPixel(m_playerConfig.X, m_playerConfig.Y, p));
-	auto& eAnimation = p->add<CAnimation>(m_game->assets().getAnimation("StormheadIdle"), true);
-	p->add<CInput>();
-	p->add<CBoundingBox>(Vec2f(eAnimation.animation.m_size.x / 4, eAnimation.animation.m_size.y / 4));
 	p->add<CBasicAttack>(30, m_currentFrame);
 	p->add<CHealth>(5);
+	p->add<CInput>();
 }
 
 void Scene_Play::spawnEnemies()
 {
-	for (int i = 0; i < 4; i++)
+	static int lastEnemySpawnTime = 0;
+	static const int enemySpawnInterval = 60;
+	if (m_currentFrame - lastEnemySpawnTime > enemySpawnInterval)
 	{
+		lastEnemySpawnTime = m_currentFrame;
+
+		int spawnAngle = rand() % 360;
+		Vec2f spawnPoint = Vec2f(std::cos(spawnAngle), std::sin(spawnAngle)) * 500;
+		auto& pPos = player()->get<CTransform>().pos;
+
 		auto enemy = m_entityManager.addEntity("enemy");
 		auto& eAnimation = enemy->add<CAnimation>(m_game->assets().getAnimation("ChainBotIdle"), true);
-		enemy->add<CTransform>(gridToMidPixel(i, 1, enemy));
+		enemy->add<CTransform>(pPos + spawnPoint);
 		enemy->add<CBoundingBox>(eAnimation.animation.m_size / 4);
 		enemy->add<CHealth>(2);
 
@@ -112,49 +120,7 @@ void Scene_Play::spawnEnemies()
 
 void Scene_Play::spawnTiles(const std::string& filename)
 {
-	/*std::ifstream file(m_levelPath);
-	std::string tileType;
-	while (file >> tileType)
-	{
-		std::string aniName, gridXstr, gridYstr;
-		file >> aniName >> gridXstr >> gridYstr;
-		float gridX = std::stof(gridXstr);
-		float gridY = std::stof(gridYstr);
-
-		if (tileType == "Tile")
-		{
-			auto tile = m_entityManager.addEntity("tile");
-			auto& eAnimation = tile->add<CAnimation>(m_game->assets().getAnimation(aniName), true);
-			tile->add<CTransform>(gridToMidPixel(gridX, gridY, tile), Vec2f(0, 0), 0);
-			tile->add<CBoundingBox>(eAnimation.animation.m_size / 4);
-		}
-	}*/
-
-	for (int i = -10; i < 11; i++)
-	{
-		auto tile = m_entityManager.addEntity("tile");
-		auto& eAnimation = tile->add<CAnimation>(m_game->assets().getAnimation("StormheadIdle"), true);
-		tile->add<CTransform>(gridToMidPixel(i, -5, tile));
-		tile->add<CBoundingBox>(eAnimation.animation.m_size);
-
-		auto tile2 = m_entityManager.addEntity("tile");
-		auto& eAnimation2 = tile2->add<CAnimation>(m_game->assets().getAnimation("StormheadIdle"), true);
-		tile2->add<CTransform>(gridToMidPixel(i, 5, tile2));
-		tile2->add<CBoundingBox>(eAnimation2.animation.m_size);
-	}
-
-	for (int i = -4; i < 5; i++)
-	{
-		auto tile = m_entityManager.addEntity("tile");
-		auto& eAnimation = tile->add<CAnimation>(m_game->assets().getAnimation("StormheadIdle"), true);
-		tile->add<CTransform>(gridToMidPixel(-10, i, tile));
-		tile->add<CBoundingBox>(eAnimation.animation.m_size);
-
-		auto tile2 = m_entityManager.addEntity("tile");
-		auto& eAnimation2 = tile2->add<CAnimation>(m_game->assets().getAnimation("StormheadIdle"), true);
-		tile2->add<CTransform>(gridToMidPixel(10, i, tile2));
-		tile2->add<CBoundingBox>(eAnimation2.animation.m_size);
-	}
+	
 }
 
 void Scene_Play::update()
@@ -162,6 +128,7 @@ void Scene_Play::update()
 	m_entityManager.update();
 	if (!m_paused)
 	{
+		spawnEnemies();
 		sLifespan();
 		sPlayerAttacks();
 		sAI();
@@ -238,26 +205,29 @@ void Scene_Play::sStatus()
 
 void Scene_Play::sCollision()
 {
-	for (auto& e1 : m_entityManager.getEntities())
+	for (auto& e1 : m_entityManager.getEntities("enemy"))
 	{
+		if (!e1->has<CBoundingBox>())
+			continue;
+
 		for (auto& e2 : m_entityManager.getEntities())
 		{
-			if (e1->id() == e2->id())
+			if (!e2->has<CBoundingBox>() || e1->id() == e2->id())
 				continue;
 
 			Vec2f overlap = Physics::GetOverlap(e1, e2);
 			if (overlap.x > 0 && overlap.y > 0)
 			{
-				if (e1->has<CHealth>() && e2->has<CHealth>())
+				if (e2->tag() != "enemy" && e2->has<CHealth>())
 				{
 					auto& e1Health = e1->get<CHealth>().health;
 					auto& e2Health = e2->get<CHealth>().health;
 					e1Health--;
 					e2Health--;
 
-					if (player()->get<CHealth>().health <= 0)
+					if (e2->id() == player()->id() && e2Health <= 0)
 					{
-						loadLevel("assets/play.txt");
+						loadLevel();
 						return;
 					}
 
@@ -318,10 +288,18 @@ void Scene_Play::sPlayerAttacks()
 			pBA.lastAttackTime = m_currentFrame;
 
 			auto basicAttack = m_entityManager.addEntity("playerAttack");
-			basicAttack->add<CTransform>(m_game->window().mapPixelToCoords(m_mousePos));
+
+			auto& pTransform = player()->get<CTransform>();
+			Vec2f attackDir = (m_mousePos - pTransform.pos).normalize() * 30;
+
+			float attackAngle = std::atan2(attackDir.y, attackDir.x) * 180.0f / 3.14159f;
+			basicAttack->add<CTransform>(pTransform.pos + attackDir, Vec2f(0, 0), attackAngle + 225);
+
 			auto& baAnimation = basicAttack->add<CAnimation>(m_game->assets().getAnimation("BasicAttack"), true).animation;
-			basicAttack->add<CBoundingBox>(baAnimation.m_size);
-			basicAttack->add<CLifespan>(30, m_currentFrame);
+			baAnimation.m_sprite.setScale({ pBA.scale, pBA.scale });
+
+			basicAttack->add<CBoundingBox>(baAnimation.m_size * pBA.scale);
+			basicAttack->add<CLifespan>(pBA.duration, m_currentFrame);
 			basicAttack->add<CHealth>(10);
 		}
 	}
@@ -363,11 +341,11 @@ void Scene_Play::sDoAction(const Action& action)
 		else if (action.m_name == "LEFT_CLICK")
 		{
 			pInput.basicAttack = true;
-			m_mousePos = action.m_mousePos;
+			m_mousePos = m_game->window().mapPixelToCoords(action.m_mousePos);
 		}
 		else if (action.m_name == "MOUSE_MOVE")
 		{
-			m_mousePos = action.m_mousePos;
+			m_mousePos = m_game->window().mapPixelToCoords(action.m_mousePos);
 		}
 	}
 	else if (action.m_type == "END")
@@ -438,6 +416,7 @@ void Scene_Play::sRender()
 		auto& animation = entity->get<CAnimation>().animation;
 
 		animation.m_sprite.setPosition(transform.pos);
+		animation.m_sprite.setRotation(sf::degrees(transform.angle));
 		window.draw(animation.m_sprite);
 
 		if (player()->get<CInput>().displayHitbox)

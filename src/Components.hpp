@@ -66,6 +66,8 @@ class CBasicAttack : public Component
 public:
 	int cooldown = 0;
 	int lastAttackTime = 0;
+	float scale = 3.0f;
+	int duration = 15;
 
 	CBasicAttack() = default;
 	CBasicAttack(int c, int lat)
