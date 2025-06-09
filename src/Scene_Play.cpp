@@ -161,7 +161,7 @@ void Scene_Play::spawnChainBot()
 		auto& eAnimation = enemy->add<CAnimation>(m_game->assets().getAnimation("ChainBotIdle"), true);
 		enemy->add<CTransform>(player()->get<CTransform>().pos + spawnPoint);
 		enemy->add<CBoundingBox>(eAnimation.animation.m_size / 2);
-		enemy->add<CHealth>(2);
+		enemy->add<CHealth>(3);
 		enemy->add<CDamage>(1);
 		enemy->add<CFollow>(player(), 0.5f);
 		enemy->add<CScore>(1);
@@ -899,44 +899,91 @@ void Scene_Play::sRender()
 	}
 	window.setView(window.getDefaultView());
 
-	m_gridText.setString(std::to_string(player()->get<CScore>().score));
+	auto& pScore = player()->get<CScore>().score;
+	m_gridText.setString(std::to_string(pScore));
 	window.draw(m_gridText);
 
-	auto& animation = player()->get<CAnimation>().animation;
-	auto& transform = player()->get<CTransform>();
-	// Bar settings
-	float width = 400.f;
-	float height = 30.f;
-	auto& health = player()->get<CHealth>();
-	float hpPercent = static_cast<float>(health.health) / health.maxHealth;
-	sf::Vector2f barPos = sf::Vector2f((m_game->window().getSize().x - width) / 2, m_game->window().getSize().y - 120);
+	auto& pAnimation = player()->get<CAnimation>().animation;
+	auto& pTransform = player()->get<CTransform>();
+
+	// player health bar
+	float healthBarWidth = 400.f;
+	float HealthBarHeight = 30.f;
+	auto& pHealth = player()->get<CHealth>();
+	float hpPercent = static_cast<float>(pHealth.health) / pHealth.maxHealth;
+	sf::Vector2f barPos = sf::Vector2f((width() - healthBarWidth) / 2, height() - 120);
 	// Background (transparent black)
-	sf::RectangleShape bgBar(sf::Vector2f(width, height));
+	sf::RectangleShape bgBar(sf::Vector2f(healthBarWidth, HealthBarHeight));
 	bgBar.setFillColor(sf::Color(0, 0, 0, 60));
 	bgBar.setPosition(barPos + sf::Vector2f(2.f, 2.f));
 	// Health (white)
-	sf::RectangleShape hpBar(sf::Vector2f(width * hpPercent, height));
+	sf::RectangleShape hpBar(sf::Vector2f(healthBarWidth * hpPercent, HealthBarHeight));
 	hpBar.setFillColor(sf::Color::White);
 	hpBar.setPosition(barPos);
 	// Draw both
 	window.draw(bgBar);
 	window.draw(hpBar);
+	//
 
-	sf::Text hpText(m_game->assets().getFont("FutureMillennium"));
-	hpText.setOutlineThickness(1.0f);
-	hpText.setOutlineColor(sf::Color(86, 106, 137));
-	hpText.setString(std::to_string(health.health) + " / " + std::to_string(health.maxHealth));
-	sf::FloatRect bounds = hpText.getLocalBounds();
-	hpText.setOrigin({ bounds.position.x + bounds.size.x / 2.f, bounds.position.y + bounds.size.y / 2.f });
-	hpText.setPosition(sf::Vector2f(m_game->window().getSize().x / 2, m_game->window().getSize().y - 105));
+	// player health text
+	sf::Text scoreText(m_game->assets().getFont("FutureMillennium"));
+	scoreText.setOutlineThickness(1.0f);
+	scoreText.setOutlineColor(sf::Color(86, 106, 137));
+	scoreText.setString(std::to_string(pHealth.health) + " / " + std::to_string(pHealth.maxHealth));
+	sf::FloatRect bounds = scoreText.getLocalBounds();
+	scoreText.setOrigin({ bounds.position.x + bounds.size.x / 2.f, bounds.position.y + bounds.size.y / 2.f });
+	scoreText.setPosition(sf::Vector2f(width() / 2, height() - 105));
 
-	sf::Text shadow = hpText; // Copy the main text
+	sf::Text shadow = scoreText; // Copy the main text
 	shadow.setFillColor(sf::Color(0, 0, 0, 150)); // Semi-transparent black
 	shadow.setOutlineThickness(0.f);
 	shadow.move({ 2.f, 2.f }); // Offset slightly down and right
 
 	window.draw(shadow);
-	window.draw(hpText);
+	window.draw(scoreText);
+	//
+
+	int scoreThreshold = 200;
+	// circle score UI
+	float percent = (pScore % scoreThreshold) / static_cast<float>(scoreThreshold);
+	int segments = 100;
+	float radius = 60.f;
+	sf::Vector2f center(barPos.x - radius - 30.f, barPos.y + 10.f);
+
+	// Draw full circle shadow behind the partial pie
+	sf::CircleShape pieShadow(radius);
+	pieShadow.setPosition(center - sf::Vector2f(radius, radius) + sf::Vector2f(2.f, 2.f)); // Offset by (2,2)
+	pieShadow.setFillColor(sf::Color(0, 0, 0, 60)); // semi-transparent black
+
+	// ---- Actual pie on top ----
+	sf::VertexArray pie(sf::PrimitiveType::TriangleFan, segments + 2);
+	pie[0].position = center;
+	pie[0].color = sf::Color::White;
+
+	for (int i = 0; i <= segments; ++i)
+	{
+		float angle = i * (2 * 3.14159f * percent) / segments - 3.14159f / 2;
+		float x = center.x + std::cos(angle) * radius;
+		float y = center.y + std::sin(angle) * radius;
+
+		pie[i + 1].position = { x, y };
+		pie[i + 1].color = sf::Color::White;
+	}
+
+	window.draw(pieShadow);
+	window.draw(pie);
+	//
+
+	// player score text
+	sf::Text pieText(m_game->assets().getFont("FutureMillennium"));
+	scoreText.setOutlineThickness(1.0f);
+	scoreText.setOutlineColor(sf::Color(86, 106, 137));
+	scoreText.setString(std::to_string(static_cast<int>(percent * 100)) + " %");
+	bounds = scoreText.getLocalBounds();
+	scoreText.setOrigin({ bounds.position.x + bounds.size.x / 2.f, bounds.position.y + bounds.size.y / 2.f });
+	scoreText.setPosition(center);
+
+	window.draw(scoreText);
 
 	window.setView(m_cameraView);
 }
