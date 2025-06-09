@@ -100,6 +100,11 @@ void Scene_Play::loadLevel(const std::string& filename = "")
 	spawnPlayer();
 	spawnTiles(filename);
 	m_entityManager.update();
+
+	auto& bgm = m_game->assets().getMusic("FloatingDream");
+	bgm.setVolume(120);
+	bgm.setLooping(true);
+	bgm.play();
 }
 
 std::shared_ptr<Entity> Scene_Play::player()
@@ -128,7 +133,7 @@ void Scene_Play::spawnPlayer()
 void Scene_Play::spawnEnemies()
 {
 	static int lastEnemySpawnTime = 0;
-	static const int enemySpawnInterval = 15;
+	static const int enemySpawnInterval = 60;
 	if (m_currentFrame - lastEnemySpawnTime > enemySpawnInterval)
 	{
 		lastEnemySpawnTime = m_currentFrame;
@@ -314,6 +319,8 @@ void Scene_Play::sCollision()
 					{
 						e1->destroy();
 						player()->get<CScore>().score += e1->get<CScore>().score;
+
+						playSound("HitLaserPebble", 40);
 					}
 					if (e2Health <= 0)
 					{
@@ -324,6 +331,8 @@ void Scene_Play::sCollision()
 				{
 					auto& paKnockback = e2->get<CKnockback>();
 					applyKnockback(e1, e2Transform.pos, paKnockback.magnitude, paKnockback.duration, paKnockback.decel);
+
+					playSound("HitPlastic", 30);
 					continue;
 				}
 
@@ -414,11 +423,7 @@ void Scene_Play::spawnBasicAttack(const Vec2f& targetPos)
 	basicAttack->add<CMoveAtSameVelocity>(player());
 	basicAttack->add<CKnockback>(Vec2f(0, 0), 20.0f, 30, -2.0f);
 
-	auto& baSound = m_game->assets().getSound("Whoosh");
-	float pitch = 0.9f + static_cast<float>(rand()) / RAND_MAX * 0.4f; // range [0.9, 1.1]
-	baSound.setPitch(pitch);
-	baSound.setVolume(50);
-	baSound.play();
+	playSound("MeeleSwordSlash", 30);
 }
 
 void Scene_Play::spawnSpecialAttack(const Vec2f& targetPos)
@@ -449,11 +454,16 @@ void Scene_Play::spawnSpecialAttack(const Vec2f& targetPos)
 	specialAttack->add<CHealth>(pSpecialAttack.pierce);
 	specialAttack->add<CKnockback>(Vec2f(0, 0), 20.0f, 30, -2.0f);
 
-	auto& saSound = m_game->assets().getSound("Whoosh");
-	float pitch = 0.9f + static_cast<float>(rand()) / RAND_MAX * 0.4f; // range [0.9, 1.1]
-	saSound.setPitch(pitch);
-	saSound.setVolume(50);
-	saSound.play();
+	playSound("ProjectileHighWhoosh", 50);
+}
+
+void Scene_Play::playSound(const std::string& name, float volume)
+{
+	auto& sound = m_game->assets().getSound(name);
+	float pitch = 0.8f + static_cast<float>(rand()) / RAND_MAX * 0.4f; // range [0.8, 1.2]
+	sound.setPitch(pitch);
+	sound.setVolume(volume);
+	sound.play();
 }
 
 void Scene_Play::sDoAction(const Action& action)
