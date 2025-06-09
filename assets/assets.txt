@@ -14,3 +14,5 @@ Animation ChainBotRun TexChainBotRun 8 1 8 10
 
 Texture TexBasicAttack assets/attacks/slash1.png
 Animation BasicAttack TexBasicAttack 2 5 9 5
+
+Sound Whoosh assets/sounds/WHOOSH_AIRY_FLUTTER_01.wav

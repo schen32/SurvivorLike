@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <cassert>
+#include <SFML/Audio.hpp>
 
 class Assets
 {
@@ -11,6 +12,9 @@ public:
 	std::unordered_map<std::string, sf::Texture> m_textureMap;
 	std::unordered_map<std::string, Animation> m_animationMap;
 	std::unordered_map<std::string, sf::Font> m_fontMap;
+	std::unordered_map<std::string, sf::SoundBuffer> m_soundBufferMap;
+	std::unordered_map<std::string, sf::Sound> m_soundMap;
+	std::unordered_map<std::string, sf::Music> m_musicMap;
 
 	void addTexture(const std::string& textureName, const std::string& path,
 		bool smooth = false)
@@ -39,6 +43,25 @@ public:
 		if (!m_fontMap[fontName].openFromFile(path))
 		{
 			std::cerr << "Could not load font file: " << path << std::endl;
+		}
+	}
+
+	void addSound(const std::string& soundName, const std::string& path)
+	{
+		m_soundBufferMap[soundName] = sf::SoundBuffer();
+		if (!m_soundBufferMap[soundName].loadFromFile(path))
+		{
+			std::cerr << "Could not load sound file: " << path << std::endl;
+		}
+		m_soundMap.emplace(soundName, sf::Sound(m_soundBufferMap[soundName]));
+	}
+
+	void addMusic(const std::string& musicName, const std::string& path)
+	{
+		m_musicMap[musicName] = sf::Music();
+		if (!m_musicMap[musicName].openFromFile(path))
+		{
+			std::cerr << "Could not load music file: " << path << std::endl;
 		}
 	}
 	
@@ -70,6 +93,18 @@ public:
 				file >> name >> path;
 				addFont(name, path);
 			}
+			else if (str == "Sound")
+			{
+				std::string name, path;
+				file >> name >> path;
+				addSound(name, path);
+			}
+			else if (str == "Music")
+			{
+				std::string name, path;
+				file >> name >> path;
+				addMusic(name, path);
+			}
 			else
 			{
 				std::cerr << "Unknown Asset Type: " << str << std::endl;
@@ -93,5 +128,17 @@ public:
 	{
 		assert(m_fontMap.find(fontName) != m_fontMap.end());
 		return m_fontMap.at(fontName);
+	}
+
+	sf::Sound& getSound(const std::string& soundName)
+	{
+		assert(m_soundMap.find(soundName) != m_soundMap.end());
+		return m_soundMap.at(soundName);
+	}
+
+	sf::Music& getMusic(const std::string& musicName)
+	{
+		assert(m_musicMap.find(musicName) != m_musicMap.end());
+		return m_musicMap.at(musicName);
 	}
 };

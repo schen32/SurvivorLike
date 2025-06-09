@@ -413,6 +413,12 @@ void Scene_Play::spawnBasicAttack(const Vec2f& targetPos)
 	basicAttack->add<CHealth>(pBasicAttack.pierce);
 	basicAttack->add<CMoveAtSameVelocity>(player());
 	basicAttack->add<CKnockback>(Vec2f(0, 0), 20.0f, 30, -2.0f);
+
+	auto& baSound = m_game->assets().getSound("Whoosh");
+	float pitch = 0.9f + static_cast<float>(rand()) / RAND_MAX * 0.4f; // range [0.9, 1.1]
+	baSound.setPitch(pitch);
+	baSound.setVolume(50);
+	baSound.play();
 }
 
 void Scene_Play::spawnSpecialAttack(const Vec2f& targetPos)
@@ -428,20 +434,26 @@ void Scene_Play::spawnSpecialAttack(const Vec2f& targetPos)
 	auto& pTransform = player()->get<CTransform>();
 
 	Vec2f attackDir = (targetPos - pTransform.pos).normalize();
-	auto basicAttack = m_entityManager.addEntity("playerAttack");
+	auto specialAttack = m_entityManager.addEntity("playerAttack");
 
 	float attackAngle = std::atan2(attackDir.y, attackDir.x) * 180.0f / 3.14159f;
-	auto& baTransform = basicAttack->add<CTransform>(pTransform.pos + attackDir,
+	auto& baTransform = specialAttack->add<CTransform>(pTransform.pos + attackDir,
 		attackDir * pSpecialAttack.speed, attackAngle);
 	baTransform.accel = pSpecialAttack.decel;
 
-	auto& baAnimation = basicAttack->add<CAnimation>(m_game->assets().getAnimation("BasicAttack"), true).animation;
+	auto& baAnimation = specialAttack->add<CAnimation>(m_game->assets().getAnimation("BasicAttack"), true).animation;
 	baAnimation.m_sprite.setScale({ pSpecialAttack.scale, pSpecialAttack.scale });
 
-	basicAttack->add<CBoundingBox>(Vec2f(baAnimation.m_size.x, baAnimation.m_size.y / 2) * pSpecialAttack.scale);
-	basicAttack->add<CLifespan>(pSpecialAttack.duration, m_currentFrame);
-	basicAttack->add<CHealth>(pSpecialAttack.pierce);
-	basicAttack->add<CKnockback>(Vec2f(0, 0), 20.0f, 30, -2.0f);
+	specialAttack->add<CBoundingBox>(Vec2f(baAnimation.m_size.x, baAnimation.m_size.y / 2) * pSpecialAttack.scale);
+	specialAttack->add<CLifespan>(pSpecialAttack.duration, m_currentFrame);
+	specialAttack->add<CHealth>(pSpecialAttack.pierce);
+	specialAttack->add<CKnockback>(Vec2f(0, 0), 20.0f, 30, -2.0f);
+
+	auto& saSound = m_game->assets().getSound("Whoosh");
+	float pitch = 0.9f + static_cast<float>(rand()) / RAND_MAX * 0.4f; // range [0.9, 1.1]
+	saSound.setPitch(pitch);
+	saSound.setVolume(50);
+	saSound.play();
 }
 
 void Scene_Play::sDoAction(const Action& action)

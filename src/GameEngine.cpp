@@ -180,6 +180,11 @@ const Assets& GameEngine::assets() const
 	return m_assets;
 }
 
+Assets& GameEngine::assets()
+{
+	return m_assets;
+}
+
 void GameEngine::update()
 {
 	if (!isRunning()) return;
