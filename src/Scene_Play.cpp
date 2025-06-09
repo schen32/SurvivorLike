@@ -45,7 +45,7 @@ void Scene_Play::init(const std::string& levelPath)
 	registerAction(sf::Keyboard::Scan::S, "DOWN");
 	registerAction(sf::Keyboard::Scan::Space, "TOGGLE_AUTO_ATTACK");
 
-	m_playerConfig = { 0, 0, 0, 0, 4.0f, 0, ""};
+	m_playerConfig = { 0, 0, 0, 0, 3.0f, 0, ""};
 
 	m_gridText.setCharacterSize(100);
 	m_gridText.setFont(m_game->assets().getFont("FutureMillennium"));
@@ -934,12 +934,6 @@ void Scene_Play::sRender()
 	scoreText.setOrigin({ bounds.position.x + bounds.size.x / 2.f, bounds.position.y + bounds.size.y / 2.f });
 	scoreText.setPosition(sf::Vector2f(width() / 2, height() - 105));
 
-	sf::Text shadow = scoreText; // Copy the main text
-	shadow.setFillColor(sf::Color(0, 0, 0, 150)); // Semi-transparent black
-	shadow.setOutlineThickness(0.f);
-	shadow.move({ 2.f, 2.f }); // Offset slightly down and right
-
-	window.draw(shadow);
 	window.draw(scoreText);
 	//
 
@@ -978,7 +972,7 @@ void Scene_Play::sRender()
 	sf::Text pieText(m_game->assets().getFont("FutureMillennium"));
 	scoreText.setOutlineThickness(1.0f);
 	scoreText.setOutlineColor(sf::Color(86, 106, 137));
-	scoreText.setString(std::to_string(static_cast<int>(percent * 100)) + " %");
+	scoreText.setString(std::to_string(static_cast<int>(percent * 100)) + "%");
 	bounds = scoreText.getLocalBounds();
 	scoreText.setOrigin({ bounds.position.x + bounds.size.x / 2.f, bounds.position.y + bounds.size.y / 2.f });
 	scoreText.setPosition(center);
