@@ -13,6 +13,8 @@ Texture TexChainBotRun assets/Ball_and_Chain_Bot/run.png
 Animation ChainBotRun TexChainBotRun 8 1 8 10
 Texture TexChainBotDeath assets/Ball_and_Chain_Bot/death.png
 Animation ChainBotDeath TexChainBotDeath 5 1 5 10
+Texture TexChainBotHit assets/Ball_and_Chain_Bot/hit.png
+Animation ChainBotHit TexChainBotHit 2 1 2 10
 
 Texture TexBasicAttack assets/attacks/slash1.png
 Animation BasicAttack TexBasicAttack 2 5 9 5

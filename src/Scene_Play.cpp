@@ -285,6 +285,11 @@ void Scene_Play::applyKnockback(std::shared_ptr<Entity> target, const Vec2f& fro
 	Vec2f direction = (tTransform.pos - fromPos).normalize();
 	target->add<CKnockback>(direction, force, duration, decel);
 
+	if (target->tag() == "enemy")
+	{
+		target->get<CState>().state = "knockback";
+	}
+
 	tTransform.velocity = direction * force;
 	tTransform.accel = decel;
 }
@@ -297,7 +302,6 @@ void Scene_Play::sKnockback() {
 		if (kb.duration > 0)
 		{
 			kb.duration--;
-			e->get<CAnimation>().animation.m_sprite.setColor(sf::Color::Cyan);
 		}
 		else
 		{
@@ -306,7 +310,10 @@ void Scene_Play::sKnockback() {
 			transform.accel = 0;
 			e->remove<CKnockback>();
 
-			e->get<CAnimation>().animation.m_sprite.setColor(sf::Color::White);
+			if (e->get<CHealth>().health <= 0)
+				e->get<CState>().state = "dead";
+			else
+				e->get<CState>().state = "alive";		
 		}
 	}
 }
@@ -645,7 +652,15 @@ void Scene_Play::sAnimation()
 		if (entity->tag() == "enemy")
 		{
 			auto& eState = entity->get<CState>().state;
-			if (eState == "dead" && entity->get<CAnimation>().animation.m_name != "ChainBotDeath")
+			if (eState == "alive" && entity->get<CAnimation>().animation.m_name != "ChainBotIdle")
+			{
+				auto& eAnimation = entity->add<CAnimation>(m_game->assets().getAnimation("ChainBotIdle"), true);
+			}
+			else if (eState == "knockback" && entity->get<CAnimation>().animation.m_name != "ChainBotHit")
+			{
+				auto& eAnimation = entity->add<CAnimation>(m_game->assets().getAnimation("ChainBotHit"), true);
+			}
+			else if (eState == "dead" && entity->get<CAnimation>().animation.m_name != "ChainBotDeath")
 			{
 				auto& eAnimation = entity->add<CAnimation>(m_game->assets().getAnimation("ChainBotDeath"), false);
 				auto& eTransform = entity->get<CTransform>();
