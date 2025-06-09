@@ -17,15 +17,19 @@ Animation ChainBotDeath TexChainBotDeath 5 1 5 10
 Texture TexBasicAttack assets/attacks/slash1.png
 Animation BasicAttack TexBasicAttack 2 5 9 5
 
+Texture TexGem assets/items/icon_gem.png
+Animation Gem TexGem 1 1 1 0
+
 Sound Whoosh1 assets/sounds/Whoosh_1-1.wav
 Sound Whoosh4 assets/sounds/Whoosh_4-1.wav
-Sound HitPlastic assets/sounds/DSGNMisc_HIT-Plastic_Zap_HY_PC-001.wav
-Sound MeeleSwordSlash assets/sounds/DSGNMisc_MELEE-Sword_Slash_HY_PC-005.wav
-Sound ProjectileHighWhoosh assets/sounds/DSGNMisc_PROJECTILE-High_Whoosh_HY_PC-005.wav
-Sound HitLaserPebble assets/sounds/DSGNMisc_HIT-Laser_Pebble_HY_PC-003.wav
-Sound MovementNoiseSweeper assets/sounds/DSGNMisc_MOVEMENT-Noise_Sweeper_HY_PC-001.wav
+Sound PlasticZap assets/sounds/DSGNMisc_HIT-Plastic_Zap_HY_PC-001.wav
+Sound SwordSlash assets/sounds/DSGNMisc_MELEE-Sword_Slash_HY_PC-005.wav
+Sound HighWhoosh assets/sounds/DSGNMisc_PROJECTILE-High_Whoosh_HY_PC-005.wav
+Sound LaserPebble assets/sounds/DSGNMisc_HIT-Laser_Pebble_HY_PC-003.wav
+Sound NoiseSweeper assets/sounds/DSGNMisc_MOVEMENT-Noise_Sweeper_HY_PC-001.wav
 Sound BubbleStep assets/sounds/DSGNMisc_STEP-Bubble_Step_HY_PC-001.wav
 Sound BubblierStep assets/sounds/DSGNMisc_STEP-Bubblier_Step_HY_PC-001.wav
+Sound CoinZap assets/sounds/DSGNTonl_USABLE-Coin_Zap_HY_PC-001.wav
 
 Music EveningHarmony assets/music/Evening_Harmony.wav
 Music FloatingDream assets/music/Floating_Dream.wav

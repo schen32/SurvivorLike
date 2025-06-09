@@ -44,9 +44,10 @@ class CFollow : public Component
 public:
 	std::shared_ptr<Entity> target = nullptr;
 	float steering_scale = 0.1f;
+	float speed = 1.0f;
 
 	CFollow() = default;
-	CFollow(std::shared_ptr<Entity> t) : target(t) {}
+	CFollow(std::shared_ptr<Entity> t, float s) : target(t), speed(s) {}
 };
 
 class CHealth : public Component

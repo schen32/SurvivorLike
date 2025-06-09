@@ -149,10 +149,21 @@ void Scene_Play::spawnEnemies()
 		enemy->add<CBoundingBox>(eAnimation.animation.m_size / 4);
 		enemy->add<CHealth>(2);
 		enemy->add<CDamage>(1);
-		enemy->add<CFollow>(player());
+		enemy->add<CFollow>(player(), 1.0f);
 		enemy->add<CScore>(1);
 		enemy->add<CState>("alive");
 	}
+}
+
+void Scene_Play::spawnGem(const Vec2f& pos)
+{
+	auto gem = m_entityManager.addEntity("gem");
+
+	gem->add<CTransform>(pos);
+	auto& gemAnimation = gem->add<CAnimation>(m_game->assets().getAnimation("Gem"), true);
+	gem->add<CBoundingBox>(gemAnimation.animation.m_size);
+	gem->add<CScore>(1);
+	gem->add<CFollow>(player(), 3.0f);
 }
 
 void Scene_Play::spawnTiles(const std::string& filename)
@@ -251,11 +262,12 @@ void Scene_Play::sAI()
 	{
 		if (!entity->has<CFollow>())
 			continue;
+
 		auto& eFollow = entity->get<CFollow>();
 		auto& tTransform = eFollow.target->get<CTransform>();
 		auto& eTransform = entity->get<CTransform>();
 
-		Vec2f desired = (tTransform.pos - eTransform.pos).normalize();
+		Vec2f desired = (tTransform.pos - eTransform.pos).normalize() * eFollow.speed;
 		Vec2f steering = (desired - eTransform.velocity) * eFollow.steering_scale;
 		eTransform.velocity += steering;
 	}
@@ -303,52 +315,63 @@ void Scene_Play::sCollision()
 {
 	for (auto& e1 : m_entityManager.getEntities("enemy"))
 	{
-		if (!e1->has<CBoundingBox>())
-			continue;
-
-		for (auto& e2 : m_entityManager.getEntities())
+		Vec2f overlap = Physics::GetOverlap(e1, player());
+		if (overlap.x > 0 && overlap.y > 0)
 		{
-			if (!e2->has<CBoundingBox>() || e1->id() == e2->id())
+			auto& e1Health = e1->get<CHealth>().health;
+			auto& playerHealth = player()->get<CHealth>().health;
+			e1Health -= player()->get<CDamage>().damage;
+			playerHealth -= e1->get<CDamage>().damage;
+
+			if (e1Health <= 0)
+			{
+				e1->get<CState>().state = "dead";
+				player()->get<CScore>().score += e1->get<CScore>().score;
+			}
+			if (playerHealth <= 0)
+			{
+				player()->get<CState>().state = "dead";
+				return;
+			}	
+		}
+
+		for (auto& pAttack : m_entityManager.getEntities("playerAttack"))
+		{
+			overlap = Physics::GetOverlap(e1, pAttack);
+			if (overlap.x > 0 && overlap.y > 0)
+			{
+				auto& e1Health = e1->get<CHealth>().health;
+				auto& pAttackHealth = pAttack->get<CHealth>().health;
+				e1Health -= pAttack->get<CDamage>().damage;
+				pAttackHealth -= e1->get<CDamage>().damage;
+
+				auto& paKnockback = pAttack->get<CKnockback>();
+				applyKnockback(e1, pAttack->get<CTransform>().pos,
+					paKnockback.magnitude, paKnockback.duration, paKnockback.decel);
+				playSound("PlasticZap", 30);
+
+				if (e1Health <= 0)
+				{
+					e1->get<CState>().state = "dead";
+					player()->get<CScore>().score += e1->get<CScore>().score;
+				}
+				if (pAttackHealth <= 0)
+				{
+					pAttack->destroy();
+				}
+			}
+		}
+
+		for (auto& e2 : m_entityManager.getEntities("enemy"))
+		{
+			if (e1->id() == e2->id())
 				continue;
 
-			Vec2f overlap = Physics::GetOverlap(e1, e2);
+			overlap = Physics::GetOverlap(e1, e2);
 			if (overlap.x > 0 && overlap.y > 0)
 			{
 				auto& e1Transform = e1->get<CTransform>();
 				auto& e2Transform = e2->get<CTransform>();
-
-				if (e2->tag() != "enemy" && e2->has<CHealth>())
-				{
-					auto& e1Health = e1->get<CHealth>().health;
-					auto& e2Health = e2->get<CHealth>().health;
-					e1Health -= e2->get<CDamage>().damage;
-					e2Health -= e1->get<CDamage>().damage;
-
-					if (e2->id() == player()->id() && player()->get<CHealth>().health <= 0)
-					{
-						player()->get<CState>().state = "dead";
-						return;
-					}
-
-					if (e1Health <= 0)
-					{
-						e1->get<CState>().state = "dead";
-						player()->get<CScore>().score += e1->get<CScore>().score;
-					}
-					if (e2Health <= 0)
-					{
-						e2->destroy();
-					}
-				}
-				if (e2->tag() == "playerAttack")
-				{
-					auto& paKnockback = e2->get<CKnockback>();
-					applyKnockback(e1, e2Transform.pos, paKnockback.magnitude, paKnockback.duration, paKnockback.decel);
-
-					playSound("HitPlastic", 30);
-					continue;
-				}
-
 				Vec2f prevOverlap = Physics::GetPreviousOverlap(e1, e2);
 				if (prevOverlap.x > 0)
 				{
@@ -367,6 +390,17 @@ void Scene_Play::sCollision()
 						e1Transform.pos.x += overlap.x;
 				}
 			}
+		}
+	}
+
+	for (auto& gem : m_entityManager.getEntities("gem"))
+	{
+		Vec2f overlap = Physics::GetOverlap(gem, player());
+		if (overlap.x > 0 && overlap.y > 0)
+		{
+			player()->get<CScore>().score += gem->get<CScore>().score;
+			gem->destroy();
+			playSound("CoinZap", 15);
 		}
 	}
 }
@@ -437,7 +471,7 @@ void Scene_Play::spawnBasicAttack(const Vec2f& targetPos)
 	basicAttack->add<CKnockback>(Vec2f(0, 0), 20.0f, 30, -2.0f);
 	basicAttack->add<CDamage>(pBasicAttack.damage);
 
-	playSound("MeeleSwordSlash", 30);
+	playSound("SwordSlash", 30);
 }
 
 void Scene_Play::spawnSpecialAttack(const Vec2f& targetPos)
@@ -469,7 +503,7 @@ void Scene_Play::spawnSpecialAttack(const Vec2f& targetPos)
 	specialAttack->add<CKnockback>(Vec2f(0, 0), 20.0f, 30, -2.0f);
 	specialAttack->add<CDamage>(pSpecialAttack.damage);
 
-	playSound("ProjectileHighWhoosh", 50);
+	playSound("HighWhoosh", 50);
 }
 
 void Scene_Play::playSound(const std::string& name, float volume)
@@ -614,10 +648,14 @@ void Scene_Play::sAnimation()
 			if (eState == "dead" && entity->get<CAnimation>().animation.m_name != "ChainBotDeath")
 			{
 				auto& eAnimation = entity->add<CAnimation>(m_game->assets().getAnimation("ChainBotDeath"), false);
+				auto& eTransform = entity->get<CTransform>();
+
 				entity->remove<CFollow>();
 				entity->remove<CBoundingBox>();
-				entity->get<CTransform>().velocity = { 0, 0 };
-				playSound("HitLaserPebble", 40);
+				eTransform.velocity = { 0, 0 };
+
+				playSound("LaserPebble", 40);
+				spawnGem(eTransform.pos);
 			}
 		}
 	}

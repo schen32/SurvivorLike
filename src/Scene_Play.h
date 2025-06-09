@@ -39,6 +39,7 @@ protected:
 	void update();
 	void spawnPlayer();
 	void spawnEnemies();
+	void spawnGem(const Vec2f& pos);
 	void spawnTiles(const std::string& filename);
 	std::shared_ptr<Entity> player();
 	void sDoAction(const Action& action);
