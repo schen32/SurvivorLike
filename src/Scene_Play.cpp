@@ -372,11 +372,11 @@ void Scene_Play::sStatus()
 }
 
 void Scene_Play::applyKnockback(std::shared_ptr<Entity> target, const Vec2f& fromPos,
-	float force, int duration, float decel) {
+	float force, int duration) {
 	auto& tTransform = target->get<CTransform>();
 
 	Vec2f direction = (tTransform.pos - fromPos).normalize();
-	target->add<CKnockback>(direction, force, duration, decel);
+	auto& tKnockback = target->add<CKnockback>(force, duration);
 
 	if (target->tag() == "enemy")
 	{
@@ -384,7 +384,7 @@ void Scene_Play::applyKnockback(std::shared_ptr<Entity> target, const Vec2f& fro
 	}
 
 	tTransform.velocity = direction * force;
-	tTransform.accel = decel;
+	tTransform.accel = -0.2f;
 }
 
 void Scene_Play::sKnockback() {
@@ -447,7 +447,7 @@ void Scene_Play::sCollision()
 
 				auto& paKnockback = pAttack->get<CKnockback>();
 				applyKnockback(e1, pAttack->get<CTransform>().pos,
-					paKnockback.magnitude, paKnockback.duration, paKnockback.decel);
+					paKnockback.magnitude, paKnockback.duration);
 				playSound("PlasticZap", 30);
 
 				if (e1Health <= 0)
@@ -568,7 +568,7 @@ void Scene_Play::spawnBasicAttack(const Vec2f& targetPos)
 	basicAttack->add<CLifespan>(pBasicAttack.duration, m_currentFrame);
 	basicAttack->add<CHealth>(pBasicAttack.pierce);
 	basicAttack->add<CMoveAtSameVelocity>(player());
-	basicAttack->add<CKnockback>(Vec2f(0, 0), 20.0f, 30, -2.0f);
+	basicAttack->add<CKnockback>(pBasicAttack.knockMagnitude, pBasicAttack.knockDuration);
 	basicAttack->add<CDamage>(pBasicAttack.damage);
 
 	playSound("SwordSlash", 30);
@@ -600,7 +600,7 @@ void Scene_Play::spawnSpecialAttack(const Vec2f& targetPos)
 	specialAttack->add<CBoundingBox>(Vec2f(saAnimation.m_size.x, saAnimation.m_size.y / 2) * pSpecialAttack.scale);
 	specialAttack->add<CLifespan>(pSpecialAttack.duration, m_currentFrame);
 	specialAttack->add<CHealth>(pSpecialAttack.pierce);
-	specialAttack->add<CKnockback>(Vec2f(0, 0), 20.0f, 30, -2.0f);
+	specialAttack->add<CKnockback>(pSpecialAttack.knockMagnitude, pSpecialAttack.knockDuration);
 	specialAttack->add<CDamage>(pSpecialAttack.damage);
 
 	playSound("HighWhoosh", 50);
@@ -859,6 +859,32 @@ void Scene_Play::sRender()
 			hitbox.setOutlineColor(sf::Color::Red);
 			hitbox.setOutlineThickness(1.f);
 			window.draw(hitbox);
+		}
+
+		auto& health = entity->get<CHealth>();
+
+		if (entity->tag() == "enemy" && entity->get<CState>().state == "alive")
+		{
+			// Bar settings
+			float width = animation.m_size.x * 0.5f;
+			float height = 3.f;
+			float hpPercent = static_cast<float>(health.health) / health.maxHealth;
+
+			sf::Vector2f barPos = transform.pos + sf::Vector2f(-width / 2, -animation.m_size.y / 2);
+
+			// Background (gray)
+			sf::RectangleShape bgBar(sf::Vector2f(width, height));
+			bgBar.setFillColor(sf::Color(0, 0, 0, 60));
+			bgBar.setPosition(barPos + sf::Vector2f(1.f, 1.f));
+
+			// Health (green/red)
+			sf::RectangleShape hpBar(sf::Vector2f(width * hpPercent, height));
+			hpBar.setFillColor(sf::Color::White);
+			hpBar.setPosition(barPos);
+
+			// Draw both
+			window.draw(bgBar);
+			window.draw(hpBar);
 		}
 	}
 	window.setView(window.getDefaultView());

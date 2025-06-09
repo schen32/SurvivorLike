@@ -54,9 +54,10 @@ class CHealth : public Component
 {
 public:
 	int health = 0;
+	int maxHealth = 0;
 
 	CHealth() = default;
-	CHealth(int h) : health(h) {}
+	CHealth(int h) : health(h), maxHealth(h) {}
 };
 
 class CDamage : public Component
@@ -104,6 +105,8 @@ public:
 	int pierce = 5;
 	int distanceFromPlayer = 30;
 	int damage = 1;
+	float knockMagnitude = 10.f;
+	int knockDuration = 30;
 
 	CBasicAttack() = default;
 	CBasicAttack(int lat)
@@ -121,6 +124,8 @@ public:
 	int speed = 10;
 	float decel = -0.2f;
 	int damage = 1;
+	float knockMagnitude = 10.f;
+	int knockDuration = 30;
 
 	CSpecialAttack() = default;
 	CSpecialAttack(int lat)
@@ -130,14 +135,12 @@ public:
 class CKnockback : public Component
 {
 public:
-	Vec2f direction = { 0, 0 };
 	float magnitude = 0;
 	int duration = 0;
-	float decel = 0;
 
 	CKnockback() = default;
-	CKnockback(const Vec2f& dir, float m, int d, float deceleration)
-		: direction(dir), magnitude(m), duration(d), decel(deceleration) { }
+	CKnockback(float m, int d)
+		: magnitude(m), duration(d) { }
 };
 
 class CBoundingBox : public Component
