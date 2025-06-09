@@ -116,7 +116,7 @@ std::shared_ptr<Entity> Scene_Play::player()
 
 void Scene_Play::spawnPlayer()
 {
-	auto p = m_entityManager.addEntity("player");
+	auto p = m_entityManager.addEntity("player", "playerCharacter");
 	m_playerDied = false;
 	
 	auto& pAnimation = p->add<CAnimation>(m_game->assets().getAnimation("StormheadIdle"), true);
@@ -132,7 +132,13 @@ void Scene_Play::spawnPlayer()
 	p->add<CSpecialAttack>(m_currentFrame);
 }
 
-void Scene_Play::spawnEnemies()
+void Scene_Play::sSpawnEnemies()
+{
+	spawnChainBot();
+	spawnBotWheel();
+}
+
+void Scene_Play::spawnChainBot()
 {
 	static int lastEnemySpawnTime = 0;
 	static const int enemySpawnInterval = 60;
@@ -143,10 +149,10 @@ void Scene_Play::spawnEnemies()
 		int spawnAngle = rand() % 360;
 		Vec2f spawnPoint = Vec2f(std::cos(spawnAngle), std::sin(spawnAngle)) * 500;
 
-		auto enemy = m_entityManager.addEntity("enemy");
+		auto enemy = m_entityManager.addEntity("enemy", "chainBot");
 		auto& eAnimation = enemy->add<CAnimation>(m_game->assets().getAnimation("ChainBotIdle"), true);
 		enemy->add<CTransform>(player()->get<CTransform>().pos + spawnPoint);
-		enemy->add<CBoundingBox>(eAnimation.animation.m_size / 4);
+		enemy->add<CBoundingBox>(eAnimation.animation.m_size / 2);
 		enemy->add<CHealth>(2);
 		enemy->add<CDamage>(1);
 		enemy->add<CFollow>(player(), 1.0f);
@@ -155,9 +161,32 @@ void Scene_Play::spawnEnemies()
 	}
 }
 
+void Scene_Play::spawnBotWheel()
+{
+	static int lastEnemySpawnTime = 0;
+	static const int enemySpawnInterval = 120;
+	if (m_currentFrame - lastEnemySpawnTime > enemySpawnInterval)
+	{
+		lastEnemySpawnTime = m_currentFrame;
+
+		int spawnAngle = rand() % 360;
+		Vec2f spawnPoint = Vec2f(std::cos(spawnAngle), std::sin(spawnAngle)) * 500;
+
+		auto enemy = m_entityManager.addEntity("enemy", "botWheel");
+		auto& eAnimation = enemy->add<CAnimation>(m_game->assets().getAnimation("BotWheelRun"), true);
+		enemy->add<CTransform>(player()->get<CTransform>().pos + spawnPoint);
+		enemy->add<CBoundingBox>(eAnimation.animation.m_size / 2);
+		enemy->add<CHealth>(4);
+		enemy->add<CDamage>(1);
+		enemy->add<CFollow>(player(), 1.2f);
+		enemy->add<CScore>(2);
+		enemy->add<CState>("alive");
+	}
+}
+
 void Scene_Play::spawnGem(const Vec2f& pos)
 {
-	auto gem = m_entityManager.addEntity("gem");
+	auto gem = m_entityManager.addEntity("gem", "scoreGem");
 
 	gem->add<CTransform>(pos);
 	auto& gemAnimation = gem->add<CAnimation>(m_game->assets().getAnimation("Gem"), true);
@@ -177,7 +206,7 @@ void Scene_Play::update()
 	{
 		m_entityManager.update();
 		sLifespan();
-		spawnEnemies();
+		sSpawnEnemies();
 		sPlayerAttacks();
 		sKnockback();
 		sAI();
@@ -462,7 +491,7 @@ void Scene_Play::spawnBasicAttack(const Vec2f& targetPos)
 	auto& pTransform = player()->get<CTransform>();
 
 	Vec2f attackDir = (targetPos - pTransform.pos).normalize();
-	auto basicAttack = m_entityManager.addEntity("playerAttack");
+	auto basicAttack = m_entityManager.addEntity("playerAttack", "basicAttack");
 
 	float attackAngle = std::atan2(attackDir.y, attackDir.x) * 180.0f / 3.14159f;
 	basicAttack->add<CTransform>(pTransform.pos + attackDir * pBasicAttack.distanceFromPlayer
@@ -494,7 +523,7 @@ void Scene_Play::spawnSpecialAttack(const Vec2f& targetPos)
 	auto& pTransform = player()->get<CTransform>();
 
 	Vec2f attackDir = (targetPos - pTransform.pos).normalize();
-	auto specialAttack = m_entityManager.addEntity("playerAttack");
+	auto specialAttack = m_entityManager.addEntity("playerAttack", "specialAttack");
 
 	float attackAngle = std::atan2(attackDir.y, attackDir.x) * 180.0f / 3.14159f;
 	auto& saTransform = specialAttack->add<CTransform>(pTransform.pos + attackDir,
@@ -651,26 +680,53 @@ void Scene_Play::sAnimation()
 
 		if (entity->tag() == "enemy")
 		{
-			auto& eState = entity->get<CState>().state;
-			if (eState == "alive" && entity->get<CAnimation>().animation.m_name != "ChainBotIdle")
+			if (entity->name() == "chainBot")
 			{
-				auto& eAnimation = entity->add<CAnimation>(m_game->assets().getAnimation("ChainBotIdle"), true);
-			}
-			else if (eState == "knockback" && entity->get<CAnimation>().animation.m_name != "ChainBotHit")
-			{
-				auto& eAnimation = entity->add<CAnimation>(m_game->assets().getAnimation("ChainBotHit"), true);
-			}
-			else if (eState == "dead" && entity->get<CAnimation>().animation.m_name != "ChainBotDeath")
-			{
-				auto& eAnimation = entity->add<CAnimation>(m_game->assets().getAnimation("ChainBotDeath"), false);
-				auto& eTransform = entity->get<CTransform>();
+				auto& eState = entity->get<CState>().state;
+				if (eState == "alive" && entity->get<CAnimation>().animation.m_name != "ChainBotIdle")
+				{
+					auto& eAnimation = entity->add<CAnimation>(m_game->assets().getAnimation("ChainBotIdle"), true);
+				}
+				else if (eState == "knockback" && entity->get<CAnimation>().animation.m_name != "ChainBotHit")
+				{
+					auto& eAnimation = entity->add<CAnimation>(m_game->assets().getAnimation("ChainBotHit"), true);
+				}
+				else if (eState == "dead" && entity->get<CAnimation>().animation.m_name != "ChainBotDeath")
+				{
+					auto& eAnimation = entity->add<CAnimation>(m_game->assets().getAnimation("ChainBotDeath"), false);
+					auto& eTransform = entity->get<CTransform>();
 
-				entity->remove<CFollow>();
-				entity->remove<CBoundingBox>();
-				eTransform.velocity = { 0, 0 };
+					entity->remove<CFollow>();
+					entity->remove<CBoundingBox>();
+					eTransform.velocity = { 0, 0 };
 
-				playSound("LaserPebble", 40);
-				spawnGem(eTransform.pos);
+					playSound("LaserPebble", 40);
+					spawnGem(eTransform.pos);
+				}
+			}
+			else if (entity->name() == "botWheel")
+			{
+				auto& eState = entity->get<CState>().state;
+				if (eState == "alive" && entity->get<CAnimation>().animation.m_name != "BotWheelRun")
+				{
+					auto& eAnimation = entity->add<CAnimation>(m_game->assets().getAnimation("BotWheelRun"), true);
+				}
+				else if (eState == "knockback" && entity->get<CAnimation>().animation.m_name != "BotWheelHit")
+				{
+					auto& eAnimation = entity->add<CAnimation>(m_game->assets().getAnimation("BotWheelHit"), true);
+				}
+				else if (eState == "dead" && entity->get<CAnimation>().animation.m_name != "BotWheelDead")
+				{
+					auto& eAnimation = entity->add<CAnimation>(m_game->assets().getAnimation("BotWheelDead"), false);
+					auto& eTransform = entity->get<CTransform>();
+
+					entity->remove<CFollow>();
+					entity->remove<CBoundingBox>();
+					eTransform.velocity = { 0, 0 };
+
+					playSound("LaserPebble", 40);
+					spawnGem(eTransform.pos);
+				}
 			}
 		}
 	}

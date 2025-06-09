@@ -32,10 +32,11 @@ class Entity
 	ComponentTuple m_components;
 	bool m_active = true;
 	std::string m_tag = "default";
+	std::string m_name = "name";
 	size_t m_id = 0;
 
-	Entity(const std::string& tag, const size_t& id)
-		: m_tag(tag), m_id(id) {}
+	Entity(const std::string& tag, const std::string& name, const size_t& id)
+		: m_tag(tag), m_name(name), m_id(id) {}
 
 public:
 	bool isActive() const
@@ -56,6 +57,11 @@ public:
 	const std::string& tag() const
 	{
 		return m_tag;
+	}
+
+	const std::string& name() const
+	{
+		return m_name;
 	}
 
 	template <typename T>

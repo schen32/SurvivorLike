@@ -48,9 +48,9 @@ public:
 		}
 	}
 
-	std::shared_ptr<Entity> addEntity(const std::string& tag)
+	std::shared_ptr<Entity> addEntity(const std::string& tag, const std::string& name)
 	{
-		auto entity = std::shared_ptr<Entity>(new Entity(tag, m_totalEntities++));
+		auto entity = std::shared_ptr<Entity>(new Entity(tag, name, m_totalEntities++));
 		// auto entity = std::make_shared<Entity>(tag, m_totalEntities++);
 		m_entitiesToAdd.push_back(entity);
 		return entity;
