@@ -132,6 +132,7 @@ void Scene_Play::spawnPlayer()
 	p->add<CInput>();
 	p->add<CScore>(0);
 	p->add<CState>("idle");
+	p->add<CKnockback>(10.f, 30);
 
 	p->add<CBasicAttack>(m_currentFrame);
 	p->add<CSpecialAttack>(m_currentFrame);
@@ -422,6 +423,11 @@ void Scene_Play::sCollision()
 			auto& playerHealth = player()->get<CHealth>().health;
 			e1Health -= player()->get<CDamage>().damage;
 			playerHealth -= e1->get<CDamage>().damage;
+
+			auto& pKnockback = player()->get<CKnockback>();
+			applyKnockback(e1, player()->get<CTransform>().pos,
+				pKnockback.magnitude, pKnockback.duration);
+			playSound("PlasticZap", 30);
 
 			if (e1Health <= 0)
 			{
@@ -861,13 +867,12 @@ void Scene_Play::sRender()
 			window.draw(hitbox);
 		}
 
-		auto& health = entity->get<CHealth>();
-
 		if (entity->tag() == "enemy" && entity->get<CState>().state == "alive")
 		{
 			// Bar settings
 			float width = animation.m_size.x * 0.5f;
 			float height = 3.f;
+			auto& health = entity->get<CHealth>();
 			float hpPercent = static_cast<float>(health.health) / health.maxHealth;
 
 			sf::Vector2f barPos = transform.pos + sf::Vector2f(-width / 2, -animation.m_size.y / 2);
@@ -892,8 +897,34 @@ void Scene_Play::sRender()
 	m_gridText.setString(std::to_string(player()->get<CScore>().score));
 	window.draw(m_gridText);
 
-	/*m_particleSystem.update();
-	m_particleSystem.draw(window);*/
+	auto& animation = player()->get<CAnimation>().animation;
+	auto& transform = player()->get<CTransform>();
+	// Bar settings
+	float width = 400.f;
+	float height = 30.f;
+	auto& health = player()->get<CHealth>();
+	float hpPercent = static_cast<float>(health.health) / health.maxHealth;
+	sf::Vector2f barPos = sf::Vector2f((m_game->window().getSize().x - width) / 2, m_game->window().getSize().y - 120);
+	// Background (transparent black)
+	sf::RectangleShape bgBar(sf::Vector2f(width, height));
+	bgBar.setFillColor(sf::Color(0, 0, 0, 60));
+	bgBar.setPosition(barPos + sf::Vector2f(2.f, 2.f));
+	// Health (white)
+	sf::RectangleShape hpBar(sf::Vector2f(width * hpPercent, height));
+	hpBar.setFillColor(sf::Color::White);
+	hpBar.setPosition(barPos);
+	// Draw both
+	window.draw(bgBar);
+	window.draw(hpBar);
+
+	sf::Text hpText(m_game->assets().getFont("FutureMillennium"));
+	hpText.setOutlineThickness(1.0f);
+	hpText.setOutlineColor(sf::Color(86, 106, 137));
+	hpText.setString(std::to_string(health.health) + " / " + std::to_string(health.maxHealth));
+	sf::FloatRect bounds = hpText.getLocalBounds();
+	hpText.setOrigin({ bounds.position.x + bounds.size.x / 2.f, bounds.position.y + bounds.size.y / 2.f });
+	hpText.setPosition(sf::Vector2f(m_game->window().getSize().x / 2, m_game->window().getSize().y - 105));
+	window.draw(hpText);
 
 	window.setView(m_cameraView);
 }
