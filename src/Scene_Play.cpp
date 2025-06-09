@@ -383,8 +383,8 @@ void Scene_Play::applyKnockback(std::shared_ptr<Entity> target, const Vec2f& fro
 		target->get<CState>().state = "knockback";
 	}
 
-	tTransform.velocity = direction * force;
-	tTransform.accel = -0.2f;
+	tTransform.velocity = direction * force / tTransform.scale;
+	tTransform.accel = -0.2f * tTransform.scale;
 }
 
 void Scene_Play::sKnockback() {
