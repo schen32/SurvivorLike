@@ -169,6 +169,7 @@ void Scene_Play::update()
 		sMovement();
 		sCollision();
 		sAnimation();
+		sSound();
 		sCamera();
 	}
 }
@@ -265,6 +266,8 @@ void Scene_Play::applyKnockback(std::shared_ptr<Entity> target, const Vec2f& fro
 
 	tTransform.velocity = direction * force;
 	tTransform.accel = decel;
+
+	target->get<CAnimation>().animation.m_sprite.setColor(sf::Color::Cyan);
 }
 
 void Scene_Play::sKnockback() {
@@ -280,6 +283,8 @@ void Scene_Play::sKnockback() {
 			transform.velocity = { 0, 0 };
 			transform.accel = 0;
 			e->remove<CKnockback>();
+
+			e->get<CAnimation>().animation.m_sprite.setColor(sf::Color::White);
 		}
 	}
 }
@@ -442,14 +447,14 @@ void Scene_Play::spawnSpecialAttack(const Vec2f& targetPos)
 	auto specialAttack = m_entityManager.addEntity("playerAttack");
 
 	float attackAngle = std::atan2(attackDir.y, attackDir.x) * 180.0f / 3.14159f;
-	auto& baTransform = specialAttack->add<CTransform>(pTransform.pos + attackDir,
+	auto& saTransform = specialAttack->add<CTransform>(pTransform.pos + attackDir,
 		attackDir * pSpecialAttack.speed, attackAngle);
-	baTransform.accel = pSpecialAttack.decel;
+	saTransform.accel = pSpecialAttack.decel;
 
-	auto& baAnimation = specialAttack->add<CAnimation>(m_game->assets().getAnimation("BasicAttack"), true).animation;
-	baAnimation.m_sprite.setScale({ pSpecialAttack.scale, pSpecialAttack.scale });
+	auto& saAnimation = specialAttack->add<CAnimation>(m_game->assets().getAnimation("BasicAttack"), true).animation;
+	saAnimation.m_sprite.setScale({ pSpecialAttack.scale, pSpecialAttack.scale });
 
-	specialAttack->add<CBoundingBox>(Vec2f(baAnimation.m_size.x, baAnimation.m_size.y / 2) * pSpecialAttack.scale);
+	specialAttack->add<CBoundingBox>(Vec2f(saAnimation.m_size.x, saAnimation.m_size.y / 2) * pSpecialAttack.scale);
 	specialAttack->add<CLifespan>(pSpecialAttack.duration, m_currentFrame);
 	specialAttack->add<CHealth>(pSpecialAttack.pierce);
 	specialAttack->add<CKnockback>(Vec2f(0, 0), 20.0f, 30, -2.0f);
@@ -570,6 +575,15 @@ void Scene_Play::sAnimation()
 
 		if (!eAnimation.repeat && eAnimation.animation.hasEnded())
 			entity->destroy();
+	}
+}
+
+void Scene_Play::sSound()
+{
+	auto& pState = player()->get<CState>().state;
+	if (pState == "running" && m_currentFrame % 15 == 0)
+	{
+		playSound("BubbleStep", 5);
 	}
 }
 

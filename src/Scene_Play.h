@@ -51,6 +51,7 @@ protected:
 	void sAI();
 	void sStatus();
 	void sAnimation();
+	void sSound();
 	void sCollision();
 	void sCamera();
 	void sGui();
