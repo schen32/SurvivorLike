@@ -135,7 +135,9 @@ void Scene_Play::spawnPlayer()
 void Scene_Play::sSpawnEnemies()
 {
 	spawnChainBot();
+	spawnBigChainBot();
 	spawnBotWheel();
+	spawnBigBotWheel();
 }
 
 void Scene_Play::spawnChainBot()
@@ -184,11 +186,68 @@ void Scene_Play::spawnBotWheel()
 	}
 }
 
+void Scene_Play::spawnBigChainBot()
+{
+	static int lastEnemySpawnTime = 0;
+	static const int enemySpawnInterval = 600;
+	if (m_currentFrame - lastEnemySpawnTime > enemySpawnInterval)
+	{
+		lastEnemySpawnTime = m_currentFrame;
+
+		int spawnAngle = rand() % 360;
+		Vec2f spawnPoint = Vec2f(std::cos(spawnAngle), std::sin(spawnAngle)) * 500;
+
+		auto enemy = m_entityManager.addEntity("enemy", "chainBot");
+		auto& eTransform = enemy->add<CTransform>(player()->get<CTransform>().pos + spawnPoint);
+		eTransform.scale = 2.0f;
+
+		auto& eAnimation = enemy->add<CAnimation>(m_game->assets().getAnimation("ChainBotIdle"), true);
+		eAnimation.animation.m_sprite.setScale(Vec2f(eTransform.scale, eTransform.scale));
+		
+		enemy->add<CBoundingBox>(eAnimation.animation.m_size / 2 * eTransform.scale);
+		enemy->add<CHealth>(20);
+		enemy->add<CDamage>(2);
+		enemy->add<CFollow>(player(), 1.0f);
+		enemy->add<CScore>(6);
+		enemy->add<CState>("alive");
+	}
+}
+
+void Scene_Play::spawnBigBotWheel()
+{
+	static int lastEnemySpawnTime = 0;
+	static const int enemySpawnInterval = 1200;
+	if (m_currentFrame - lastEnemySpawnTime > enemySpawnInterval)
+	{
+		lastEnemySpawnTime = m_currentFrame;
+
+		int spawnAngle = rand() % 360;
+		Vec2f spawnPoint = Vec2f(std::cos(spawnAngle), std::sin(spawnAngle)) * 500;
+
+		auto enemy = m_entityManager.addEntity("enemy", "botWheel");
+		auto& eTransform = enemy->add<CTransform>(player()->get<CTransform>().pos + spawnPoint);
+		eTransform.scale = 2.0f;
+
+		auto& eAnimation = enemy->add<CAnimation>(m_game->assets().getAnimation("BotWheelRun"), true);
+		eAnimation.animation.m_sprite.setScale(Vec2f(eTransform.scale, eTransform.scale));
+
+		enemy->add<CBoundingBox>(eAnimation.animation.m_size / 2 * eTransform.scale);
+		enemy->add<CHealth>(25);
+		enemy->add<CDamage>(2);
+		enemy->add<CFollow>(player(), 1.2f);
+		enemy->add<CScore>(8);
+		enemy->add<CState>("alive");
+	}
+}
+
 void Scene_Play::spawnGem(const Vec2f& pos)
 {
+	int spawnAngle = rand() % 360;
+	Vec2f spawnPoint = Vec2f(std::cos(spawnAngle), std::sin(spawnAngle)) * 10;
+
 	auto gem = m_entityManager.addEntity("gem", "scoreGem");
 
-	gem->add<CTransform>(pos);
+	gem->add<CTransform>(pos + spawnPoint);
 	auto& gemAnimation = gem->add<CAnimation>(m_game->assets().getAnimation("Gem"), true);
 	gem->add<CBoundingBox>(gemAnimation.animation.m_size);
 	gem->add<CScore>(1);
@@ -694,14 +753,7 @@ void Scene_Play::sAnimation()
 				else if (eState == "dead" && entity->get<CAnimation>().animation.m_name != "ChainBotDeath")
 				{
 					auto& eAnimation = entity->add<CAnimation>(m_game->assets().getAnimation("ChainBotDeath"), false);
-					auto& eTransform = entity->get<CTransform>();
-
-					entity->remove<CFollow>();
-					entity->remove<CBoundingBox>();
-					eTransform.velocity = { 0, 0 };
-
-					playSound("LaserPebble", 40);
-					spawnGem(eTransform.pos);
+					enemyDied(entity);
 				}
 			}
 			else if (entity->name() == "botWheel")
@@ -718,17 +770,25 @@ void Scene_Play::sAnimation()
 				else if (eState == "dead" && entity->get<CAnimation>().animation.m_name != "BotWheelDead")
 				{
 					auto& eAnimation = entity->add<CAnimation>(m_game->assets().getAnimation("BotWheelDead"), false);
-					auto& eTransform = entity->get<CTransform>();
-
-					entity->remove<CFollow>();
-					entity->remove<CBoundingBox>();
-					eTransform.velocity = { 0, 0 };
-
-					playSound("LaserPebble", 40);
-					spawnGem(eTransform.pos);
+					enemyDied(entity);
 				}
 			}
 		}
+	}
+}
+
+void Scene_Play::enemyDied(std::shared_ptr<Entity> enemy)
+{
+	auto& eTransform = enemy->get<CTransform>();
+
+	enemy->remove<CFollow>();
+	enemy->remove<CBoundingBox>();
+	eTransform.velocity = { 0, 0 };
+
+	playSound("LaserPebble", 40);
+	for (int i = 0; i < enemy->get<CScore>().score; i++)
+	{
+		spawnGem(eTransform.pos);
 	}
 }
 
@@ -770,6 +830,14 @@ void Scene_Play::sRender()
 
 		animation.m_sprite.setPosition(transform.pos);
 		animation.m_sprite.setRotation(sf::degrees(transform.angle));
+		animation.m_sprite.setScale(Vec2f(transform.scale, transform.scale));
+
+		sf::Sprite shadowSprite = animation.m_sprite;
+		shadowSprite.setPosition(transform.pos + Vec2f(5.f, 5.f));
+		shadowSprite.setScale(Vec2f(animation.m_sprite.getScale().x, animation.m_sprite.getScale().y * 0.5f));
+		shadowSprite.setColor(sf::Color(0, 0, 0, 100));
+		window.draw(shadowSprite);
+
 		window.draw(animation.m_sprite);
 
 		if (player()->get<CInput>().displayHitbox)

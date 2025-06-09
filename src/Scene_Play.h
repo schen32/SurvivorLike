@@ -41,7 +41,10 @@ protected:
 
 	void sSpawnEnemies();
 	void spawnChainBot();
+	void spawnBigChainBot();
 	void spawnBotWheel();
+	void spawnBigBotWheel();
+	void enemyDied(std::shared_ptr<Entity> enemy);
 
 	void spawnGem(const Vec2f& pos);
 	void spawnTiles(const std::string& filename);

@@ -18,7 +18,7 @@ class CTransform : public Component
 public:
 	Vec2f pos = { 0.0, 0.0 };
 	Vec2f prevPos = { 0.0, 0.0 };
-	Vec2f scale = { 1.0, 1.0 };
+	float scale = 1.0f;
 	Vec2f velocity = { 0.0, 0.0 };
 	float angle = 0;
 	float accel = 0;
