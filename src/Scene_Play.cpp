@@ -57,7 +57,12 @@ void Scene_Play::init(const std::string& levelPath)
 	m_cameraView.setSize({ (float)width(), (float)height() });
 	m_cameraView.zoom(0.5f);
 
-	auto& bgm = m_game->assets().getMusic("FloatingDream");
+	srand(static_cast<unsigned int>(time(nullptr)));
+	std::vector<std::string> bgms = { "EveningHarmony", "FloatingDream", "ForgottenBiomes",
+		"PolarLights", "SunlightThroughLeaves" };
+	int randomIndex = rand() % bgms.size();
+
+	auto& bgm = m_game->assets().getMusic(bgms[randomIndex]);
 	bgm.setVolume(120);
 	bgm.setLooping(true);
 	bgm.play();
@@ -143,7 +148,7 @@ void Scene_Play::sSpawnEnemies()
 void Scene_Play::spawnChainBot()
 {
 	static int lastEnemySpawnTime = 0;
-	static const int enemySpawnInterval = 60;
+	static const int enemySpawnInterval = 90;
 	if (m_currentFrame - lastEnemySpawnTime > enemySpawnInterval)
 	{
 		lastEnemySpawnTime = m_currentFrame;
@@ -189,7 +194,7 @@ void Scene_Play::spawnBotWheel()
 void Scene_Play::spawnBigChainBot()
 {
 	static int lastEnemySpawnTime = 0;
-	static const int enemySpawnInterval = 600;
+	static const int enemySpawnInterval = 900;
 	if (m_currentFrame - lastEnemySpawnTime > enemySpawnInterval)
 	{
 		lastEnemySpawnTime = m_currentFrame;
@@ -832,11 +837,15 @@ void Scene_Play::sRender()
 		animation.m_sprite.setRotation(sf::degrees(transform.angle));
 		animation.m_sprite.setScale(Vec2f(transform.scale, transform.scale));
 
-		sf::Sprite shadowSprite = animation.m_sprite;
-		shadowSprite.setPosition(transform.pos + Vec2f(5.f, 5.f));
-		shadowSprite.setScale(Vec2f(animation.m_sprite.getScale().x, animation.m_sprite.getScale().y * 0.5f));
-		shadowSprite.setColor(sf::Color(0, 0, 0, 100));
-		window.draw(shadowSprite);
+		if (entity->id() != player()->id())
+		{
+			// Create a shadow sprite by copying the original
+			sf::Sprite shadow = animation.m_sprite;
+			shadow.move({ animation.m_size.x * 0.2f, animation.m_size.y * 0.2f });
+			shadow.setColor(sf::Color(0, 0, 0, 60));
+			shadow.setScale({ transform.scale, transform.scale * 0.3f });
+			window.draw(shadow);
+		}
 
 		window.draw(animation.m_sprite);
 
