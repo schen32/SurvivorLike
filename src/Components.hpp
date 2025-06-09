@@ -121,10 +121,11 @@ public:
 	Vec2f direction = { 0, 0 };
 	float magnitude = 0;
 	int duration = 0;
+	float decel = 0;
 
 	CKnockback() = default;
-	CKnockback(const Vec2f& dir, float m, int d)
-		: direction(dir), magnitude(m), duration(d) { }
+	CKnockback(const Vec2f& dir, float m, int d, float deceleration)
+		: direction(dir), magnitude(m), duration(d), decel(deceleration) { }
 };
 
 class CBoundingBox : public Component

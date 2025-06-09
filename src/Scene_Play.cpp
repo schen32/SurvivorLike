@@ -251,14 +251,32 @@ void Scene_Play::sStatus()
 
 }
 
-void Scene_Play::applyKnockback(std::shared_ptr<Entity> target, const Vec2f& fromPos, float force, int duration) {
+void Scene_Play::applyKnockback(std::shared_ptr<Entity> target, const Vec2f& fromPos,
+	float force, int duration, float decel) {
 	auto& tTransform = target->get<CTransform>();
 
 	Vec2f direction = (tTransform.pos - fromPos).normalize();
-	target->add<CKnockback>(direction, force, duration);
+	target->add<CKnockback>(direction, force, duration, decel);
 
 	tTransform.velocity = direction * force;
-	tTransform.accel = -0.05f;
+	tTransform.accel = decel;
+}
+
+void Scene_Play::sKnockback() {
+	for (auto& e : m_entityManager.getEntities("enemy")) {
+		if (!e->has<CKnockback>()) continue;
+
+		auto& kb = e->get<CKnockback>();
+		if (kb.duration > 0)
+			kb.duration--;
+		else
+		{
+			auto& transform = e->get<CTransform>();
+			transform.velocity = { 0, 0 };
+			transform.accel = 0;
+			e->remove<CKnockback>();
+		}
+	}
 }
 
 void Scene_Play::sCollision()
@@ -304,9 +322,8 @@ void Scene_Play::sCollision()
 				}
 				if (e2->tag() == "playerAttack")
 				{
-					const static float force = 10.0f;
-					const static int duration = 10;
-					applyKnockback(e1, e2Transform.pos, force, duration);
+					auto& paKnockback = e2->get<CKnockback>();
+					applyKnockback(e1, e2Transform.pos, paKnockback.magnitude, paKnockback.duration, paKnockback.decel);
 					continue;
 				}
 
@@ -328,23 +345,6 @@ void Scene_Play::sCollision()
 						e1Transform.pos.x += overlap.x;
 				}
 			}
-		}
-	}
-}
-
-void Scene_Play::sKnockback() {
-	for (auto& e : m_entityManager.getEntities()) {
-		if (!e->has<CKnockback>()) continue;
-
-		auto& kb = e->get<CKnockback>();
-		if (kb.duration > 0)
-			kb.duration--;
-		else
-		{
-			auto& transform = e->get<CTransform>();
-			transform.velocity = { 0, 0 };
-			transform.accel = 0;
-			e->remove<CKnockback>();
 		}
 	}
 }
@@ -412,6 +412,7 @@ void Scene_Play::spawnBasicAttack(const Vec2f& targetPos)
 	basicAttack->add<CLifespan>(pBasicAttack.duration, m_currentFrame);
 	basicAttack->add<CHealth>(pBasicAttack.pierce);
 	basicAttack->add<CMoveAtSameVelocity>(player());
+	basicAttack->add<CKnockback>(Vec2f(0, 0), 20.0f, 30, -2.0f);
 }
 
 void Scene_Play::spawnSpecialAttack(const Vec2f& targetPos)
@@ -440,6 +441,7 @@ void Scene_Play::spawnSpecialAttack(const Vec2f& targetPos)
 	basicAttack->add<CBoundingBox>(Vec2f(baAnimation.m_size.x, baAnimation.m_size.y / 2) * pSpecialAttack.scale);
 	basicAttack->add<CLifespan>(pSpecialAttack.duration, m_currentFrame);
 	basicAttack->add<CHealth>(pSpecialAttack.pierce);
+	basicAttack->add<CKnockback>(Vec2f(0, 0), 20.0f, 30, -2.0f);
 }
 
 void Scene_Play::sDoAction(const Action& action)

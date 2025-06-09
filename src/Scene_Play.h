@@ -59,7 +59,7 @@ protected:
 	void spawnBasicAttack(const Vec2f& targetPos);
 	void spawnSpecialAttack(const Vec2f& targetPos);
 	void sKnockback();
-	void applyKnockback(std::shared_ptr<Entity> target, const Vec2f& fromPos, float force, int duration);
+	void applyKnockback(std::shared_ptr<Entity> target, const Vec2f& fromPos, float force, int duration, float decel);
 public:
 
 	Scene_Play() = default;
