@@ -149,7 +149,7 @@ void Scene_Play::sSpawnEnemies()
 void Scene_Play::spawnChainBot()
 {
 	static int lastEnemySpawnTime = 0;
-	static const int enemySpawnInterval = 90;
+	static const int enemySpawnInterval = 60;
 	if (m_currentFrame - lastEnemySpawnTime > enemySpawnInterval)
 	{
 		lastEnemySpawnTime = m_currentFrame;
@@ -172,7 +172,7 @@ void Scene_Play::spawnChainBot()
 void Scene_Play::spawnBotWheel()
 {
 	static int lastEnemySpawnTime = 0;
-	static const int enemySpawnInterval = 120;
+	static const int enemySpawnInterval = 90;
 	if (m_currentFrame - lastEnemySpawnTime > enemySpawnInterval)
 	{
 		lastEnemySpawnTime = m_currentFrame;
@@ -378,6 +378,7 @@ void Scene_Play::applyKnockback(std::shared_ptr<Entity> target, const Vec2f& fro
 
 	Vec2f direction = (tTransform.pos - fromPos).normalize();
 	auto& tKnockback = target->add<CKnockback>(force, duration);
+	tKnockback.beingKnockedback = true;
 
 	if (target->tag() == "enemy")
 	{
@@ -393,6 +394,8 @@ void Scene_Play::sKnockback() {
 		if (!e->has<CKnockback>()) continue;
 
 		auto& kb = e->get<CKnockback>();
+		if (!kb.beingKnockedback) continue;
+
 		if (kb.duration > 0)
 		{
 			kb.duration--;
@@ -426,6 +429,8 @@ void Scene_Play::sCollision()
 
 			auto& pKnockback = player()->get<CKnockback>();
 			applyKnockback(e1, player()->get<CTransform>().pos,
+				pKnockback.magnitude, pKnockback.duration);
+			applyKnockback(player(), e1->get<CTransform>().pos,
 				pKnockback.magnitude, pKnockback.duration);
 			playSound("PlasticZap", 30);
 

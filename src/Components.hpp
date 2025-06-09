@@ -137,6 +137,7 @@ class CKnockback : public Component
 public:
 	float magnitude = 0;
 	int duration = 0;
+	bool beingKnockedback = false;
 
 	CKnockback() = default;
 	CKnockback(float m, int d)
