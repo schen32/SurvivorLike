@@ -127,7 +127,7 @@ void Scene_Play::spawnPlayer()
 	auto& pAnimation = p->add<CAnimation>(m_game->assets().getAnimation("StormheadIdle"), true);
 	p->add<CBoundingBox>(Vec2f(pAnimation.animation.m_size.x / 4, pAnimation.animation.m_size.y / 4));
 	p->add<CTransform>(gridToMidPixel(m_playerConfig.X, m_playerConfig.Y, p));
-	p->add<CHealth>(5);
+	p->add<CHealth>(10);
 	p->add<CDamage>(1);
 	p->add<CInput>();
 	p->add<CScore>(0);
@@ -163,7 +163,7 @@ void Scene_Play::spawnChainBot()
 		enemy->add<CBoundingBox>(eAnimation.animation.m_size / 2);
 		enemy->add<CHealth>(2);
 		enemy->add<CDamage>(1);
-		enemy->add<CFollow>(player(), 1.0f);
+		enemy->add<CFollow>(player(), 0.5f);
 		enemy->add<CScore>(1);
 		enemy->add<CState>("alive");
 	}
@@ -186,7 +186,7 @@ void Scene_Play::spawnBotWheel()
 		enemy->add<CBoundingBox>(eAnimation.animation.m_size / 2);
 		enemy->add<CHealth>(4);
 		enemy->add<CDamage>(1);
-		enemy->add<CFollow>(player(), 1.2f);
+		enemy->add<CFollow>(player(), 0.6f);
 		enemy->add<CScore>(2);
 		enemy->add<CState>("alive");
 	}
@@ -213,7 +213,7 @@ void Scene_Play::spawnBigChainBot()
 		enemy->add<CBoundingBox>(eAnimation.animation.m_size / 2 * eTransform.scale);
 		enemy->add<CHealth>(20);
 		enemy->add<CDamage>(2);
-		enemy->add<CFollow>(player(), 1.0f);
+		enemy->add<CFollow>(player(), 0.3f);
 		enemy->add<CScore>(6);
 		enemy->add<CState>("alive");
 	}
@@ -240,7 +240,7 @@ void Scene_Play::spawnBigBotWheel()
 		enemy->add<CBoundingBox>(eAnimation.animation.m_size / 2 * eTransform.scale);
 		enemy->add<CHealth>(25);
 		enemy->add<CDamage>(2);
-		enemy->add<CFollow>(player(), 1.2f);
+		enemy->add<CFollow>(player(), 0.4f);
 		enemy->add<CScore>(8);
 		enemy->add<CState>("alive");
 	}
@@ -929,6 +929,13 @@ void Scene_Play::sRender()
 	sf::FloatRect bounds = hpText.getLocalBounds();
 	hpText.setOrigin({ bounds.position.x + bounds.size.x / 2.f, bounds.position.y + bounds.size.y / 2.f });
 	hpText.setPosition(sf::Vector2f(m_game->window().getSize().x / 2, m_game->window().getSize().y - 105));
+
+	sf::Text shadow = hpText; // Copy the main text
+	shadow.setFillColor(sf::Color(0, 0, 0, 150)); // Semi-transparent black
+	shadow.setOutlineThickness(0.f);
+	shadow.move({ 2.f, 2.f }); // Offset slightly down and right
+
+	window.draw(shadow);
 	window.draw(hpText);
 
 	window.setView(m_cameraView);
