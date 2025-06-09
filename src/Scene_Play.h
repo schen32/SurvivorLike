@@ -30,6 +30,7 @@ protected:
 	ParticleSystem			 m_particleSystem;
 	sf::View				 m_cameraView;
 	Vec2f					 m_mousePos;
+	bool					 m_playerDied = false;
 
 	void init(const std::string& levelPath);
 	void loadLevel(const std::string& filename);

@@ -57,6 +57,11 @@ void Scene_Play::init(const std::string& levelPath)
 	m_cameraView.setSize({ (float)width(), (float)height() });
 	m_cameraView.zoom(0.5f);
 
+	auto& bgm = m_game->assets().getMusic("FloatingDream");
+	bgm.setVolume(120);
+	bgm.setLooping(true);
+	bgm.play();
+
 	loadLevel(levelPath);
 }
 
@@ -100,11 +105,6 @@ void Scene_Play::loadLevel(const std::string& filename = "")
 	spawnPlayer();
 	spawnTiles(filename);
 	m_entityManager.update();
-
-	auto& bgm = m_game->assets().getMusic("FloatingDream");
-	bgm.setVolume(120);
-	bgm.setLooping(true);
-	bgm.play();
 }
 
 std::shared_ptr<Entity> Scene_Play::player()
@@ -117,6 +117,7 @@ std::shared_ptr<Entity> Scene_Play::player()
 void Scene_Play::spawnPlayer()
 {
 	auto p = m_entityManager.addEntity("player");
+	m_playerDied = false;
 	
 	auto& pAnimation = p->add<CAnimation>(m_game->assets().getAnimation("StormheadIdle"), true);
 	p->add<CBoundingBox>(Vec2f(pAnimation.animation.m_size.x / 4, pAnimation.animation.m_size.y / 4));
@@ -148,6 +149,7 @@ void Scene_Play::spawnEnemies()
 		enemy->add<CHealth>(2);
 		enemy->add<CFollow>(player());
 		enemy->add<CScore>(1);
+		enemy->add<CState>("alive");
 	}
 }
 
@@ -168,9 +170,14 @@ void Scene_Play::update()
 		sAI();
 		sMovement();
 		sCollision();
-		sAnimation();
 		sSound();
 		sCamera();
+		sAnimation();
+	}
+
+	if (m_playerDied)
+	{
+		loadLevel();
 	}
 }
 
@@ -266,8 +273,6 @@ void Scene_Play::applyKnockback(std::shared_ptr<Entity> target, const Vec2f& fro
 
 	tTransform.velocity = direction * force;
 	tTransform.accel = decel;
-
-	target->get<CAnimation>().animation.m_sprite.setColor(sf::Color::Cyan);
 }
 
 void Scene_Play::sKnockback() {
@@ -276,7 +281,10 @@ void Scene_Play::sKnockback() {
 
 		auto& kb = e->get<CKnockback>();
 		if (kb.duration > 0)
+		{
 			kb.duration--;
+			e->get<CAnimation>().animation.m_sprite.setColor(sf::Color::Cyan);
+		}
 		else
 		{
 			auto& transform = e->get<CTransform>();
@@ -316,16 +324,13 @@ void Scene_Play::sCollision()
 
 					if (e2->id() == player()->id() && e2Health <= 0)
 					{
-						loadLevel();
-						return;
+						player()->get<CState>().state = "dead";
 					}
 
 					if (e1Health <= 0)
 					{
-						e1->destroy();
+						e1->get<CState>().state = "dead";
 						player()->get<CScore>().score += e1->get<CScore>().score;
-
-						playSound("HitLaserPebble", 40);
 					}
 					if (e2Health <= 0)
 					{
@@ -554,17 +559,6 @@ void Scene_Play::sDoAction(const Action& action)
 
 void Scene_Play::sAnimation()
 {
-	auto& pState = player()->get<CState>().state;
-	auto& pAnimation = player()->get<CAnimation>().animation;
-	if (pState == "idle" && pAnimation.m_name != "StormheadIdle")
-	{
-		player()->add<CAnimation>(m_game->assets().getAnimation("StormheadIdle"), true);
-	}
-	else if (pState == "running" && pAnimation.m_name != "StormheadRun")
-	{
-		player()->add<CAnimation>(m_game->assets().getAnimation("StormheadRun"), true);
-	}
-
 	for (auto& entity : m_entityManager.getEntities())
 	{
 		if (!entity->has<CAnimation>())
@@ -574,7 +568,53 @@ void Scene_Play::sAnimation()
 		eAnimation.animation.update();
 
 		if (!eAnimation.repeat && eAnimation.animation.hasEnded())
-			entity->destroy();
+		{
+			if (!m_playerDied && entity->id() == player()->id())
+			{
+				// crashes for some reason if m_playerDied is set here
+				// m_playerDied = true;
+				// return;
+			}
+			else
+			{
+				entity->destroy();
+				continue;
+			}
+		}
+
+		if (entity->tag() == "player")
+		{
+			auto& pState = player()->get<CState>().state;
+			auto& pAnimation = player()->get<CAnimation>().animation;
+			if (pState == "idle" && pAnimation.m_name != "StormheadIdle")
+			{
+				player()->add<CAnimation>(m_game->assets().getAnimation("StormheadIdle"), true);
+			}
+			else if (pState == "running" && pAnimation.m_name != "StormheadRun")
+			{
+				player()->add<CAnimation>(m_game->assets().getAnimation("StormheadRun"), true);
+			}
+			else if (pState == "dead" && pAnimation.m_name != "StormheadDeath")
+			{
+				player()->add<CAnimation>(m_game->assets().getAnimation("StormheadDeath"), false);
+				// temporarily set m_playerDied here instead
+				m_playerDied = true;
+				return;
+			}
+		}
+
+		if (entity->tag() == "enemy")
+		{
+			auto& eState = entity->get<CState>().state;
+			if (eState == "dead" && entity->get<CAnimation>().animation.m_name != "ChainBotDeath")
+			{
+				auto& eAnimation = entity->add<CAnimation>(m_game->assets().getAnimation("ChainBotDeath"), false);
+				entity->remove<CFollow>();
+				entity->remove<CBoundingBox>();
+				entity->get<CTransform>().velocity = { 0, 0 };
+				playSound("HitLaserPebble", 40);
+			}
+		}
 	}
 }
 

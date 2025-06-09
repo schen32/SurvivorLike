@@ -49,10 +49,6 @@ public:
 
 	bool hasEnded() const
 	{
-		if (m_currentFrame == m_frameCount * m_speed)
-		{
-			return true;
-		}
-		return false;
+		return (m_currentFrame >= m_frameCount * m_speed);
 	}
 };
