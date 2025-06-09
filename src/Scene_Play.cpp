@@ -123,6 +123,7 @@ void Scene_Play::spawnPlayer()
 	p->add<CBoundingBox>(Vec2f(pAnimation.animation.m_size.x / 4, pAnimation.animation.m_size.y / 4));
 	p->add<CTransform>(gridToMidPixel(m_playerConfig.X, m_playerConfig.Y, p));
 	p->add<CHealth>(5);
+	p->add<CDamage>(1);
 	p->add<CInput>();
 	p->add<CScore>(0);
 	p->add<CState>("idle");
@@ -147,6 +148,7 @@ void Scene_Play::spawnEnemies()
 		enemy->add<CTransform>(player()->get<CTransform>().pos + spawnPoint);
 		enemy->add<CBoundingBox>(eAnimation.animation.m_size / 4);
 		enemy->add<CHealth>(2);
+		enemy->add<CDamage>(1);
 		enemy->add<CFollow>(player());
 		enemy->add<CScore>(1);
 		enemy->add<CState>("alive");
@@ -319,12 +321,13 @@ void Scene_Play::sCollision()
 				{
 					auto& e1Health = e1->get<CHealth>().health;
 					auto& e2Health = e2->get<CHealth>().health;
-					e1Health--;
-					e2Health--;
+					e1Health -= e2->get<CDamage>().damage;
+					e2Health -= e1->get<CDamage>().damage;
 
-					if (e2->id() == player()->id() && e2Health <= 0)
+					if (e2->id() == player()->id() && player()->get<CHealth>().health <= 0)
 					{
 						player()->get<CState>().state = "dead";
+						return;
 					}
 
 					if (e1Health <= 0)
@@ -432,6 +435,7 @@ void Scene_Play::spawnBasicAttack(const Vec2f& targetPos)
 	basicAttack->add<CHealth>(pBasicAttack.pierce);
 	basicAttack->add<CMoveAtSameVelocity>(player());
 	basicAttack->add<CKnockback>(Vec2f(0, 0), 20.0f, 30, -2.0f);
+	basicAttack->add<CDamage>(pBasicAttack.damage);
 
 	playSound("MeeleSwordSlash", 30);
 }
@@ -463,6 +467,7 @@ void Scene_Play::spawnSpecialAttack(const Vec2f& targetPos)
 	specialAttack->add<CLifespan>(pSpecialAttack.duration, m_currentFrame);
 	specialAttack->add<CHealth>(pSpecialAttack.pierce);
 	specialAttack->add<CKnockback>(Vec2f(0, 0), 20.0f, 30, -2.0f);
+	specialAttack->add<CDamage>(pSpecialAttack.damage);
 
 	playSound("ProjectileHighWhoosh", 50);
 }

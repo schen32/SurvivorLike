@@ -20,6 +20,7 @@ using ComponentTuple = std::tuple<
 	CSpecialAttack,
 	CKnockback,
 	CHealth,
+	CDamage,
 	CFollow,
 	CMoveAtSameVelocity
 >;

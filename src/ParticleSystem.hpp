@@ -19,7 +19,7 @@ class ParticleSystem
 	void resetParticle(size_t index, bool firstSpawn = false)
 	{
 		float mx = m_windowSize.x / 2;
-		float my = m_windowSize.y / 2;
+		float my = m_windowSize.y / 2 + 32;
 
 		m_vertices[6 * index + 0].position = sf::Vector2f(mx, my);
 		m_vertices[6 * index + 1].position = sf::Vector2f(mx + m_size, my);
@@ -28,7 +28,7 @@ class ParticleSystem
 		m_vertices[6 * index + 4].position = sf::Vector2f(mx, my + m_size);
 		m_vertices[6 * index + 5].position = sf::Vector2f(mx + m_size, my + m_size);
 
-		sf::Color color(128 + rand() % 128, 0, 0, rand() % 255);
+		sf::Color color(sf::Color::White);
 		if (firstSpawn) color.a = 0;
 
 		m_vertices[6 * index + 0].color = color;
@@ -38,8 +38,8 @@ class ParticleSystem
 		m_vertices[6 * index + 4].color = color;
 		m_vertices[6 * index + 5].color = color;
 
-		float rx = ((float)rand() / RAND_MAX) * 10 - 5;
-		float ry = ((float)rand() / RAND_MAX) * 10 - 5;
+		float rx = ((float)rand() / RAND_MAX) * 2.0f - 1.0f;
+		float ry = ((float)rand() / RAND_MAX) * 2.0f - 1.0f;
 		m_particles[index].velocity = sf::Vector2f(rx, ry);
 
 		m_particles[index].lifetime = 30 + rand() % 60;
@@ -48,7 +48,7 @@ class ParticleSystem
 public:
 	ParticleSystem() {}
 
-	void resetParticles(size_t count = 1024, float size = 8)
+	void resetParticles(size_t count = 16, float size = 4)
 	{
 		m_particles = std::vector<Particle>(count);
 		m_vertices = sf::VertexArray(sf::PrimitiveType::Triangles, count * 3 * 2);

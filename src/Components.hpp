@@ -58,6 +58,15 @@ public:
 	CHealth(int h) : health(h) {}
 };
 
+class CDamage : public Component
+{
+public:
+	int damage = 0;
+
+	CDamage() = default;
+	CDamage(int d) : damage(d) {}
+};
+
 class CLifespan : public Component
 {
 public:
@@ -93,6 +102,7 @@ public:
 	int duration = 15;
 	int pierce = 5;
 	int distanceFromPlayer = 30;
+	int damage = 1;
 
 	CBasicAttack() = default;
 	CBasicAttack(int lat)
@@ -109,6 +119,7 @@ public:
 	int pierce = 10;
 	int speed = 10;
 	float decel = -0.2f;
+	int damage = 1;
 
 	CSpecialAttack() = default;
 	CSpecialAttack(int lat)
