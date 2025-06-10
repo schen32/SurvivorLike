@@ -167,7 +167,7 @@ void Scene_Play::spawnChainBot()
 		lastEnemySpawnTime = m_currentFrame;
 
 		int spawnAngle = rand() % 360;
-		Vec2f spawnPoint = Vec2f(std::cos(spawnAngle), std::sin(spawnAngle)) * 500;
+		Vec2f spawnPoint = Vec2f(std::cos(spawnAngle), std::sin(spawnAngle)) * height() / 2;
 
 		auto enemy = m_entityManager.addEntity("enemy", "chainBot");
 		auto& eAnimation = enemy->add<CAnimation>(m_game->assets().getAnimation("ChainBotIdle"), true);
@@ -190,7 +190,7 @@ void Scene_Play::spawnBotWheel()
 		lastEnemySpawnTime = m_currentFrame;
 
 		int spawnAngle = rand() % 360;
-		Vec2f spawnPoint = Vec2f(std::cos(spawnAngle), std::sin(spawnAngle)) * 500;
+		Vec2f spawnPoint = Vec2f(std::cos(spawnAngle), std::sin(spawnAngle)) * height() / 2;
 
 		auto enemy = m_entityManager.addEntity("enemy", "botWheel");
 		auto& eAnimation = enemy->add<CAnimation>(m_game->assets().getAnimation("BotWheelRun"), true);
@@ -213,7 +213,7 @@ void Scene_Play::spawnBigChainBot()
 		lastEnemySpawnTime = m_currentFrame;
 
 		int spawnAngle = rand() % 360;
-		Vec2f spawnPoint = Vec2f(std::cos(spawnAngle), std::sin(spawnAngle)) * 500;
+		Vec2f spawnPoint = Vec2f(std::cos(spawnAngle), std::sin(spawnAngle)) * height() / 2;
 
 		auto enemy = m_entityManager.addEntity("enemy", "chainBot");
 		auto& eTransform = enemy->add<CTransform>(player()->get<CTransform>().pos + spawnPoint);
@@ -240,7 +240,7 @@ void Scene_Play::spawnBigBotWheel()
 		lastEnemySpawnTime = m_currentFrame;
 
 		int spawnAngle = rand() % 360;
-		Vec2f spawnPoint = Vec2f(std::cos(spawnAngle), std::sin(spawnAngle)) * 500;
+		Vec2f spawnPoint = Vec2f(std::cos(spawnAngle), std::sin(spawnAngle)) * height() / 2;
 
 		auto enemy = m_entityManager.addEntity("enemy", "botWheel");
 		auto& eTransform = enemy->add<CTransform>(player()->get<CTransform>().pos + spawnPoint);

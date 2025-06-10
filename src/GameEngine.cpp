@@ -16,7 +16,8 @@ void GameEngine::init(const std::string& path)
 {
 	m_assets.loadFromFile(path);
 
-	m_window.create(sf::VideoMode({ 1920, 1080 }), "Alien Survivor");
+	sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
+	m_window.create(desktop, "Alien Survivor", sf::Style::None);
 	m_window.setFramerateLimit(60);
 
 	if (!ImGui::SFML::Init(m_window))
