@@ -277,6 +277,7 @@ void Scene_Play::update()
 		sAI();
 		sMovement();
 		sCollision();
+		sScore();
 		sSound();
 		sCamera();
 		sAnimation();
@@ -290,7 +291,15 @@ void Scene_Play::update()
 
 void Scene_Play::sScore()
 {
+	auto& pScore = player()->get<CScore>();
+	if (pScore.score >= pScore.nextScoreThreshold)
+	{
+		auto temp = pScore.prevScoreThreshold;
+		pScore.prevScoreThreshold = pScore.nextScoreThreshold;
+		pScore.nextScoreThreshold += temp;
 
+		pScore.level++;
+	}
 }
 
 void Scene_Play::sDrag()
@@ -899,8 +908,8 @@ void Scene_Play::sRender()
 	}
 	window.setView(window.getDefaultView());
 
-	auto& pScore = player()->get<CScore>().score;
-	m_gridText.setString(std::to_string(pScore));
+	auto& pScore = player()->get<CScore>();
+	m_gridText.setString(std::to_string(pScore.score));
 	window.draw(m_gridText);
 
 	auto& pAnimation = player()->get<CAnimation>().animation;
@@ -937,9 +946,9 @@ void Scene_Play::sRender()
 	window.draw(scoreText);
 	//
 
-	int scoreThreshold = 200;
 	// circle score UI
-	float percent = (pScore % scoreThreshold) / static_cast<float>(scoreThreshold);
+	float percent = (pScore.score - pScore.prevScoreThreshold) /
+		static_cast<float>(pScore.nextScoreThreshold - pScore.prevScoreThreshold);
 	int segments = 100;
 	float radius = 60.f;
 	sf::Vector2f center(barPos.x - radius - 30.f, barPos.y + 10.f);

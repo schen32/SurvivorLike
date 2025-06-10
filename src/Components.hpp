@@ -188,6 +188,9 @@ class CScore : public Component
 {
 public:
 	int score = 0;
+	int prevScoreThreshold = 0;
+	int nextScoreThreshold = 200;
+	int level = 0;
 
 	CScore() = default;
 	CScore(int s) : score(s) {}
