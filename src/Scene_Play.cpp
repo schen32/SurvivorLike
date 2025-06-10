@@ -905,7 +905,7 @@ void Scene_Play::sRender()
 		{
 			// Create a shadow sprite by copying the original
 			sf::Sprite shadow = animation.m_sprite;
-			shadow.move({ animation.m_size.x * 0.2f, animation.m_size.y * 0.2f });
+			shadow.move({ transform.scale * animation.m_size.x * 0.2f, transform.scale * animation.m_size.y * 0.2f });
 			shadow.setColor(sf::Color(0, 0, 0, 60));
 			shadow.setScale({ transform.scale, transform.scale * 0.3f });
 			window.draw(shadow);
@@ -928,12 +928,12 @@ void Scene_Play::sRender()
 		if (entity->tag() == "enemy" && entity->get<CState>().state == "alive")
 		{
 			// Bar settings
-			float width = animation.m_size.x * 0.5f;
+			float width = transform.scale * animation.m_size.x * 0.5f;
 			float height = 3.f;
 			auto& health = entity->get<CHealth>();
 			float hpPercent = static_cast<float>(health.health) / health.maxHealth;
 
-			sf::Vector2f barPos = transform.pos + sf::Vector2f(-width / 2, -animation.m_size.y / 2);
+			sf::Vector2f barPos = transform.pos + sf::Vector2f(-width / 2, -transform.scale * animation.m_size.y / 2);
 
 			// Background (gray)
 			sf::RectangleShape bgBar(sf::Vector2f(width, height));
