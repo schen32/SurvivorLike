@@ -29,6 +29,10 @@ Texture TexSlash3 assets/attacks/slash3.png
 Animation Slash3 TexSlash3 2 5 9 2
 Texture TexRing1 assets/attacks/ring1.png
 Animation Ring1 TexRing1 1 14 14 5
+Texture TexRing2 assets/attacks/ring2.png
+Animation Ring2 TexRing2 1 13 13 5
+Texture TexExplode1 assets/attacks/explode1.png
+Animation Explode1 TexExplode1 1 14 14 2
 
 Texture TexGem assets/items/icon_gem.png
 Animation Gem TexGem 1 1 1 0
@@ -44,6 +48,7 @@ Sound BubbleStep assets/sounds/DSGNMisc_STEP-Bubble_Step_HY_PC-001.wav
 Sound BubblierStep assets/sounds/DSGNMisc_STEP-Bubblier_Step_HY_PC-001.wav
 Sound CoinZap assets/sounds/DSGNTonl_USABLE-Coin_Zap_HY_PC-001.wav
 Sound FireSphere assets/sounds/DSGNMisc_SKILL_RELEASE-Fire_Sphere_HY_PC-001.wav
+Sound FireHit assets/sounds/DSGNImpt_EXPLOSION-Fire_Hit_HY_PC-001.wav
 
 Music EveningHarmony assets/music/Evening_Harmony.wav
 Music FloatingDream assets/music/Floating_Dream.wav

@@ -19,6 +19,7 @@ using ComponentTuple = std::tuple<
 	CBasicAttack,
 	CSpecialAttack,
 	CRingAttack,
+	CExplodeAttack,
 	CKnockback,
 	CHealth,
 	CDamage,

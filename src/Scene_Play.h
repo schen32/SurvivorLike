@@ -70,6 +70,7 @@ protected:
 	void spawnBasicAttack(const Vec2f& targetPos);
 	void spawnSpecialAttack(const Vec2f& targetPos);
 	void spawnRingAttack(const Vec2f& targetPos);
+	void spawnExplodeAttack(const Vec2f& targetPos);
 	void sKnockback();
 	void applyKnockback(std::shared_ptr<Entity> target, const Vec2f& fromPos, float force, int duration);
 	void spawnDisappearingText(const std::string& text, const Vec2f& pos);

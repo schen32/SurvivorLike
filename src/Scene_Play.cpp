@@ -43,8 +43,14 @@ void Scene_Play::init(const std::string& levelPath)
 	registerAction(sf::Keyboard::Scan::D, "RIGHT");
 	registerAction(sf::Keyboard::Scan::W, "UP");
 	registerAction(sf::Keyboard::Scan::S, "DOWN");
+	registerAction(sf::Keyboard::Scan::Left, "LEFT");
+	registerAction(sf::Keyboard::Scan::Right, "RIGHT");
+	registerAction(sf::Keyboard::Scan::Up, "UP");
+	registerAction(sf::Keyboard::Scan::Down, "DOWN");
+
 	registerAction(sf::Keyboard::Scan::Space, "TOGGLE_AUTO_ATTACK");
 	registerAction(sf::Keyboard::Scan::Q, "RING_ATTACK");
+	registerAction(sf::Keyboard::Scan::R, "EXPLODE_ATTACK");
 
 	m_playerConfig = { 0, 0, 0, 0, 3.0f, 0, ""};
 
@@ -138,6 +144,7 @@ void Scene_Play::spawnPlayer()
 	p->add<CBasicAttack>(m_currentFrame);
 	p->add<CSpecialAttack>(m_currentFrame);
 	p->add<CRingAttack>(m_currentFrame);
+	p->add<CExplodeAttack>(m_currentFrame);
 }
 
 void Scene_Play::sSpawnEnemies()
@@ -605,6 +612,7 @@ void Scene_Play::sPlayerAttacks()
 		spawnBasicAttack(neTransform.pos);
 		spawnSpecialAttack(neTransform.pos);
 		spawnRingAttack(player()->get<CTransform>().pos);
+		spawnExplodeAttack(neTransform.pos);
 		return;
 	}
 	
@@ -614,6 +622,8 @@ void Scene_Play::sPlayerAttacks()
 		spawnSpecialAttack(m_mousePos);
 	if (pInput.ringAttack)
 		spawnRingAttack(player()->get<CTransform>().pos);
+	if (pInput.explodeAttack)
+		spawnExplodeAttack(m_mousePos);
 }
 
 void Scene_Play::spawnBasicAttack(const Vec2f& targetPos)
@@ -705,6 +715,30 @@ void Scene_Play::spawnRingAttack(const Vec2f& targetPos)
 	playSound("FireSphere", 30);
 }
 
+void Scene_Play::spawnExplodeAttack(const Vec2f& targetPos)
+{
+	if (!player()->has<CExplodeAttack>())
+		return;
+
+	auto& pExplodeAttack = player()->get<CExplodeAttack>();
+	if ((m_currentFrame - pExplodeAttack.lastAttackTime) < pExplodeAttack.cooldown)
+		return;
+	pExplodeAttack.lastAttackTime = m_currentFrame;
+
+	auto explodeAttack = m_entityManager.addEntity("playerAttack", "explodeAttack");
+	auto& ringTransform = explodeAttack->add<CTransform>(targetPos);
+	ringTransform.scale = pExplodeAttack.scale;
+	auto& ringAnimation = explodeAttack->add<CAnimation>(m_game->assets().getAnimation("Explode1"), true).animation;
+
+	explodeAttack->add<CBoundingBox>(Vec2f(ringAnimation.m_size.x, ringAnimation.m_size.y) * pExplodeAttack.scale);
+	explodeAttack->add<CLifespan>(pExplodeAttack.duration, m_currentFrame);
+	explodeAttack->add<CHealth>(pExplodeAttack.health);
+	explodeAttack->add<CDamage>(pExplodeAttack.damage);
+	explodeAttack->add<CKnockback>(pExplodeAttack.knockMagnitude, pExplodeAttack.knockDuration);
+
+	playSound("FireHit", 50);
+}
+
 void Scene_Play::playSound(const std::string& name, float volume)
 {
 	auto& sound = m_game->assets().getSound(name);
@@ -769,6 +803,10 @@ void Scene_Play::sDoAction(const Action& action)
 		{
 			pInput.ringAttack = !pInput.ringAttack;
 		}
+		else if (action.m_name == "EXPLODE_ATTACK")
+		{
+			pInput.explodeAttack = true;
+		}
 	}
 	else if (action.m_type == "END")
 	{
@@ -795,6 +833,10 @@ void Scene_Play::sDoAction(const Action& action)
 		else if (action.m_name == "RIGHT_CLICK")
 		{
 			pInput.specialAttack = false;
+		}
+		else if (action.m_name == "EXPLODE_ATTACK")
+		{
+			pInput.explodeAttack = false;
 		}
 	}
 }
