@@ -127,8 +127,8 @@ void Scene_Play::spawnPlayer()
 	auto& pAnimation = p->add<CAnimation>(m_game->assets().getAnimation("StormheadIdle"), true);
 	p->add<CBoundingBox>(Vec2f(pAnimation.animation.m_size.x / 4, pAnimation.animation.m_size.y / 4));
 	p->add<CTransform>(gridToMidPixel(m_playerConfig.X, m_playerConfig.Y, p));
-	p->add<CHealth>(10);
-	p->add<CDamage>(1);
+	p->add<CHealth>(100);
+	p->add<CDamage>(10);
 	p->add<CInput>();
 	p->add<CScore>(0);
 	p->add<CState>("idle");
@@ -161,8 +161,8 @@ void Scene_Play::spawnChainBot()
 		auto& eAnimation = enemy->add<CAnimation>(m_game->assets().getAnimation("ChainBotIdle"), true);
 		enemy->add<CTransform>(player()->get<CTransform>().pos + spawnPoint);
 		enemy->add<CBoundingBox>(eAnimation.animation.m_size / 2);
-		enemy->add<CHealth>(3);
-		enemy->add<CDamage>(1);
+		enemy->add<CHealth>(30);
+		enemy->add<CDamage>(10);
 		enemy->add<CFollow>(player(), 0.5f);
 		enemy->add<CScore>(1);
 		enemy->add<CState>("alive");
@@ -184,8 +184,8 @@ void Scene_Play::spawnBotWheel()
 		auto& eAnimation = enemy->add<CAnimation>(m_game->assets().getAnimation("BotWheelRun"), true);
 		enemy->add<CTransform>(player()->get<CTransform>().pos + spawnPoint);
 		enemy->add<CBoundingBox>(eAnimation.animation.m_size / 2);
-		enemy->add<CHealth>(4);
-		enemy->add<CDamage>(1);
+		enemy->add<CHealth>(40);
+		enemy->add<CDamage>(10);
 		enemy->add<CFollow>(player(), 0.6f);
 		enemy->add<CScore>(2);
 		enemy->add<CState>("alive");
@@ -211,8 +211,8 @@ void Scene_Play::spawnBigChainBot()
 		eAnimation.animation.m_sprite.setScale(Vec2f(eTransform.scale, eTransform.scale));
 		
 		enemy->add<CBoundingBox>(eAnimation.animation.m_size / 2 * eTransform.scale);
-		enemy->add<CHealth>(20);
-		enemy->add<CDamage>(2);
+		enemy->add<CHealth>(200);
+		enemy->add<CDamage>(20);
 		enemy->add<CFollow>(player(), 0.3f);
 		enemy->add<CScore>(6);
 		enemy->add<CState>("alive");
@@ -238,8 +238,8 @@ void Scene_Play::spawnBigBotWheel()
 		eAnimation.animation.m_sprite.setScale(Vec2f(eTransform.scale, eTransform.scale));
 
 		enemy->add<CBoundingBox>(eAnimation.animation.m_size / 2 * eTransform.scale);
-		enemy->add<CHealth>(25);
-		enemy->add<CDamage>(2);
+		enemy->add<CHealth>(250);
+		enemy->add<CDamage>(20);
 		enemy->add<CFollow>(player(), 0.4f);
 		enemy->add<CScore>(8);
 		enemy->add<CState>("alive");
@@ -271,6 +271,7 @@ void Scene_Play::update()
 	{
 		m_entityManager.update();
 		sLifespan();
+		sDisappearingText();
 		sSpawnEnemies();
 		sPlayerAttacks();
 		sKnockback();
@@ -462,13 +463,31 @@ void Scene_Play::sCollision()
 			{
 				auto& e1Health = e1->get<CHealth>().health;
 				auto& pAttackHealth = pAttack->get<CHealth>().health;
-				e1Health -= pAttack->get<CDamage>().damage;
+				auto& pDamage = pAttack->get<CDamage>().damage;
+				e1Health -= pDamage;
 				pAttackHealth -= e1->get<CDamage>().damage;
 
 				auto& paKnockback = pAttack->get<CKnockback>();
 				applyKnockback(e1, pAttack->get<CTransform>().pos,
 					paKnockback.magnitude, paKnockback.duration);
 				playSound("PlasticZap", 30);
+
+				// damage number pop up
+				sf::Text damageNumText(m_game->assets().getFont("FutureMillennium"));
+				damageNumText.setString(std::to_string(pDamage));
+				damageNumText.setCharacterSize(16);
+				damageNumText.setOutlineColor(sf::Color(86, 106, 137));
+				damageNumText.setOutlineThickness(0.5f);
+
+				sf::FloatRect bounds = damageNumText.getLocalBounds();
+				damageNumText.setOrigin({ bounds.position.x / 2.f, bounds.position.y / 2.f });
+				auto& enemyPosition = e1->get<CTransform>().pos;
+				damageNumText.setPosition(enemyPosition);
+
+				auto disappearingText = m_entityManager.addEntity("disappearingText", "disappearingText");
+				auto& dmComponent = disappearingText->add<CDisappearingText>(damageNumText);
+				disappearingText->add<CTransform>(enemyPosition, dmComponent.velocity);
+				disappearingText->add<CLifespan>(dmComponent.lifetime, m_currentFrame);
 
 				if (e1Health <= 0)
 				{
@@ -541,6 +560,29 @@ void Scene_Play::sLifespan()
 	}
 }
 
+void Scene_Play::sDisappearingText()
+{
+	for (auto& entity : m_entityManager.getEntities())
+	{
+		if (!entity->has<CDisappearingText>()) continue;
+
+		auto& lifespan = entity->get<CLifespan>();
+		auto& dmg = entity->get<CDisappearingText>();
+
+		float progress = static_cast<float>(m_currentFrame - lifespan.frameCreated) / lifespan.lifespan;
+		if (progress > 1.f) progress = 1.f;
+		if (progress < 0.f) progress = 0.f;
+
+		int alpha = static_cast<int>(255.f * (1.f - progress));
+		auto curColor = dmg.text.getFillColor();
+		curColor.a = alpha;
+		dmg.text.setFillColor(curColor);
+		curColor = dmg.text.getOutlineColor();
+		curColor.a = alpha;
+		dmg.text.setOutlineColor(curColor);
+	}
+}
+
 void Scene_Play::sPlayerAttacks()
 {
 	auto& pInput = player()->get<CInput>();
@@ -586,7 +628,7 @@ void Scene_Play::spawnBasicAttack(const Vec2f& targetPos)
 
 	basicAttack->add<CBoundingBox>(Vec2f(baAnimation.m_size.x, baAnimation.m_size.y / 2) * pBasicAttack.scale);
 	basicAttack->add<CLifespan>(pBasicAttack.duration, m_currentFrame);
-	basicAttack->add<CHealth>(pBasicAttack.pierce);
+	basicAttack->add<CHealth>(pBasicAttack.health);
 	basicAttack->add<CMoveAtSameVelocity>(player());
 	basicAttack->add<CKnockback>(pBasicAttack.knockMagnitude, pBasicAttack.knockDuration);
 	basicAttack->add<CDamage>(pBasicAttack.damage);
@@ -619,7 +661,7 @@ void Scene_Play::spawnSpecialAttack(const Vec2f& targetPos)
 
 	specialAttack->add<CBoundingBox>(Vec2f(saAnimation.m_size.x, saAnimation.m_size.y / 2) * pSpecialAttack.scale);
 	specialAttack->add<CLifespan>(pSpecialAttack.duration, m_currentFrame);
-	specialAttack->add<CHealth>(pSpecialAttack.pierce);
+	specialAttack->add<CHealth>(pSpecialAttack.health);
 	specialAttack->add<CKnockback>(pSpecialAttack.knockMagnitude, pSpecialAttack.knockDuration);
 	specialAttack->add<CDamage>(pSpecialAttack.damage);
 
@@ -850,6 +892,8 @@ void Scene_Play::sRender()
 
 	for (auto& entity : m_entityManager.getEntities())
 	{
+		if (!entity->has<CAnimation>()) continue;
+
 		auto& transform = entity->get<CTransform>();
 		auto& animation = entity->get<CAnimation>().animation;
 
@@ -906,6 +950,17 @@ void Scene_Play::sRender()
 			window.draw(hpBar);
 		}
 	}
+	for (auto& entity : m_entityManager.getEntities())
+	{
+		if (!entity->has<CDisappearingText>()) continue;
+
+		auto& eDisappearingText = entity->get<CDisappearingText>();
+		auto& eTransform = entity->get<CTransform>();
+
+		eDisappearingText.text.setPosition(eTransform.pos);
+		window.draw(eDisappearingText.text);
+	}
+
 	window.setView(window.getDefaultView());
 
 	auto& pScore = player()->get<CScore>();

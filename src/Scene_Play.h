@@ -62,6 +62,7 @@ protected:
 	void sAnimation();
 	void sSound();
 	void sCollision();
+	void sDisappearingText();
 	void sCamera();
 	void sGui();
 

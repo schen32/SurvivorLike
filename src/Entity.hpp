@@ -21,6 +21,7 @@ using ComponentTuple = std::tuple<
 	CKnockback,
 	CHealth,
 	CDamage,
+	CDisappearingText,
 	CFollow,
 	CMoveAtSameVelocity
 >;

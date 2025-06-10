@@ -26,6 +26,8 @@ public:
 	CTransform() = default;
 	CTransform(const Vec2f& p)
 		: pos(p) {}
+	CTransform(const Vec2f& p, const Vec2f& v)
+		: pos(p), velocity(v) {}
 	CTransform(const Vec2f& p, const Vec2f& v, float a)
 		: pos(p), velocity(v), angle(a) {}
 };
@@ -69,6 +71,20 @@ public:
 	CDamage(int d) : damage(d) {}
 };
 
+class CDisappearingText : public Component
+{
+public:
+	sf::Font font;
+	sf::Text text = sf::Text(font);
+	Vec2f velocity = Vec2f(0, -1.0f);
+	int lifetime = 60;
+
+	CDisappearingText() = default;
+	CDisappearingText(const sf::Text& t)
+		: text(t) { }
+};
+
+
 class CLifespan : public Component
 {
 public:
@@ -102,10 +118,10 @@ public:
 	int lastAttackTime = 0;
 	float scale = 1.0f;
 	int duration = 15;
-	int pierce = 5;
+	int health = 200;
 	int distanceFromPlayer = 30;
-	int damage = 1;
-	float knockMagnitude = 10.f;
+	int damage = 7;
+	float knockMagnitude = 5.f;
 	int knockDuration = 30;
 
 	CBasicAttack() = default;
@@ -120,11 +136,11 @@ public:
 	int lastAttackTime = 0;
 	float scale = 1.0f;
 	int duration = 60;
-	int pierce = 10;
+	int health = 100;
 	int speed = 10;
 	float decel = -0.2f;
-	int damage = 1;
-	float knockMagnitude = 10.f;
+	int damage = 10;
+	float knockMagnitude = 5.f;
 	int knockDuration = 30;
 
 	CSpecialAttack() = default;
