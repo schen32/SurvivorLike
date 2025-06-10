@@ -78,6 +78,7 @@ protected:
 	bool applyAttraction(std::shared_ptr<Entity> attractor, std::shared_ptr<Entity> target);
 	void spawnDisappearingText(const std::string& text, const Vec2f& pos);
 	void playSound(const std::string& name, float volume);
+	bool applyDamage(std::shared_ptr<Entity> e1, std::shared_ptr<Entity> e2);
 
 	void renderShadow(std::shared_ptr<Entity> entity);
 public:

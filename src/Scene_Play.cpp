@@ -437,6 +437,31 @@ void Scene_Play::sKnockback() {
 	}
 }
 
+bool Scene_Play::applyDamage(std::shared_ptr<Entity> e1, std::shared_ptr<Entity> e2)
+{
+	auto& e1Health = e1->get<CHealth>();
+	auto& e2Health = e2->get<CHealth>();
+	if (m_currentFrame - e1Health.lastTakenDamage < e1Health.invulTime)
+	{
+		return false;
+	}
+	e1Health.lastTakenDamage = m_currentFrame;
+
+	e1Health.health -= e2->get<CDamage>().damage;
+	e2Health.health -= e1->get<CDamage>().damage;
+
+	if (e2->has<CKnockback>())
+	{
+		auto& paKnockback = e2->get<CKnockback>();
+		applyKnockback(e1, e2->get<CTransform>().pos, paKnockback.magnitude, paKnockback.duration);
+	}
+	
+	spawnDisappearingText(std::to_string(e2->get<CDamage>().damage), e1->get<CTransform>().pos);
+	playSound("PlasticZap", 30);
+	return true;
+}
+
+
 void Scene_Play::sCollision()
 {
 	for (auto& e1 : m_entityManager.getEntities("enemy"))
@@ -444,24 +469,14 @@ void Scene_Play::sCollision()
 		Vec2f overlap = Physics::GetOverlap(e1, player());
 		if (overlap.x > 0 && overlap.y > 0)
 		{
-			auto& e1Health = e1->get<CHealth>().health;
-			auto& playerHealth = player()->get<CHealth>().health;
-			e1Health -= player()->get<CDamage>().damage;
-			playerHealth -= e1->get<CDamage>().damage;
+			if (!applyDamage(e1, player())) continue;
 
-			auto& pKnockback = player()->get<CKnockback>();
-			applyKnockback(e1, player()->get<CTransform>().pos,
-				pKnockback.magnitude, pKnockback.duration);
-			applyKnockback(player(), e1->get<CTransform>().pos,
-				pKnockback.magnitude, pKnockback.duration);
-			playSound("PlasticZap", 30);
-
-			if (e1Health <= 0)
+			if (e1->get<CHealth>().health <= 0)
 			{
 				e1->get<CState>().state = "dead";
 				player()->get<CScore>().score += e1->get<CScore>().score;
 			}
-			if (playerHealth <= 0)
+			if (player()->get<CHealth>().health <= 0)
 			{
 				player()->get<CState>().state = "dead";
 				return;
@@ -473,25 +488,14 @@ void Scene_Play::sCollision()
 			overlap = Physics::GetOverlap(e1, pAttack);
 			if (overlap.x > 0 && overlap.y > 0)
 			{
-				auto& e1Health = e1->get<CHealth>().health;
-				auto& pAttackHealth = pAttack->get<CHealth>().health;
-				auto& pDamage = pAttack->get<CDamage>().damage;
-				e1Health -= pDamage;
-				pAttackHealth -= e1->get<CDamage>().damage;
-
-				auto& paKnockback = pAttack->get<CKnockback>();
-				applyKnockback(e1, pAttack->get<CTransform>().pos,
-					paKnockback.magnitude, paKnockback.duration);
-				playSound("PlasticZap", 30);
-
-				spawnDisappearingText(std::to_string(pDamage), e1->get<CTransform>().pos);
-
-				if (e1Health <= 0)
+				if (!applyDamage(e1, pAttack)) continue;
+			
+				if (e1->get<CHealth>().health <= 0)
 				{
 					e1->get<CState>().state = "dead";
 					player()->get<CScore>().score += e1->get<CScore>().score;
 				}
-				if (pAttackHealth <= 0)
+				if (pAttack->get<CHealth>().health <= 0)
 				{
 					pAttack->destroy();
 				}
