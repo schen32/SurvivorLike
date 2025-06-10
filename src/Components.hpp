@@ -196,7 +196,7 @@ public:
 	int lastAttackTime = 0;
 	float scale = 2.0f;
 	int duration = 300;
-	int health = 1000;
+	int health = 2000;
 	int damage = 5;
 	float attractStrength = 50.0f;
 	float attractRadius = 150.0f;

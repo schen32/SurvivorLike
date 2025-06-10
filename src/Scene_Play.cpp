@@ -161,7 +161,7 @@ void Scene_Play::sSpawnEnemies()
 void Scene_Play::spawnChainBot()
 {
 	static int lastEnemySpawnTime = 0;
-	static const int enemySpawnInterval = 60;
+	static const int enemySpawnInterval = 45;
 	if (m_currentFrame - lastEnemySpawnTime > enemySpawnInterval)
 	{
 		lastEnemySpawnTime = m_currentFrame;
@@ -184,7 +184,7 @@ void Scene_Play::spawnChainBot()
 void Scene_Play::spawnBotWheel()
 {
 	static int lastEnemySpawnTime = 0;
-	static const int enemySpawnInterval = 90;
+	static const int enemySpawnInterval = 60;
 	if (m_currentFrame - lastEnemySpawnTime > enemySpawnInterval)
 	{
 		lastEnemySpawnTime = m_currentFrame;
@@ -207,7 +207,7 @@ void Scene_Play::spawnBotWheel()
 void Scene_Play::spawnBigChainBot()
 {
 	static int lastEnemySpawnTime = 0;
-	static const int enemySpawnInterval = 900;
+	static const int enemySpawnInterval = 750;
 	if (m_currentFrame - lastEnemySpawnTime > enemySpawnInterval)
 	{
 		lastEnemySpawnTime = m_currentFrame;
@@ -234,7 +234,7 @@ void Scene_Play::spawnBigChainBot()
 void Scene_Play::spawnBigBotWheel()
 {
 	static int lastEnemySpawnTime = 0;
-	static const int enemySpawnInterval = 1200;
+	static const int enemySpawnInterval = 900;
 	if (m_currentFrame - lastEnemySpawnTime > enemySpawnInterval)
 	{
 		lastEnemySpawnTime = m_currentFrame;
