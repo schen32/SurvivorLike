@@ -42,8 +42,7 @@ public:
 			
 			size_t curRow = animFrame / m_cols;
 			size_t curCol = animFrame % m_cols;
-			m_sprite.setTextureRect(sf::IntRect({ (int)(curCol * m_size.x), (int)(curRow * m_size.y) },
-				m_size));
+			m_sprite.setTextureRect(sf::IntRect(sf::Vector2i(curCol * m_size.x, curRow * m_size.y), m_size));
 		}
 	}
 

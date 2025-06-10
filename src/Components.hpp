@@ -200,6 +200,8 @@ public:
 	int damage = 5;
 	float attractStrength = 50.0f;
 	float attractRadius = 150.0f;
+	float knockMagnitude = 0.f;
+	float knockDuration = 30;
 
 	CWhirlAttack() = default;
 	CWhirlAttack(int lat)

@@ -62,7 +62,7 @@ void Scene_Play::init(const std::string& levelPath)
 	m_gridText.setPosition({ 20, 10 });
 
 	m_particleSystem.init(m_game->window().getSize());
-	m_cameraView.setSize({ (float)width(), (float)height() });
+	m_cameraView.setSize(sf::Vector2f(width(), height()));
 	m_cameraView.zoom(0.5f);
 
 	srand(static_cast<unsigned int>(time(nullptr)));
@@ -285,8 +285,8 @@ void Scene_Play::update()
 		sDisappearingText();
 		sSpawnEnemies();
 		sPlayerAttacks();
-		sKnockback();
 		sAI();
+		sKnockback();
 		sAttraction();
 		sMovement();
 		sCollision();
@@ -769,6 +769,7 @@ void Scene_Play::spawnWhirlAttack(const Vec2f& targetPos)
 	whirlAttack->add<CHealth>(pWhirlAttack.health);
 	whirlAttack->add<CDamage>(pWhirlAttack.damage);
 	whirlAttack->add<CAttractor>(pWhirlAttack.attractStrength, pWhirlAttack.attractRadius);
+	whirlAttack->add<CKnockback>(pWhirlAttack.knockMagnitude, pWhirlAttack.knockDuration);
 
 	playSound("FireHit", 50);
 }
