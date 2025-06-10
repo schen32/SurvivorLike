@@ -802,15 +802,16 @@ bool Scene_Play::applyAttraction(std::shared_ptr<Entity> attractor, std::shared_
 	auto& attract = attractor->get<CAttractor>();
 
 	Vec2f diff = aTransform.pos - tTransform.pos;
-	float distance = diff.length();
+	float distanceSquared = diff.lengthSquared();
 
-	if (distance < 10.f)
+	if (distanceSquared < 100.f)
 	{
 		tTransform.velocity = Vec2f(0, 0);
 		return true;
 	}
-	else if (distance < attract.radius)
+	else if (distanceSquared < attract.radius * attract.radius)
 	{
+		float distance = std::sqrt(distanceSquared);
 		Vec2f direction = diff / distance;
 		float force = attract.strength / distance;
 		tTransform.velocity = direction * force;

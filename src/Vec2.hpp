@@ -111,6 +111,11 @@ public:
 	{
 		return std::sqrt(static_cast<float>(x * x + y * y));
 	}
+
+	float lengthSquared() const
+	{
+		return static_cast<float>(x * x + y * y);
+	}
 	
 	Vec2 normalize() const
 	{
