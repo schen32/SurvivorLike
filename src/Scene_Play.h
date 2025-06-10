@@ -56,6 +56,8 @@ protected:
 	void sScore();
 	void sDrag();
 	void sLifespan();
+	void sAttraction();
+	void sKnockback();
 	void sMovement();
 	void sAI();
 	void sStatus();
@@ -71,10 +73,13 @@ protected:
 	void spawnSpecialAttack(const Vec2f& targetPos);
 	void spawnRingAttack(const Vec2f& targetPos);
 	void spawnExplodeAttack(const Vec2f& targetPos);
-	void sKnockback();
+	void spawnWhirlAttack(const Vec2f& targetPos);
 	void applyKnockback(std::shared_ptr<Entity> target, const Vec2f& fromPos, float force, int duration);
+	bool applyAttraction(std::shared_ptr<Entity> attractor, std::shared_ptr<Entity> target);
 	void spawnDisappearingText(const std::string& text, const Vec2f& pos);
 	void playSound(const std::string& name, float volume);
+
+	void renderShadow(std::shared_ptr<Entity> entity);
 public:
 
 	Scene_Play() = default;

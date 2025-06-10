@@ -51,6 +51,7 @@ void Scene_Play::init(const std::string& levelPath)
 	registerAction(sf::Keyboard::Scan::Space, "TOGGLE_AUTO_ATTACK");
 	registerAction(sf::Keyboard::Scan::Q, "RING_ATTACK");
 	registerAction(sf::Keyboard::Scan::R, "EXPLODE_ATTACK");
+	registerAction(sf::Keyboard::Scan::E, "WHIRL_ATTACK");
 
 	m_playerConfig = { 0, 0, 0, 0, 3.0f, 0, ""};
 
@@ -140,11 +141,13 @@ void Scene_Play::spawnPlayer()
 	p->add<CScore>(0);
 	p->add<CState>("idle");
 	p->add<CKnockback>(10.f, 30);
+	p->add<CAttractor>(50.0f, 150.0f);
 
 	p->add<CBasicAttack>(m_currentFrame);
 	p->add<CSpecialAttack>(m_currentFrame);
 	p->add<CRingAttack>(m_currentFrame);
 	p->add<CExplodeAttack>(m_currentFrame);
+	p->add<CWhirlAttack>(m_currentFrame);
 }
 
 void Scene_Play::sSpawnEnemies()
@@ -266,7 +269,6 @@ void Scene_Play::spawnGem(const Vec2f& pos)
 	auto& gemAnimation = gem->add<CAnimation>(m_game->assets().getAnimation("Gem"), true);
 	gem->add<CBoundingBox>(gemAnimation.animation.m_size);
 	gem->add<CScore>(1);
-	gem->add<CFollow>(player(), 3.0f);
 }
 
 void Scene_Play::spawnTiles(const std::string& filename)
@@ -285,6 +287,7 @@ void Scene_Play::update()
 		sPlayerAttacks();
 		sKnockback();
 		sAI();
+		sAttraction();
 		sMovement();
 		sCollision();
 		sScore();
@@ -613,6 +616,7 @@ void Scene_Play::sPlayerAttacks()
 		spawnSpecialAttack(neTransform.pos);
 		spawnRingAttack(player()->get<CTransform>().pos);
 		spawnExplodeAttack(neTransform.pos);
+		spawnWhirlAttack(neTransform.pos);
 		return;
 	}
 	
@@ -624,6 +628,8 @@ void Scene_Play::sPlayerAttacks()
 		spawnRingAttack(player()->get<CTransform>().pos);
 	if (pInput.explodeAttack)
 		spawnExplodeAttack(m_mousePos);
+	if (pInput.whirlAttack)
+		spawnWhirlAttack(m_mousePos);
 }
 
 void Scene_Play::spawnBasicAttack(const Vec2f& targetPos)
@@ -739,6 +745,80 @@ void Scene_Play::spawnExplodeAttack(const Vec2f& targetPos)
 	playSound("FireHit", 50);
 }
 
+void Scene_Play::spawnWhirlAttack(const Vec2f& targetPos)
+{
+	if (!player()->has<CWhirlAttack>())
+		return;
+
+	auto& pWhirlAttack = player()->get<CWhirlAttack>();
+	if ((m_currentFrame - pWhirlAttack.lastAttackTime) < pWhirlAttack.cooldown)
+		return;
+	pWhirlAttack.lastAttackTime = m_currentFrame;
+
+	auto whirlAttack = m_entityManager.addEntity("playerAttack", "whirlAttack");
+	auto& ringTransform = whirlAttack->add<CTransform>(targetPos);
+	ringTransform.scale = pWhirlAttack.scale;
+	auto& ringAnimation = whirlAttack->add<CAnimation>(m_game->assets().getAnimation("Ring2"), true).animation;
+
+	whirlAttack->add<CBoundingBox>(Vec2f(ringAnimation.m_size.x, ringAnimation.m_size.y) * pWhirlAttack.scale);
+	whirlAttack->add<CLifespan>(pWhirlAttack.duration, m_currentFrame);
+	whirlAttack->add<CHealth>(pWhirlAttack.health);
+	whirlAttack->add<CDamage>(pWhirlAttack.damage);
+	whirlAttack->add<CAttractor>(pWhirlAttack.attractStrength, pWhirlAttack.attractRadius);
+
+	playSound("FireHit", 50);
+}
+
+void Scene_Play::sAttraction()
+{
+	for (auto& attractor : m_entityManager.getEntities("playerAttack")) {
+		if (!attractor->has<CAttractor>()) continue;
+
+		for (auto& target : m_entityManager.getEntities("enemy"))
+		{
+			applyAttraction(attractor, target);
+		}
+	}
+
+	if (player()->has<CAttractor>())
+	{
+		for (auto& gem : m_entityManager.getEntities("gem"))
+		{
+			if (!applyAttraction(player(), gem))
+			{
+				gem->get<CTransform>().velocity = Vec2f(0, 0);
+			}
+		}
+	}	
+}
+
+bool Scene_Play::applyAttraction(std::shared_ptr<Entity> attractor, std::shared_ptr<Entity> target) {
+	auto& tTransform = target->get<CTransform>();
+	auto& aTransform = attractor->get<CTransform>();
+	auto& attract = attractor->get<CAttractor>();
+
+	Vec2f diff = aTransform.pos - tTransform.pos;
+	float distance = diff.length();
+
+	if (distance < 10.f)
+	{
+		tTransform.velocity = Vec2f(0, 0);
+		return true;
+	}
+	else if (distance < attract.radius)
+	{
+		Vec2f direction = diff / distance;
+		float force = attract.strength / distance;
+		tTransform.velocity = direction * force;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+
 void Scene_Play::playSound(const std::string& name, float volume)
 {
 	auto& sound = m_game->assets().getSound(name);
@@ -807,6 +887,10 @@ void Scene_Play::sDoAction(const Action& action)
 		{
 			pInput.explodeAttack = true;
 		}
+		else if (action.m_name == "WHIRL_ATTACK")
+		{
+			pInput.whirlAttack = true;
+		}
 	}
 	else if (action.m_type == "END")
 	{
@@ -837,6 +921,10 @@ void Scene_Play::sDoAction(const Action& action)
 		else if (action.m_name == "EXPLODE_ATTACK")
 		{
 			pInput.explodeAttack = false;
+		}
+		else if (action.m_name == "WHIRL_ATTACK")
+		{
+			pInput.whirlAttack = false;
 		}
 	}
 }
@@ -968,15 +1056,36 @@ void Scene_Play::sGui()
 
 }
 
+void Scene_Play::renderShadow(std::shared_ptr<Entity> entity)
+{
+	// Create a shadow sprite by copying the original
+	auto& animation = entity->get<CAnimation>().animation;
+	auto& transform = entity->get<CTransform>();
+	sf::Sprite shadow = animation.m_sprite;
+	shadow.move({ transform.scale * animation.m_size.x * 0.2f, transform.scale * animation.m_size.y * 0.2f });
+	shadow.setColor(sf::Color(0, 0, 0, 60));
+	shadow.setScale({ transform.scale, transform.scale * 0.3f });
+	m_game->window().draw(shadow);
+}
+
+
 void Scene_Play::sRender()
 {
 	auto& window = m_game->window();
 	window.clear(sf::Color(204, 226, 225));
 
-	for (auto& entity : m_entityManager.getEntities())
+	for (auto& entity : m_entityManager.getEntities("gem"))
 	{
-		if (!entity->has<CAnimation>()) continue;
+		auto& transform = entity->get<CTransform>();
+		auto& animation = entity->get<CAnimation>().animation;
 
+		animation.m_sprite.setPosition(transform.pos);
+		renderShadow(entity);
+		window.draw(animation.m_sprite);
+	}
+
+	for (auto& entity : m_entityManager.getEntities("enemy"))
+	{
 		auto& transform = entity->get<CTransform>();
 		auto& animation = entity->get<CAnimation>().animation;
 
@@ -984,31 +1093,10 @@ void Scene_Play::sRender()
 		animation.m_sprite.setRotation(sf::degrees(transform.angle));
 		animation.m_sprite.setScale(Vec2f(transform.scale, transform.scale));
 
-		if (entity->id() != player()->id())
-		{
-			// Create a shadow sprite by copying the original
-			sf::Sprite shadow = animation.m_sprite;
-			shadow.move({ transform.scale * animation.m_size.x * 0.2f, transform.scale * animation.m_size.y * 0.2f });
-			shadow.setColor(sf::Color(0, 0, 0, 60));
-			shadow.setScale({ transform.scale, transform.scale * 0.3f });
-			window.draw(shadow);
-		}
-
+		renderShadow(entity);
 		window.draw(animation.m_sprite);
 
-		if (player()->get<CInput>().displayHitbox)
-		{
-			auto& boundingBox = entity->get<CBoundingBox>();
-			sf::RectangleShape hitbox(boundingBox.size);
-			hitbox.setOrigin(boundingBox.halfSize);
-			hitbox.setPosition(transform.pos);
-			hitbox.setFillColor(sf::Color(255, 0, 0, 50));
-			hitbox.setOutlineColor(sf::Color::Red);
-			hitbox.setOutlineThickness(1.f);
-			window.draw(hitbox);
-		}
-
-		if (entity->tag() == "enemy" && entity->get<CState>().state == "alive")
+		if (entity->get<CState>().state == "alive")
 		{
 			// Bar settings
 			float width = transform.scale * animation.m_size.x * 0.5f;
@@ -1033,7 +1121,46 @@ void Scene_Play::sRender()
 			window.draw(hpBar);
 		}
 	}
-	for (auto& entity : m_entityManager.getEntities())
+	for (auto& entity : m_entityManager.getEntities("playerAttack"))
+	{
+		auto& transform = entity->get<CTransform>();
+		auto& animation = entity->get<CAnimation>().animation;
+
+		animation.m_sprite.setPosition(transform.pos);
+		animation.m_sprite.setRotation(sf::degrees(transform.angle));
+		animation.m_sprite.setScale(Vec2f(transform.scale, transform.scale));
+
+		renderShadow(entity);
+		window.draw(animation.m_sprite);
+	}
+	// draw player
+	auto& transform = player()->get<CTransform>();
+	auto& animation = player()->get<CAnimation>().animation;
+
+	animation.m_sprite.setPosition(transform.pos);
+	animation.m_sprite.setScale(Vec2f(transform.scale, transform.scale));
+
+	window.draw(animation.m_sprite);
+
+	if (player()->get<CInput>().displayHitbox)
+	{
+		for (auto& entity : m_entityManager.getEntities())
+		{
+			if (!entity->has<CBoundingBox>()) continue;
+			
+			auto& transform = entity->get<CTransform>();
+			auto& boundingBox = entity->get<CBoundingBox>();
+			sf::RectangleShape hitbox(boundingBox.size);
+			hitbox.setOrigin(boundingBox.halfSize);
+			hitbox.setPosition(transform.pos);
+			hitbox.setFillColor(sf::Color(255, 0, 0, 50));
+			hitbox.setOutlineColor(sf::Color::Red);
+			hitbox.setOutlineThickness(1.f);
+			window.draw(hitbox);
+		}
+	}
+	
+	for (auto& entity : m_entityManager.getEntities("disappearingText"))
 	{
 		if (!entity->has<CDisappearingText>()) continue;
 

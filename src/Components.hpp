@@ -109,6 +109,7 @@ public:
 	bool specialAttack = false;
 	bool ringAttack = false;
 	bool explodeAttack = false;
+	bool whirlAttack = false;
 
 	CInput() = default;
 };
@@ -184,6 +185,34 @@ public:
 	CExplodeAttack(int lat)
 		: lastAttackTime(lat) {
 	}
+};
+
+class CWhirlAttack : public Component
+{
+public:
+	int cooldown = 400;
+	int lastAttackTime = 0;
+	float scale = 2.0f;
+	int duration = 300;
+	int health = 10000;
+	int damage = 5;
+	float attractStrength = 50.0f;
+	float attractRadius = 150.0f;
+
+	CWhirlAttack() = default;
+	CWhirlAttack(int lat)
+		: lastAttackTime(lat) {
+	}
+};
+
+class CAttractor : public Component
+{
+public:
+	float strength = 0;
+	float radius = 0;
+
+	CAttractor() = default;
+	CAttractor(float s, float r) : strength(s), radius(r) {}
 };
 
 class CKnockback : public Component
