@@ -44,6 +44,7 @@ void Scene_Play::init(const std::string& levelPath)
 	registerAction(sf::Keyboard::Scan::W, "UP");
 	registerAction(sf::Keyboard::Scan::S, "DOWN");
 	registerAction(sf::Keyboard::Scan::Space, "TOGGLE_AUTO_ATTACK");
+	registerAction(sf::Keyboard::Scan::Q, "RING_ATTACK");
 
 	m_playerConfig = { 0, 0, 0, 0, 3.0f, 0, ""};
 
@@ -136,6 +137,7 @@ void Scene_Play::spawnPlayer()
 
 	p->add<CBasicAttack>(m_currentFrame);
 	p->add<CSpecialAttack>(m_currentFrame);
+	p->add<CRingAttack>(m_currentFrame);
 }
 
 void Scene_Play::sSpawnEnemies()
@@ -602,6 +604,7 @@ void Scene_Play::sPlayerAttacks()
 
 		spawnBasicAttack(neTransform.pos);
 		spawnSpecialAttack(neTransform.pos);
+		spawnRingAttack(player()->get<CTransform>().pos);
 		return;
 	}
 	
@@ -609,6 +612,8 @@ void Scene_Play::sPlayerAttacks()
 		spawnBasicAttack(m_mousePos);
 	if (pInput.specialAttack)
 		spawnSpecialAttack(m_mousePos);
+	if (pInput.ringAttack)
+		spawnRingAttack(player()->get<CTransform>().pos);
 }
 
 void Scene_Play::spawnBasicAttack(const Vec2f& targetPos)
@@ -675,6 +680,31 @@ void Scene_Play::spawnSpecialAttack(const Vec2f& targetPos)
 	playSound("HighWhoosh", 50);
 }
 
+void Scene_Play::spawnRingAttack(const Vec2f& targetPos)
+{
+	if (!player()->has<CRingAttack>())
+		return;
+
+	auto& pRingAttack = player()->get<CRingAttack>();
+	if ((m_currentFrame - pRingAttack.lastAttackTime) < pRingAttack.cooldown)
+		return;
+	pRingAttack.lastAttackTime = m_currentFrame;
+
+	auto ringAttack = m_entityManager.addEntity("playerAttack", "ringAttack");
+	auto& ringTransform = ringAttack->add<CTransform>(targetPos);
+	ringTransform.scale = pRingAttack.scale;
+	auto& ringAnimation = ringAttack->add<CAnimation>(m_game->assets().getAnimation("Ring1"), true).animation;
+
+	ringAttack->add<CBoundingBox>(Vec2f(ringAnimation.m_size.x, ringAnimation.m_size.y) * pRingAttack.scale);
+	ringAttack->add<CLifespan>(pRingAttack.duration, m_currentFrame);
+	ringAttack->add<CHealth>(pRingAttack.health);
+	ringAttack->add<CDamage>(pRingAttack.damage);
+	ringAttack->add<CMoveAtSameVelocity>(player());
+	ringAttack->add<CKnockback>(pRingAttack.knockMagnitude, pRingAttack.knockDuration);
+
+	playSound("FireSphere", 30);
+}
+
 void Scene_Play::playSound(const std::string& name, float volume)
 {
 	auto& sound = m_game->assets().getSound(name);
@@ -734,6 +764,10 @@ void Scene_Play::sDoAction(const Action& action)
 		else if (action.m_name == "TOGGLE_AUTO_ATTACK")
 		{
 			pInput.autoAttack = !pInput.autoAttack;
+		}
+		else if (action.m_name == "RING_ATTACK")
+		{
+			pInput.ringAttack = !pInput.ringAttack;
 		}
 	}
 	else if (action.m_type == "END")

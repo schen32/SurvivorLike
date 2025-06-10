@@ -107,6 +107,7 @@ public:
 	bool autoAttack = false;
 	bool basicAttack = false;
 	bool specialAttack = false;
+	bool ringAttack = false;
 
 	CInput() = default;
 };
@@ -146,6 +147,24 @@ public:
 	CSpecialAttack() = default;
 	CSpecialAttack(int lat)
 		: lastAttackTime(lat) { }
+};
+
+class CRingAttack : public Component
+{
+public:
+	int cooldown = 500;
+	int lastAttackTime = 0;
+	float scale = 2.0f;
+	int duration = 300;
+	int health = 10000;
+	int damage = 5;
+	float knockMagnitude = 5.f;
+	int knockDuration = 30;
+
+	CRingAttack() = default;
+	CRingAttack(int lat)
+		: lastAttackTime(lat) {
+	}
 };
 
 class CKnockback : public Component
