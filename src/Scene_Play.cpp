@@ -472,22 +472,7 @@ void Scene_Play::sCollision()
 					paKnockback.magnitude, paKnockback.duration);
 				playSound("PlasticZap", 30);
 
-				// damage number pop up
-				sf::Text damageNumText(m_game->assets().getFont("FutureMillennium"));
-				damageNumText.setString(std::to_string(pDamage));
-				damageNumText.setCharacterSize(16);
-				damageNumText.setOutlineColor(sf::Color(86, 106, 137));
-				damageNumText.setOutlineThickness(0.5f);
-
-				sf::FloatRect bounds = damageNumText.getLocalBounds();
-				damageNumText.setOrigin({ bounds.position.x / 2.f, bounds.position.y / 2.f });
-				auto& enemyPosition = e1->get<CTransform>().pos;
-				damageNumText.setPosition(enemyPosition);
-
-				auto disappearingText = m_entityManager.addEntity("disappearingText", "disappearingText");
-				auto& dmComponent = disappearingText->add<CDisappearingText>(damageNumText);
-				disappearingText->add<CTransform>(enemyPosition, dmComponent.velocity);
-				disappearingText->add<CLifespan>(dmComponent.lifetime, m_currentFrame);
+				spawnDisappearingText(std::to_string(pDamage), e1->get<CTransform>().pos);
 
 				if (e1Health <= 0)
 				{
@@ -537,11 +522,33 @@ void Scene_Play::sCollision()
 		Vec2f overlap = Physics::GetOverlap(gem, player());
 		if (overlap.x > 0 && overlap.y > 0)
 		{
-			player()->get<CScore>().score += gem->get<CScore>().score;
-			gem->destroy();
+			auto& pScore = player()->get<CScore>().score;
+			auto& gemScore = gem->get<CScore>().score;
+			pScore += gemScore;
+			spawnDisappearingText("+" + std::to_string(gemScore), gem->get<CTransform>().pos);
 			playSound("CoinZap", 15);
+			gem->destroy();
 		}
 	}
+}
+
+void Scene_Play::spawnDisappearingText(const std::string& text, const Vec2f& pos) {
+	// damage number pop up
+	sf::Text damageNumText(m_game->assets().getFont("FutureMillennium"));
+	damageNumText.setString(text);
+	damageNumText.setCharacterSize(16);
+	damageNumText.setOutlineColor(sf::Color(86, 106, 137));
+	damageNumText.setOutlineThickness(0.5f);
+
+	sf::FloatRect bounds = damageNumText.getLocalBounds();
+	damageNumText.setOrigin({ bounds.position.x / 2.f, bounds.position.y / 2.f });
+	auto& enemyPosition = pos;
+	damageNumText.setPosition(enemyPosition);
+
+	auto disappearingText = m_entityManager.addEntity("disappearingText", "disappearingText");
+	auto& dmComponent = disappearingText->add<CDisappearingText>(damageNumText);
+	disappearingText->add<CTransform>(enemyPosition, dmComponent.velocity);
+	disappearingText->add<CLifespan>(dmComponent.lifetime, m_currentFrame);
 }
 
 
@@ -623,7 +630,7 @@ void Scene_Play::spawnBasicAttack(const Vec2f& targetPos)
 	basicAttack->add<CTransform>(pTransform.pos + attackDir * pBasicAttack.distanceFromPlayer
 		, Vec2f(0, 0), attackAngle);
 
-	auto& baAnimation = basicAttack->add<CAnimation>(m_game->assets().getAnimation("BasicAttack"), true).animation;
+	auto& baAnimation = basicAttack->add<CAnimation>(m_game->assets().getAnimation("Slash1"), true).animation;
 	baAnimation.m_sprite.setScale({ pBasicAttack.scale, pBasicAttack.scale });
 
 	basicAttack->add<CBoundingBox>(Vec2f(baAnimation.m_size.x, baAnimation.m_size.y / 2) * pBasicAttack.scale);
@@ -656,7 +663,7 @@ void Scene_Play::spawnSpecialAttack(const Vec2f& targetPos)
 		attackDir * pSpecialAttack.speed, attackAngle);
 	saTransform.accel = pSpecialAttack.decel;
 
-	auto& saAnimation = specialAttack->add<CAnimation>(m_game->assets().getAnimation("BasicAttack"), true).animation;
+	auto& saAnimation = specialAttack->add<CAnimation>(m_game->assets().getAnimation("Slash1"), true).animation;
 	saAnimation.m_sprite.setScale({ pSpecialAttack.scale, pSpecialAttack.scale });
 
 	specialAttack->add<CBoundingBox>(Vec2f(saAnimation.m_size.x, saAnimation.m_size.y / 2) * pSpecialAttack.scale);

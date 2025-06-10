@@ -114,7 +114,7 @@ public:
 class CBasicAttack : public Component
 {
 public:
-	int cooldown = 30;
+	int cooldown = 50;
 	int lastAttackTime = 0;
 	float scale = 1.0f;
 	int duration = 15;
@@ -132,7 +132,7 @@ public:
 class CSpecialAttack : public Component
 {
 public:
-	int cooldown = 90;
+	int cooldown = 150;
 	int lastAttackTime = 0;
 	float scale = 1.0f;
 	int duration = 60;

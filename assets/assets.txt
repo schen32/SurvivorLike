@@ -23,8 +23,10 @@ Animation BotWheelHit TexBotWheelHit 2 1 2 10
 Texture TexBotWheelDead assets/BotWheel/dead.png
 Animation BotWheelDead TexBotWheelDead 6 1 6 10
 
-Texture TexBasicAttack assets/attacks/slash1.png
-Animation BasicAttack TexBasicAttack 2 5 9 5
+Texture TexSlash1 assets/attacks/slash1.png
+Animation Slash1 TexSlash1 2 5 9 5
+Texture TexSlash3 assets/attacks/slash3.png
+Animation Slash3 TexSlash3 2 5 9 2
 
 Texture TexGem assets/items/icon_gem.png
 Animation Gem TexGem 1 1 1 0
