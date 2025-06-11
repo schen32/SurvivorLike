@@ -116,7 +116,6 @@ void Scene_Play::loadLevel(const std::string& filename = "")
 {
 	m_entityManager = EntityManager();
 	spawnPlayer();
-	spawnTiles(filename);
 	m_entityManager.update();
 }
 

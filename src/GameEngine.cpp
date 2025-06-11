@@ -20,10 +20,10 @@ void GameEngine::init(const std::string& path)
 	m_window.create(desktop, "Alien Survivor", sf::Style::None);
 	m_window.setFramerateLimit(60);
 
-	if (!ImGui::SFML::Init(m_window))
+	/*if (!ImGui::SFML::Init(m_window))
 	{
 		std::cerr << "Could not open window." << std::endl;
-	}
+	}*/
 
 	// changeScene("MENU", std::make_shared<Scene_Menu>(this));
 	changeScene("PLAY", std::make_shared<Scene_Play>(this, "assets/play.txt"));
@@ -48,16 +48,19 @@ void GameEngine::run()
 {
 	while (isRunning())
 	{
-		ImGui::SFML::Update(m_window, m_deltaClock.restart());
+		//ImGui::SFML::Update(m_window, m_deltaClock.restart());
 		update();
 	}
+	//ImGui::SFML::Shutdown();
+	m_window.close();
+	
 }
 
 void GameEngine::sUserInput()
 {
 	while (const std::optional event = m_window.pollEvent())
 	{
-		ImGui::SFML::ProcessEvent(m_window, *event);
+		//ImGui::SFML::ProcessEvent(m_window, *event);
 
 		if (event->is<sf::Event::Closed>())
 		{
@@ -191,10 +194,10 @@ void GameEngine::update()
 	if (!isRunning()) return;
 	if (m_sceneMap.empty()) return;
 
-		sUserInput();
-		currentScene()->simulate(m_simulationSpeed);
-		currentScene()->sRender();
+	sUserInput();
+	currentScene()->simulate(m_simulationSpeed);
+	currentScene()->sRender();
 
-	ImGui::SFML::Render(m_window);
+	//ImGui::SFML::Render(m_window);
 	m_window.display();
 }
