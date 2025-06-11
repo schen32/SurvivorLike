@@ -17,13 +17,9 @@ class Scene_Play : public Scene
 
 protected:
 
-	std::shared_ptr<Entity>  m_block;
 	std::string              m_levelPath;
 	std::string				 m_lastAction;
 	PlayerConfig             m_playerConfig;
-	bool                     m_drawTextures = true;
-	bool                     m_drawCollision = false;
-	bool                     m_drawGrid = false;
 	const Vec2f              m_gridSize = { 64, 64 };
 	sf::Font				 m_fontText;
 	sf::Text                 m_gridText = sf::Text(m_fontText);
@@ -82,7 +78,6 @@ protected:
 	void applyKnockback(std::shared_ptr<Entity> target, const Vec2f& fromPos, float force, int duration);
 	bool applyAttraction(std::shared_ptr<Entity> attractor, std::shared_ptr<Entity> target);
 	void spawnDisappearingText(const std::string& text, const Vec2f& pos);
-	void playSound(const std::string& name, float volume);
 	bool applyDamage(std::shared_ptr<Entity> e1, std::shared_ptr<Entity> e2);
 
 	void renderShadow(std::shared_ptr<Entity> entity);

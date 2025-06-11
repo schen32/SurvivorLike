@@ -1,3 +1,8 @@
+Texture TexPlayButton assets/GUI/Default@2x.png
+Animation PlayButton TexPlayButton 1 1 1 0
+Texture TexPlayButtonHover assets/GUI/Hover@2x.png
+Animation PlayButtonHover TexPlayButtonHover 1 1 1 0
+
 Font FutureMillennium assets/0Fonts/FutureMillennium.ttf
 
 Texture TexStormheadIdle assets/stormhead/idle.png

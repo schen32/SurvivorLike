@@ -195,6 +195,7 @@
     <ClInclude Include="imgui\imstb_textedit.h" />
     <ClInclude Include="imgui\imstb_truetype.h" />
     <ClInclude Include="src\Timer.hpp" />
+    <ClInclude Include="src\Utils.hpp" />
     <ClInclude Include="src\Vec2.hpp" />
   </ItemGroup>
   <ItemGroup>

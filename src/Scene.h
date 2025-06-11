@@ -42,4 +42,6 @@ public:
 
 	bool hasEnded() const;
 	const ActionMap& getActionMap() const;
+
+	void playSound(const std::string& name, float volume);
 };

@@ -18,13 +18,19 @@ protected:
 	sf::RectangleShape m_menuTextBackground;
 	size_t m_selectedMenuIndex = 0;
 	std::string m_musicName;
+	Vec2f m_mousePos;
 
 	void init();
+	void loadMenu();
 	void update();
 	void onEnd();
 	void sDoAction(const Action& action);
 	void onResume();
 	void onPause();
+
+	void select();
+	void sHover();
+	void sAnimation();
 public:
 	Scene_Menu() = default;
 	Scene_Menu(GameEngine* gameEngine = nullptr);

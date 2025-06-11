@@ -6,25 +6,13 @@
 #include "Components.hpp"
 #include "Action.hpp"
 #include "ParticleSystem.hpp"
+#include "Utils.hpp"
 
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <cmath>
 #include <math.h>
-
-bool IsInside(const Vec2f& pos, std::shared_ptr<Entity> entity)
-{
-	auto& ePosition = entity->get<CTransform>().pos;
-	auto& eSize = entity->get<CAnimation>().animation.m_size;
-
-	if (ePosition.x - eSize.x / 2 <= pos.x && pos.x <= ePosition.x + eSize.x / 2 &&
-		ePosition.y - eSize.y / 2 <= pos.y && pos.y <= ePosition.y + eSize.y / 2)
-	{
-		return true;
-	}
-	return false;
-}
 
 Scene_Play::Scene_Play(GameEngine* gameEngine, const std::string& levelPath)
 	: Scene(gameEngine)
@@ -301,7 +289,7 @@ void Scene_Play::update()
 
 	if (m_playerDied)
 	{
-		loadLevel();
+		onPause();
 	}
 }
 
@@ -871,16 +859,6 @@ bool Scene_Play::applyAttraction(std::shared_ptr<Entity> attractor, std::shared_
 	}
 }
 
-
-void Scene_Play::playSound(const std::string& name, float volume)
-{
-	auto& sound = m_game->assets().getSound(name);
-	float pitch = 0.8f + static_cast<float>(rand()) / RAND_MAX * 0.4f; // range [0.8, 1.2]
-	sound.setPitch(pitch);
-	sound.setVolume(volume);
-	sound.play();
-}
-
 void Scene_Play::sDoAction(const Action& action)
 {
 	auto& pInput = player()->get<CInput>();
@@ -962,9 +940,8 @@ void Scene_Play::sAnimation()
 		{
 			if (!m_playerDied && entity->id() == player()->id())
 			{
-				// crashes for some reason if m_playerDied is set here
-				// m_playerDied = true;
-				// return;
+				m_playerDied = true;
+				return;
 			}
 			else
 			{
@@ -988,7 +965,6 @@ void Scene_Play::sAnimation()
 			else if (pState == "dead" && pAnimation.m_name != "StormheadDeath")
 			{
 				player()->add<CAnimation>(m_game->assets().getAnimation("StormheadDeath"), false);
-				// temporarily set m_playerDied here instead
 				m_playerDied = true;
 				return;
 			}

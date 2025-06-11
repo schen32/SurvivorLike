@@ -4,6 +4,7 @@
 #include "GameEngine.h"
 #include "Components.hpp"
 #include "Action.hpp"
+#include "Utils.hpp"
 
 #include <iostream>
 
@@ -15,14 +16,6 @@ Scene_Menu::Scene_Menu(GameEngine* gameEngine)
 
 void Scene_Menu::init()
 {
-	m_title = "Alien Survivor";
-	m_menuStrings.push_back("Start");
-	m_menuStrings.push_back("Continue");
-
-	m_levelPaths.push_back("assets/play.txt");
-
-	m_menuText.setFont(m_game->assets().getFont("FutureMillennium"));
-
 	registerAction(sf::Keyboard::Scan::W, "UP");
 	registerAction(sf::Keyboard::Scan::S, "DOWN");
 	registerAction(sf::Keyboard::Scan::D, "PLAY");
@@ -33,11 +26,59 @@ void Scene_Menu::init()
     bgm.setVolume(120);
     bgm.setLooping(true);
     bgm.play();
+
+	loadMenu();
+}
+
+void Scene_Menu::loadMenu()
+{
+	m_entityManager = EntityManager();
+
+	auto playButton = m_entityManager.addEntity("button", "playButton");
+	playButton->add<CAnimation>(m_game->assets().getAnimation("PlayButton"), true);
+	playButton->add<CTransform>(Vec2f(width(), height())/2);
+	playButton->add<CState>("unselected");
 }
 
 void Scene_Menu::update()
 {
-	
+	m_entityManager.update();
+	sHover();
+	sAnimation();
+}
+
+void Scene_Menu::sHover()
+{
+	for (auto& button : m_entityManager.getEntities("button"))
+	{
+		auto& buttonState = button->get<CState>().state;
+		if (Utils::IsInside(m_mousePos, button))
+			buttonState = "selected";
+		else
+			buttonState = "unselected";
+	}
+}
+
+void Scene_Menu::sAnimation()
+{
+	for (auto& button : m_entityManager.getEntities("button"))
+	{
+		auto& buttonState = button->get<CState>().state;
+		auto& buttonAnimation = button->get<CAnimation>().animation;
+		if (button->name() == "playButton")
+		{
+			if (buttonState == "selected" && buttonAnimation.m_name != "PlayButtonHover")
+			{
+				button->add<CAnimation>(m_game->assets().getAnimation("PlayButtonHover"), true);
+				playSound("BubblierStep", 20);
+			}
+			else if (buttonState == "unselected" && buttonAnimation.m_name != "PlayButton")
+			{
+				button->add<CAnimation>(m_game->assets().getAnimation("PlayButton"), true);
+				playSound("BubblierStep", 20);
+			}
+		}
+	}
 }
 
 void Scene_Menu::onEnd()
@@ -58,23 +99,35 @@ void Scene_Menu::onResume()
     bgm.play();
 }
 
+void Scene_Menu::select()
+{
+	for (auto& button : m_entityManager.getEntities("button"))
+	{
+		if (!Utils::IsInside(m_mousePos, button)) continue;
+
+		if (button->name() == "playButton" &&
+			m_game->changeScene("PLAY",std::make_shared<Scene_Play>(m_game)))
+			onPause();
+	}
+}
+
 void Scene_Menu::sDoAction(const Action& action)
 {
 	if (action.m_type == "START")
 	{
-		if (action.m_name == "PLAY")
+		/*if (action.m_name == "PLAY")
 		{
-            if (m_selectedMenuIndex == 0)
-            {
-                if (m_game->changeScene("PLAY",
-                    std::make_shared<Scene_Play>(m_game, m_levelPaths[m_selectedMenuIndex])))
-                    onPause();
-            }
-            else if (m_selectedMenuIndex == 1)
-            {
-                if (m_game->changeScene("PLAY", nullptr))
-                    onPause();
-            }   
+			if (m_selectedMenuIndex == 0)
+			{
+				if (m_game->changeScene("PLAY",
+					std::make_shared<Scene_Play>(m_game, m_levelPaths[m_selectedMenuIndex])))
+					onPause();
+			}
+			else if (m_selectedMenuIndex == 1)
+			{
+				if (m_game->changeScene("PLAY", nullptr))
+					onPause();
+			}
 		}
 		else if (action.m_name == "UP")
 		{
@@ -86,10 +139,17 @@ void Scene_Menu::sDoAction(const Action& action)
 		else if (action.m_name == "DOWN")
 		{
 			m_selectedMenuIndex = (m_selectedMenuIndex + 1) % m_menuStrings.size();
-		}
-		else if (action.m_name == "QUIT")
+		}*/
+		if (action.m_name == "QUIT")
 		{
-            onEnd();
+			onEnd();
+		}
+		else if (action.m_name == "MOUSE_MOVE")
+			m_mousePos = action.m_mousePos;
+		else if (action.m_name == "LEFT_CLICK")
+		{
+			m_mousePos = action.m_mousePos;
+			select();
 		}
 	}
 }
@@ -97,87 +157,16 @@ void Scene_Menu::sDoAction(const Action& action)
 void Scene_Menu::sRender()
 {
     auto& window = m_game->window();
-    window.clear(sf::Color(20, 22, 26));
+	window.clear(sf::Color(204, 226, 225));
+    
+	for (auto& entity : m_entityManager.getEntities())
+	{
+		if (!entity->has<CAnimation>()) continue;
 
-    // Draw planet
-    sf::CircleShape planet(400.0f);
-    planet.setPointCount(150);
-    planet.setFillColor(sf::Color(158, 97, 22));
-    planet.setOrigin({ planet.getRadius(), planet.getRadius() });  // Fixed origin calculation
-    planet.setPosition({ width() * 0.25f, height() * 0.5f });     // Simplified position calculation
-    window.draw(planet);
+		auto& animation = entity->get<CAnimation>().animation;
+		auto& transform = entity->get<CTransform>();
 
-    // Draw title
-    m_menuText.setString(m_title);
-    m_menuText.setFillColor(sf::Color::White);
-    m_menuText.setCharacterSize(100);
-
-    // Center title horizontally
-    float titleWidth = m_menuText.getLocalBounds().size.x;
-    m_menuText.setPosition({ (width() - titleWidth) * 0.5f, 10 });
-    window.draw(m_menuText);
-
-    // Draw menu items
-    m_menuText.setCharacterSize(40);
-    m_menuTextBackground.setSize({ 200, 75 });
-    m_menuTextBackground.setFillColor(sf::Color(158, 97, 22));
-
-    float menuStartX = width() - 250.0f;
-    float menuStartY = height() * 0.25f;  // More readable than (height() / 2.0f) / 2.0f
-
-    for (size_t sI = 0; sI < m_menuStrings.size(); sI++)  // Changed to size_t
-    {
-        m_menuTextBackground.setPosition({ menuStartX, menuStartY + sI * 100.0f });
-
-        // Calculate text position relative to background
-        sf::FloatRect bgBounds = m_menuTextBackground.getLocalBounds();
-        sf::FloatRect textBounds = m_menuText.getLocalBounds();
-
-        float textPosX = m_menuTextBackground.getPosition().x +
-            (bgBounds.size.x - textBounds.size.x) * 0.5f -
-            textBounds.position.x;
-
-        float textPosY = m_menuTextBackground.getPosition().y +
-            (bgBounds.size.y - textBounds.size.y) * 0.5f -
-            textBounds.position.y;
-
-        if (m_selectedMenuIndex == sI)
-        {
-            m_menuText.setFillColor(sf::Color::Black);
-            m_menuTextBackground.setOutlineColor(sf::Color::Red);
-            m_menuTextBackground.setOutlineThickness(3);
-        }
-        else
-        {
-            m_menuText.setFillColor(sf::Color::White);
-            m_menuTextBackground.setOutlineColor(sf::Color(150, 150, 150));
-            m_menuTextBackground.setOutlineThickness(1);
-        }
-
-        m_menuText.setString(m_menuStrings[sI]);
-        m_menuText.setPosition({ textPosX, textPosY });
-
-        window.draw(m_menuTextBackground);
-        window.draw(m_menuText);
-    }
-
-    // Draw controls help text
-    const sf::Font& font = m_game->assets().getFont("FutureMillennium");  // Use reference to avoid copy
-    sf::Text upText(font, "UP: W", 25);
-    sf::Text downText(font, "DOWN: S", 25);
-    sf::Text playText(font, "PLAY: D", 25);
-    sf::Text backText(font, "QUIT: ESC", 25);
-
-    float controlsY = static_cast<float>(window.getSize().y) - 100.0f;
-    float padding = 40.0f;
-
-    upText.setPosition({ 10.0f, controlsY });
-    downText.setPosition({ upText.getPosition().x + upText.getLocalBounds().size.x + padding, controlsY });
-    playText.setPosition({ downText.getPosition().x + downText.getLocalBounds().size.x + padding, controlsY });
-    backText.setPosition({ playText.getPosition().x + playText.getLocalBounds().size.x + padding, controlsY });
-
-    window.draw(upText);
-    window.draw(downText);
-    window.draw(playText);
-    window.draw(backText);
+		animation.m_sprite.setPosition(transform.pos);
+		window.draw(animation.m_sprite);
+	}
 }

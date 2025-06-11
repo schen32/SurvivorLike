@@ -52,3 +52,12 @@ void Scene::doAction(const Action& action)
 {
 	sDoAction(action);
 }
+
+void Scene::playSound(const std::string& name, float volume)
+{
+	auto& sound = m_game->assets().getSound(name);
+	float pitch = 0.8f + static_cast<float>(rand()) / RAND_MAX * 0.4f; // range [0.8, 1.2]
+	sound.setPitch(pitch);
+	sound.setVolume(volume);
+	sound.play();
+}

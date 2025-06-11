@@ -26,7 +26,7 @@ void GameEngine::init(const std::string& path)
 	}*/
 
 	changeScene("MENU", std::make_shared<Scene_Menu>(this));
-	// changeScene("PLAY", std::make_shared<Scene_Play>(this));
+	//changeScene("PLAY", std::make_shared<Scene_Play>(this));
 }
 
 std::shared_ptr<Scene> GameEngine::currentScene()
