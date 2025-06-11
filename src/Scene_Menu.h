@@ -17,12 +17,14 @@ protected:
 	sf::Text m_menuText = sf::Text(m_menuFont);
 	sf::RectangleShape m_menuTextBackground;
 	size_t m_selectedMenuIndex = 0;
+	std::string m_musicName;
 
 	void init();
 	void update();
 	void onEnd();
 	void sDoAction(const Action& action);
 	void onResume();
+	void onPause();
 public:
 	Scene_Menu() = default;
 	Scene_Menu(GameEngine* gameEngine = nullptr);

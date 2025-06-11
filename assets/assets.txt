@@ -58,3 +58,4 @@ Music FloatingDream assets/music/Floating_Dream.wav
 Music ForgottenBiomes assets/music/Forgotten_Biomes.wav
 Music PolarLights assets/music/Polar_Lights.wav
 Music SunlightThroughLeaves assets/music/Sunlight_Through_Leaves.wav
+Music Gymnopedie assets/music/Gymnopedie_No.1.wav

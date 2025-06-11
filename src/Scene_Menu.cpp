@@ -27,6 +27,12 @@ void Scene_Menu::init()
 	registerAction(sf::Keyboard::Scan::S, "DOWN");
 	registerAction(sf::Keyboard::Scan::D, "PLAY");
 	registerAction(sf::Keyboard::Scan::Escape, "QUIT");
+
+    m_musicName = "Gymnopedie";
+    auto& bgm = m_game->assets().getMusic(m_musicName);
+    bgm.setVolume(120);
+    bgm.setLooping(true);
+    bgm.play();
 }
 
 void Scene_Menu::update()
@@ -39,9 +45,17 @@ void Scene_Menu::onEnd()
 	m_game->quit();
 }
 
+void Scene_Menu::onPause()
+{
+    m_selectedMenuIndex = 0;
+    auto& bgm = m_game->assets().getMusic(m_musicName);
+    bgm.stop();
+}
+
 void Scene_Menu::onResume()
 {
-
+    auto& bgm = m_game->assets().getMusic(m_musicName);
+    bgm.play();
 }
 
 void Scene_Menu::sDoAction(const Action& action)
@@ -52,13 +66,15 @@ void Scene_Menu::sDoAction(const Action& action)
 		{
             if (m_selectedMenuIndex == 0)
             {
-                m_game->changeScene("PLAY",
-                    std::make_shared<Scene_Play>(m_game, m_levelPaths[m_selectedMenuIndex]));
+                if (m_game->changeScene("PLAY",
+                    std::make_shared<Scene_Play>(m_game, m_levelPaths[m_selectedMenuIndex])))
+                    onPause();
             }
             else if (m_selectedMenuIndex == 1)
             {
-                m_game->changeScene("PLAY", nullptr);
-            }
+                if (m_game->changeScene("PLAY", nullptr))
+                    onPause();
+            }   
 		}
 		else if (action.m_name == "UP")
 		{

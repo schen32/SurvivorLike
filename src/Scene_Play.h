@@ -38,6 +38,7 @@ protected:
 
 	void onEnd();
 	void onResume();
+	void onPause();
 	void update();
 	void spawnPlayer();
 

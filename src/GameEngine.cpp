@@ -161,7 +161,7 @@ void GameEngine::sUserInput()
 	}
 }
 
-void GameEngine::changeScene(const std::string& sceneName, std::shared_ptr<Scene> scene,
+bool GameEngine::changeScene(const std::string& sceneName, std::shared_ptr<Scene> scene,
 	bool endCurrentScene)
 {
 	if (scene)
@@ -171,7 +171,7 @@ void GameEngine::changeScene(const std::string& sceneName, std::shared_ptr<Scene
 	else if (m_sceneMap.find(sceneName) == m_sceneMap.end())
 	{
 		std::cerr << "Warning: Scene does not exist: " << sceneName << std::endl;
-		return;
+		return false;
 	}
 
 	if (endCurrentScene)
@@ -183,6 +183,7 @@ void GameEngine::changeScene(const std::string& sceneName, std::shared_ptr<Scene
 	{
 		currentScene()->onResume();
 	}
+	return true;
 }
 
 void GameEngine::quit()

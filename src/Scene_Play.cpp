@@ -36,7 +36,7 @@ Scene_Play::Scene_Play(GameEngine* gameEngine, const std::string& levelPath)
 void Scene_Play::init(const std::string& levelPath)
 {
 	registerAction(sf::Keyboard::Scan::P, "PAUSE");
-	registerAction(sf::Keyboard::Scan::Escape, "QUIT");
+	registerAction(sf::Keyboard::Scan::Escape, "ESCAPE");
 	registerAction(sf::Keyboard::Scan::H, "DISPLAY_HITBOX");
 
 	registerAction(sf::Keyboard::Scan::A, "LEFT");
@@ -885,8 +885,8 @@ void Scene_Play::sDoAction(const Action& action)
 			pInput.up = true;
 		else if (action.m_name == "DOWN")
 			pInput.down = true;
-		else if (action.m_name == "QUIT")
-			onEnd();
+		else if (action.m_name == "ESCAPE")
+			onPause();
 		else if (action.m_name == "PAUSE")
 			m_paused = !m_paused;
 		else if (action.m_name == "DISPLAY_HITBOX")
@@ -1055,6 +1055,11 @@ void Scene_Play::sCamera()
 }
 
 void Scene_Play::onEnd()
+{
+	m_game->quit();
+}
+
+void Scene_Play::onPause()
 {
 	auto& window = m_game->window();
 	window.setView(window.getDefaultView());
