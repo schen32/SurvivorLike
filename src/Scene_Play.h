@@ -31,11 +31,13 @@ protected:
 	sf::View				 m_cameraView;
 	Vec2f					 m_mousePos;
 	bool					 m_playerDied = false;
+	std::string				 m_musicName;
 
 	void init(const std::string& levelPath);
 	void loadLevel(const std::string& filename);
 
 	void onEnd();
+	void onResume();
 	void update();
 	void spawnPlayer();
 
@@ -86,7 +88,7 @@ protected:
 public:
 
 	Scene_Play() = default;
-	Scene_Play(GameEngine* gameEngine, const std::string& levelPath);
+	Scene_Play(GameEngine* gameEngine, const std::string& levelPath = "");
 
 	void sRender();
 };

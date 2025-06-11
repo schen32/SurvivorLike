@@ -17,7 +17,7 @@ void Scene_Menu::init()
 {
 	m_title = "Alien Survivor";
 	m_menuStrings.push_back("Start");
-	m_menuStrings.push_back("Options");
+	m_menuStrings.push_back("Continue");
 
 	m_levelPaths.push_back("assets/play.txt");
 
@@ -39,14 +39,26 @@ void Scene_Menu::onEnd()
 	m_game->quit();
 }
 
+void Scene_Menu::onResume()
+{
+
+}
+
 void Scene_Menu::sDoAction(const Action& action)
 {
 	if (action.m_type == "START")
 	{
 		if (action.m_name == "PLAY")
 		{
-			m_game->changeScene("PLAY",
-				std::make_shared<Scene_Play>(m_game, m_levelPaths[m_selectedMenuIndex]));
+            if (m_selectedMenuIndex == 0)
+            {
+                m_game->changeScene("PLAY",
+                    std::make_shared<Scene_Play>(m_game, m_levelPaths[m_selectedMenuIndex]));
+            }
+            else if (m_selectedMenuIndex == 1)
+            {
+                m_game->changeScene("PLAY", nullptr);
+            }
 		}
 		else if (action.m_name == "UP")
 		{

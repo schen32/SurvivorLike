@@ -22,7 +22,7 @@ protected:
 	void update();
 	void onEnd();
 	void sDoAction(const Action& action);
-
+	void onResume();
 public:
 	Scene_Menu() = default;
 	Scene_Menu(GameEngine* gameEngine = nullptr);

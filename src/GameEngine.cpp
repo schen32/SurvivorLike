@@ -25,8 +25,8 @@ void GameEngine::init(const std::string& path)
 		std::cerr << "Could not open window." << std::endl;
 	}*/
 
-	// changeScene("MENU", std::make_shared<Scene_Menu>(this));
-	changeScene("PLAY", std::make_shared<Scene_Play>(this, "assets/play.txt"));
+	changeScene("MENU", std::make_shared<Scene_Menu>(this));
+	// changeScene("PLAY", std::make_shared<Scene_Play>(this));
 }
 
 std::shared_ptr<Scene> GameEngine::currentScene()
@@ -65,6 +65,13 @@ void GameEngine::sUserInput()
 		if (event->is<sf::Event::Closed>())
 		{
 			quit();
+		}
+		// catch the resize events
+		else if (const auto* resized = event->getIf<sf::Event::Resized>())
+		{
+			// update the view to the new size of the window
+			sf::FloatRect visibleArea({ 0.f, 0.f }, sf::Vector2f(resized->size));
+			m_window.setView(sf::View(visibleArea));
 		}
 
 		if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
@@ -172,6 +179,10 @@ void GameEngine::changeScene(const std::string& sceneName, std::shared_ptr<Scene
 		m_sceneMap.erase(m_sceneMap.find(m_currentScene));
 	}
 	m_currentScene = sceneName;
+	if (!scene)
+	{
+		currentScene()->onResume();
+	}
 }
 
 void GameEngine::quit()

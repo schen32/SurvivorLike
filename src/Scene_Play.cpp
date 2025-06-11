@@ -71,7 +71,8 @@ void Scene_Play::init(const std::string& levelPath)
 		"PolarLights", "SunlightThroughLeaves" };
 	int randomIndex = rand() % bgms.size();
 
-	auto& bgm = m_game->assets().getMusic(bgms[randomIndex]);
+	m_musicName = bgms[randomIndex];
+	auto& bgm = m_game->assets().getMusic(m_musicName);
 	bgm.setVolume(120);
 	bgm.setLooping(true);
 	bgm.play();
@@ -1055,7 +1056,22 @@ void Scene_Play::sCamera()
 
 void Scene_Play::onEnd()
 {
-	m_game->quit();
+	auto& window = m_game->window();
+	window.setView(window.getDefaultView());
+
+	auto& bgm = m_game->assets().getMusic(m_musicName);
+	bgm.pause();
+
+	m_game->changeScene("MENU", nullptr);
+}
+
+void Scene_Play::onResume()
+{
+	auto& window = m_game->window();
+	window.setView(m_cameraView);
+
+	auto& bgm = m_game->assets().getMusic(m_musicName);
+	bgm.play();
 }
 
 void Scene_Play::sGui()
