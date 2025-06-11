@@ -34,10 +34,22 @@ void Scene_Menu::loadMenu()
 {
 	m_entityManager = EntityManager();
 
-	auto playButton = m_entityManager.addEntity("button", "playButton");
-	playButton->add<CAnimation>(m_game->assets().getAnimation("PlayButton"), true);
-	playButton->add<CTransform>(Vec2f(width(), height())/2);
+	auto title = m_entityManager.addEntity("ui", "Alien Survivors");
+	auto& tAnimation = title->add<CAnimation>(m_game->assets().getAnimation("ButtonHover"), true).animation;
+	tAnimation.m_sprite.setScale(sf::Vector2f(2.f, 0.8f));
+	title->add<CTransform>(Vec2f(width() / 2, height() * 0.2f));
+
+	auto playButton = m_entityManager.addEntity("button", "Play");
+	playButton->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
+	auto& pbTransform = playButton->add<CTransform>(Vec2f(width() / 2, height() * 0.4f));
+	pbTransform.scale = 0.5f;
 	playButton->add<CState>("unselected");
+
+	auto continueButton = m_entityManager.addEntity("button", "Continue");
+	continueButton->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
+	auto& cTransform = continueButton->add<CTransform>(Vec2f(width() / 2, height() * 0.55f));
+	cTransform.scale = 0.5f;
+	continueButton->add<CState>("unselected");
 }
 
 void Scene_Menu::update()
@@ -65,19 +77,17 @@ void Scene_Menu::sAnimation()
 	{
 		auto& buttonState = button->get<CState>().state;
 		auto& buttonAnimation = button->get<CAnimation>().animation;
-		if (button->name() == "playButton")
+
+		if (buttonState == "selected" && buttonAnimation.m_name != "ButtonHover")
 		{
-			if (buttonState == "selected" && buttonAnimation.m_name != "PlayButtonHover")
-			{
-				button->add<CAnimation>(m_game->assets().getAnimation("PlayButtonHover"), true);
-				playSound("BubblierStep", 20);
-			}
-			else if (buttonState == "unselected" && buttonAnimation.m_name != "PlayButton")
-			{
-				button->add<CAnimation>(m_game->assets().getAnimation("PlayButton"), true);
-				playSound("BubblierStep", 20);
-			}
+			button->add<CAnimation>(m_game->assets().getAnimation("ButtonHover"), true);
+			playSound("BubblierStep", 20);
 		}
+		else if (buttonState == "unselected" && buttonAnimation.m_name != "Button")
+		{
+			button->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
+		}
+
 	}
 }
 
@@ -105,8 +115,11 @@ void Scene_Menu::select()
 	{
 		if (!Utils::IsInside(m_mousePos, button)) continue;
 
-		if (button->name() == "playButton" &&
+		if (button->name() == "Play" &&
 			m_game->changeScene("PLAY",std::make_shared<Scene_Play>(m_game)))
+			onPause();
+		if (button->name() == "Continue" &&
+			m_game->changeScene("PLAY", nullptr))
 			onPause();
 	}
 }
@@ -167,6 +180,18 @@ void Scene_Menu::sRender()
 		auto& transform = entity->get<CTransform>();
 
 		animation.m_sprite.setPosition(transform.pos);
+		if (entity->tag() == "button")
+			animation.m_sprite.setScale({ transform.scale, transform.scale });
 		window.draw(animation.m_sprite);
+
+		auto buttonText = sf::Text(m_game->assets().getFont("FutureMillennium"));
+		buttonText.setCharacterSize(200 * transform.scale);
+		buttonText.setString(entity->name());
+		buttonText.setOutlineColor(sf::Color(204, 226, 225));
+		buttonText.setOutlineThickness(5.0f * transform.scale);
+		auto bounds = buttonText.getLocalBounds();
+		buttonText.setOrigin(bounds.position + bounds.size / 2.f);
+		buttonText.setPosition(transform.pos);
+		window.draw(buttonText);
 	}
 }

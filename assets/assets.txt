@@ -2,6 +2,10 @@ Texture TexPlayButton assets/GUI/Default@2x.png
 Animation PlayButton TexPlayButton 1 1 1 0
 Texture TexPlayButtonHover assets/GUI/Hover@2x.png
 Animation PlayButtonHover TexPlayButtonHover 1 1 1 0
+Texture TexButton assets/GUI/Headed@2x.png
+Animation Button TexButton 1 1 1 0
+Texture TexButtonHover assets/GUI/Headless@2x.png
+Animation ButtonHover TexButtonHover 1 1 1 0
 
 Font FutureMillennium assets/0Fonts/FutureMillennium.ttf
 
