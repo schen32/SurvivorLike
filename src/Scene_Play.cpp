@@ -48,7 +48,8 @@ void Scene_Play::init(const std::string& levelPath)
 	registerAction(sf::Keyboard::Scan::Up, "UP");
 	registerAction(sf::Keyboard::Scan::Down, "DOWN");
 
-	registerAction(sf::Keyboard::Scan::Space, "TOGGLE_AUTO_ATTACK");
+	registerAction(sf::Keyboard::Scan::Z, "TOGGLE_AUTO_AIM");
+	registerAction(sf::Keyboard::Scan::X, "TOGGLE_AUTO_ATTACK");
 	registerAction(sf::Keyboard::Scan::Q, "RING_ATTACK");
 	registerAction(sf::Keyboard::Scan::R, "EXPLODE_ATTACK");
 	registerAction(sf::Keyboard::Scan::E, "WHIRL_ATTACK");
@@ -611,34 +612,42 @@ void Scene_Play::sDisappearingText()
 void Scene_Play::sPlayerAttacks()
 {
 	auto& pInput = player()->get<CInput>();
-	if (pInput.autoAttack)
+	Vec2f attackPos = Vec2f(0, 0);
+	if (pInput.autoAim)
 	{
 		auto nearestEnemy = getNearestEnemy(player());
-		if (!nearestEnemy)
-			return;
-		auto& neTransform = nearestEnemy->get<CTransform>();
-
-		spawnBasicAttack(neTransform.pos);
-		spawnSpecialAttack(neTransform.pos);
-		spawnRingAttack(player()->get<CTransform>().pos);
-		spawnExplodeAttack(neTransform.pos);
-		spawnWhirlAttack(neTransform.pos);
-		spawnBulletAttack(neTransform.pos);
-		return;
+		if (nearestEnemy)
+			attackPos = nearestEnemy->get<CTransform>().pos;
 	}
-	
-	if (pInput.basicAttack)
-		spawnBasicAttack(m_mousePos);
-	if (pInput.specialAttack)
-		spawnSpecialAttack(m_mousePos);
-	if (pInput.ringAttack)
+	else
+	{
+		attackPos = m_mousePos;
+	}
+
+	if (pInput.autoAttack)
+	{
+		spawnBasicAttack(attackPos);
+		spawnSpecialAttack(attackPos);
 		spawnRingAttack(player()->get<CTransform>().pos);
-	if (pInput.explodeAttack)
-		spawnExplodeAttack(m_mousePos);
-	if (pInput.whirlAttack)
-		spawnWhirlAttack(m_mousePos);
-	if (pInput.bulletAttack)
-		spawnBulletAttack(m_mousePos);
+		spawnExplodeAttack(attackPos);
+		spawnWhirlAttack(attackPos);
+		spawnBulletAttack(attackPos);
+	}
+	else
+	{
+		if (pInput.basicAttack)
+			spawnBasicAttack(attackPos);
+		if (pInput.specialAttack)
+			spawnSpecialAttack(attackPos);
+		if (pInput.ringAttack)
+			spawnRingAttack(player()->get<CTransform>().pos);
+		if (pInput.explodeAttack)
+			spawnExplodeAttack(attackPos);
+		if (pInput.whirlAttack)
+			spawnWhirlAttack(attackPos);
+		if (pInput.bulletAttack)
+			spawnBulletAttack(attackPos);
+	}
 }
 
 void Scene_Play::spawnBasicAttack(const Vec2f& targetPos)
@@ -905,6 +914,8 @@ void Scene_Play::sDoAction(const Action& action)
 			m_mousePos = m_game->window().mapPixelToCoords(action.m_mousePos);
 		else if (action.m_name == "TOGGLE_AUTO_ATTACK")
 			pInput.autoAttack = !pInput.autoAttack;
+		else if (action.m_name == "TOGGLE_AUTO_AIM")
+			pInput.autoAim = !pInput.autoAim;
 		else if (action.m_name == "RING_ATTACK")
 			pInput.ringAttack = !pInput.ringAttack;
 		else if (action.m_name == "EXPLODE_ATTACK")
