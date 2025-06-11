@@ -1196,17 +1196,19 @@ void Scene_Play::sRender()
 	auto& pTransform = player()->get<CTransform>();
 
 	// player health bar
-	float healthBarWidth = 400.f;
-	float HealthBarHeight = 30.f;
+	float healthBarWidth = 500.f;
+	float healthBarHeight = 50.f;
 	auto& pHealth = player()->get<CHealth>();
 	float hpPercent = static_cast<float>(pHealth.health) / pHealth.maxHealth;
-	sf::Vector2f barPos = sf::Vector2f((width() - healthBarWidth) / 2, height() - 120);
+	sf::Vector2f barPos = sf::Vector2f(width() / 2, height() - 150);
 	// Background (transparent black)
-	sf::RectangleShape bgBar(sf::Vector2f(healthBarWidth, HealthBarHeight));
+	sf::RectangleShape bgBar(sf::Vector2f(healthBarWidth, healthBarHeight));
+	bgBar.setOrigin(sf::Vector2f(healthBarWidth, healthBarHeight) / 2.f);
 	bgBar.setFillColor(sf::Color(0, 0, 0, 60));
 	bgBar.setPosition(barPos + sf::Vector2f(2.f, 2.f));
 	// Health (white)
-	sf::RectangleShape hpBar(sf::Vector2f(healthBarWidth * hpPercent, HealthBarHeight));
+	sf::RectangleShape hpBar(sf::Vector2f(healthBarWidth * hpPercent, healthBarHeight));
+	hpBar.setOrigin(sf::Vector2f(healthBarWidth, healthBarHeight) / 2.f);
 	hpBar.setFillColor(sf::Color::White);
 	hpBar.setPosition(barPos);
 	// Draw both
@@ -1216,12 +1218,13 @@ void Scene_Play::sRender()
 
 	// player health text
 	sf::Text scoreText(m_game->assets().getFont("FutureMillennium"));
+	scoreText.setCharacterSize(40.f);
 	scoreText.setOutlineThickness(1.0f);
 	scoreText.setOutlineColor(sf::Color(86, 106, 137));
 	scoreText.setString(std::to_string(pHealth.health) + " / " + std::to_string(pHealth.maxHealth));
 	sf::FloatRect bounds = scoreText.getLocalBounds();
 	scoreText.setOrigin({ bounds.position.x + bounds.size.x / 2.f, bounds.position.y + bounds.size.y / 2.f });
-	scoreText.setPosition(sf::Vector2f(width() / 2, height() - 105));
+	scoreText.setPosition(barPos);
 
 	window.draw(scoreText);
 	//
@@ -1230,8 +1233,8 @@ void Scene_Play::sRender()
 	float percent = (pScore.score - pScore.prevScoreThreshold) /
 		static_cast<float>(pScore.nextScoreThreshold - pScore.prevScoreThreshold);
 	int segments = 100;
-	float radius = 60.f;
-	sf::Vector2f center(barPos.x - radius - 30.f, barPos.y + 10.f);
+	float radius = 120.f;
+	sf::Vector2f center(barPos.x - radius * 3.5, barPos.y);
 
 	// Draw full circle shadow behind the partial pie
 	sf::CircleShape pieShadow(radius);
