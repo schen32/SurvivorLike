@@ -50,6 +50,12 @@ void Scene_Menu::loadMenu()
 	auto& cTransform = continueButton->add<CTransform>(Vec2f(width() / 2, height() * 0.55f));
 	cTransform.scale = 0.5f;
 	continueButton->add<CState>("unselected");
+
+	auto quitButton = m_entityManager.addEntity("button", "Quit");
+	quitButton->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
+	auto& qTransform = quitButton->add<CTransform>(Vec2f(width() / 2, height() * 0.70f));
+	qTransform.scale = 0.5f;
+	quitButton->add<CState>("unselected");
 }
 
 void Scene_Menu::update()
@@ -81,7 +87,7 @@ void Scene_Menu::sAnimation()
 		if (buttonState == "selected" && buttonAnimation.m_name != "ButtonHover")
 		{
 			button->add<CAnimation>(m_game->assets().getAnimation("ButtonHover"), true);
-			playSound("BubblierStep", 20);
+			playSound("BubblierStep", 10);
 		}
 		else if (buttonState == "unselected" && buttonAnimation.m_name != "Button")
 		{
@@ -116,11 +122,14 @@ void Scene_Menu::select()
 		if (!Utils::IsInside(m_mousePos, button)) continue;
 
 		if (button->name() == "Play" &&
-			m_game->changeScene("PLAY",std::make_shared<Scene_Play>(m_game)))
+			m_game->changeScene("PLAY", std::make_shared<Scene_Play>(m_game)))
 			onPause();
-		if (button->name() == "Continue" &&
+		else if (button->name() == "Continue" &&
 			m_game->changeScene("PLAY", nullptr))
 			onPause();
+		else if (button->name() == "Quit")
+			onEnd();
+			
 	}
 }
 
