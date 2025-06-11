@@ -52,6 +52,7 @@ void Scene_Play::init(const std::string& levelPath)
 	registerAction(sf::Keyboard::Scan::Q, "RING_ATTACK");
 	registerAction(sf::Keyboard::Scan::R, "EXPLODE_ATTACK");
 	registerAction(sf::Keyboard::Scan::E, "WHIRL_ATTACK");
+	registerAction(sf::Keyboard::Scan::F, "BULLET_ATTACK");
 
 	m_playerConfig = { 0, 0, 0, 0, 3.0f, 0, ""};
 
@@ -147,6 +148,7 @@ void Scene_Play::spawnPlayer()
 	p->add<CRingAttack>(m_currentFrame);
 	p->add<CExplodeAttack>(m_currentFrame);
 	p->add<CWhirlAttack>(m_currentFrame);
+	p->add<CBulletAttack>(m_currentFrame);
 }
 
 void Scene_Play::sSpawnEnemies()
@@ -620,6 +622,7 @@ void Scene_Play::sPlayerAttacks()
 		spawnRingAttack(player()->get<CTransform>().pos);
 		spawnExplodeAttack(neTransform.pos);
 		spawnWhirlAttack(neTransform.pos);
+		spawnBulletAttack(neTransform.pos);
 		return;
 	}
 	
@@ -633,6 +636,8 @@ void Scene_Play::sPlayerAttacks()
 		spawnExplodeAttack(m_mousePos);
 	if (pInput.whirlAttack)
 		spawnWhirlAttack(m_mousePos);
+	if (pInput.bulletAttack)
+		spawnBulletAttack(m_mousePos);
 }
 
 void Scene_Play::spawnBasicAttack(const Vec2f& targetPos)
@@ -697,6 +702,39 @@ void Scene_Play::spawnSpecialAttack(const Vec2f& targetPos)
 	specialAttack->add<CDamage>(pSpecialAttack.damage);
 
 	playSound("HighWhoosh", 50);
+}
+
+void Scene_Play::spawnBulletAttack(const Vec2f& targetPos)
+{
+	if (!player()->has<CBulletAttack>())
+		return;
+
+	auto& pBulletAttack = player()->get<CBulletAttack>();
+	if ((m_currentFrame - pBulletAttack.lastAttackTime) < pBulletAttack.cooldown)
+		return;
+	pBulletAttack.lastAttackTime = m_currentFrame;
+
+	auto& pTransform = player()->get<CTransform>();
+
+	Vec2f attackDir = (targetPos - pTransform.pos).normalize();
+	auto bulletAttack = m_entityManager.addEntity("playerAttack", "bulletAttack");
+
+	float attackAngle = std::atan2(attackDir.y, attackDir.x) * 180.0f / 3.14159f;
+	auto& bulletTransform = bulletAttack->add<CTransform>(pTransform.pos + attackDir,
+		attackDir * pBulletAttack.speed, attackAngle);
+	bulletTransform.accel = pBulletAttack.decel;
+	bulletTransform.scale = pBulletAttack.scale;
+
+	auto& saAnimation = bulletAttack->add<CAnimation>(m_game->assets().getAnimation("Bullet1"), true).animation;
+	saAnimation.m_sprite.setScale({ pBulletAttack.scale, pBulletAttack.scale });
+
+	bulletAttack->add<CBoundingBox>(Vec2f(saAnimation.m_size.x, saAnimation.m_size.y / 4) * pBulletAttack.scale);
+	bulletAttack->add<CLifespan>(pBulletAttack.duration, m_currentFrame);
+	bulletAttack->add<CHealth>(pBulletAttack.health);
+	bulletAttack->add<CKnockback>(pBulletAttack.knockMagnitude, pBulletAttack.knockDuration);
+	bulletAttack->add<CDamage>(pBulletAttack.damage);
+
+	playSound("LaserShot", 5);
 }
 
 void Scene_Play::spawnRingAttack(const Vec2f& targetPos)
@@ -839,33 +877,19 @@ void Scene_Play::sDoAction(const Action& action)
 	if (action.m_type == "START")
 	{
 		if (action.m_name == "LEFT")
-		{
 			pInput.left = true;
-		}
 		else if (action.m_name == "RIGHT")
-		{
 			pInput.right = true;
-		}
 		else if (action.m_name == "UP")
-		{
 			pInput.up = true;
-		}
 		else if (action.m_name == "DOWN")
-		{
 			pInput.down = true;
-		}
 		else if (action.m_name == "QUIT")
-		{
 			onEnd();
-		}
 		else if (action.m_name == "PAUSE")
-		{
 			m_paused = !m_paused;
-		}
 		else if (action.m_name == "DISPLAY_HITBOX")
-		{
 			pInput.displayHitbox = !pInput.displayHitbox;
-		}
 		else if (action.m_name == "LEFT_CLICK")
 		{
 			pInput.basicAttack = true;
@@ -877,60 +901,38 @@ void Scene_Play::sDoAction(const Action& action)
 			m_mousePos = m_game->window().mapPixelToCoords(action.m_mousePos);
 		}
 		else if (action.m_name == "MOUSE_MOVE")
-		{
 			m_mousePos = m_game->window().mapPixelToCoords(action.m_mousePos);
-		}
 		else if (action.m_name == "TOGGLE_AUTO_ATTACK")
-		{
 			pInput.autoAttack = !pInput.autoAttack;
-		}
 		else if (action.m_name == "RING_ATTACK")
-		{
 			pInput.ringAttack = !pInput.ringAttack;
-		}
 		else if (action.m_name == "EXPLODE_ATTACK")
-		{
 			pInput.explodeAttack = true;
-		}
 		else if (action.m_name == "WHIRL_ATTACK")
-		{
 			pInput.whirlAttack = true;
-		}
+		else if (action.m_name == "BULLET_ATTACK")
+			pInput.bulletAttack = true;
 	}
 	else if (action.m_type == "END")
 	{
 		if (action.m_name == "LEFT")
-		{
 			pInput.left = false;
-		}
 		else if (action.m_name == "RIGHT")
-		{
 			pInput.right = false;
-		}
 		if (action.m_name == "UP")
-		{
 			pInput.up = false;
-		}
 		else if (action.m_name == "DOWN")
-		{
 			pInput.down = false;
-		}
 		else if (action.m_name == "LEFT_CLICK")
-		{
 			pInput.basicAttack = false;
-		}
 		else if (action.m_name == "RIGHT_CLICK")
-		{
 			pInput.specialAttack = false;
-		}
 		else if (action.m_name == "EXPLODE_ATTACK")
-		{
 			pInput.explodeAttack = false;
-		}
 		else if (action.m_name == "WHIRL_ATTACK")
-		{
 			pInput.whirlAttack = false;
-		}
+		else if (action.m_name == "BULLET_ATTACK")
+			pInput.bulletAttack = false;
 	}
 }
 

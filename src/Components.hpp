@@ -109,6 +109,7 @@ public:
 	bool autoAttack = false;
 	bool basicAttack = false;
 	bool specialAttack = false;
+	bool bulletAttack = false;
 	bool ringAttack = false;
 	bool explodeAttack = false;
 	bool whirlAttack = false;
@@ -151,6 +152,26 @@ public:
 	CSpecialAttack() = default;
 	CSpecialAttack(int lat)
 		: lastAttackTime(lat) { }
+};
+
+class CBulletAttack: public Component
+{
+public:
+	int cooldown = 40;
+	int lastAttackTime = 0;
+	float scale = 2.0f;
+	int duration = 90;
+	int health = 50;
+	int speed = 10;
+	float decel = 0.f;
+	int damage = 10;
+	float knockMagnitude = 5.f;
+	int knockDuration = 30;
+
+	CBulletAttack() = default;
+	CBulletAttack(int lat)
+		: lastAttackTime(lat) {
+	}
 };
 
 class CRingAttack : public Component
