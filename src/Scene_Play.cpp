@@ -56,13 +56,13 @@ void Scene_Play::init(const std::string& levelPath)
 	m_cameraView.zoom(0.5f);
 
 	srand(static_cast<unsigned int>(time(nullptr)));
-	std::vector<std::string> bgms = { "EveningHarmony", "FloatingDream", "ForgottenBiomes",
-		"PolarLights", "SunlightThroughLeaves" };
+	std::vector<std::string> bgms = { "Awakened", "CargoHold", "TempleoftheValley",
+		"Gaia'sGarden", "TempleoftheLake"};
 	int randomIndex = rand() % bgms.size();
 
 	m_musicName = bgms[randomIndex];
 	auto& bgm = m_game->assets().getMusic(m_musicName);
-	bgm.setVolume(120);
+	bgm.setVolume(10);
 	bgm.setLooping(true);
 	bgm.play();
 

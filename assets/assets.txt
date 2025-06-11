@@ -68,3 +68,8 @@ Music ForgottenBiomes assets/music/Forgotten_Biomes.wav
 Music PolarLights assets/music/Polar_Lights.wav
 Music SunlightThroughLeaves assets/music/Sunlight_Through_Leaves.wav
 Music Gymnopedie assets/music/Gymnopedie_No.1.wav
+Music Awakened assets/music/Awakened.mp3
+Music CargoHold assets/music/CargoHold.mp3
+Music TempleoftheValley assets/music/TempleoftheValley.mp3
+Music Gaia'sGarden assets/music/Gaia'sGarden.mp3
+Music TempleoftheLake assets/music/TempleoftheLake.mp3

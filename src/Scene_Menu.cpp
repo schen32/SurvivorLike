@@ -21,9 +21,9 @@ void Scene_Menu::init()
 	registerAction(sf::Keyboard::Scan::D, "PLAY");
 	registerAction(sf::Keyboard::Scan::Escape, "QUIT");
 
-    m_musicName = "Gymnopedie";
+    m_musicName = "Awakened";
     auto& bgm = m_game->assets().getMusic(m_musicName);
-    bgm.setVolume(120);
+    bgm.setVolume(20);
     bgm.setLooping(true);
     bgm.play();
 
@@ -87,7 +87,7 @@ void Scene_Menu::sAnimation()
 		if (buttonState == "selected" && buttonAnimation.m_name != "ButtonHover")
 		{
 			button->add<CAnimation>(m_game->assets().getAnimation("ButtonHover"), true);
-			playSound("BubblierStep", 10);
+			playSound("BubblierStep", 15);
 		}
 		else if (buttonState == "unselected" && buttonAnimation.m_name != "Button")
 		{
