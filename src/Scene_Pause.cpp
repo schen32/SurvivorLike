@@ -28,9 +28,12 @@ void Scene_Pause::init()
 	bgm.setLooping(true);
 	bgm.play();
 
-	/*m_pauseView.setViewport(sf::FloatRect({0.25f, 0.25f}, {0.5f, 0.5f}));
 	auto& window = m_game->window();
-	window.setView(m_pauseView);*/
+	sf::Vector2f windowSize = sf::Vector2f(width(), height());
+	m_pauseView.setCenter(windowSize / 2.0f);
+	m_pauseView.setSize(windowSize);
+	m_pauseView.setViewport(sf::FloatRect({0.25f, 0.25f}, {0.5f, 0.5f}));
+	window.setView(m_pauseView);
 
 	loadScene();
 }
@@ -178,7 +181,15 @@ void Scene_Pause::sDoAction(const Action& action)
 void Scene_Pause::sRender()
 {
 	auto& window = m_game->window();
-	window.clear(sf::Color(204, 226, 225));
+
+	// Draw a solid background over just that portion
+	sf::RectangleShape screenBackground(sf::Vector2f(width(), height()));
+	screenBackground.setFillColor(sf::Color(204, 226, 225));
+	window.draw(screenBackground);
+
+	// Now set view to draw UI
+	window.setView(m_pauseView);
+
 
 	for (auto& entity : m_entityManager.getEntities())
 	{
