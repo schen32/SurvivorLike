@@ -2,6 +2,7 @@
 #include "Assets.hpp"
 #include "Scene_Menu.h"
 #include "Scene_Play.h"
+#include "Scene_NewWeapon.h"
 #include "Timer.hpp"
 
 #include <fstream>
@@ -25,8 +26,9 @@ void GameEngine::init(const std::string& path)
 		std::cerr << "Could not open window." << std::endl;
 	}*/
 
-	changeScene("MENU", std::make_shared<Scene_Menu>(this));
+	//changeScene("MENU", std::make_shared<Scene_Menu>(this));
 	//changeScene("PLAY", std::make_shared<Scene_Play>(this));
+	changeScene("NEW_WEAPON", std::make_shared<Scene_NewWeapon>(this));
 }
 
 std::shared_ptr<Scene> GameEngine::currentScene()

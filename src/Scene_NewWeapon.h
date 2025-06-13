@@ -7,6 +7,13 @@
 
 #include "EntityManager.hpp"
 
+struct WeaponData
+{
+	Animation animation;
+	std::string name;
+	std::string description;
+};
+
 class Scene_NewWeapon : public Scene
 {
 protected:
@@ -14,9 +21,10 @@ protected:
 	sf::View m_menuView;
 	std::string m_musicName;
 	Vec2f m_mousePos;
+	std::unordered_map<std::string, WeaponData>  m_weaponMap;
 
 	void init();
-	void loadScene();
+	void loadScene(const std::vector<std::string>& weapons);
 	void update();
 	void onEnd();
 	void sDoAction(const Action& action);

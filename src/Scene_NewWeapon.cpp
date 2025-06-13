@@ -34,10 +34,21 @@ void Scene_NewWeapon::init()
 	m_menuView.setViewport(sf::FloatRect({ 0.2f, 0 }, { 0.6f, 1.0f }));
 	window.setView(m_menuView);
 
-	loadScene();
+	m_weaponMap.insert({ "MeeleSlash",
+		{ m_game->assets().getAnimation("Slash1"), "Close Slash", "A meele-ranged slash"} });
+	m_weaponMap.insert({ "RangedSlash",
+		{m_game->assets().getAnimation("Slash1"), "Far Slash", "A ranged flying slash attack"} });
+	m_weaponMap.insert({ "FireRing",
+		{ m_game->assets().getAnimation("Ring1"), "Ring of Fire", "A ring of fire that protects you"} });
+
+	std::vector<std::string> weapons;
+	weapons.push_back("MeeleSlash");
+	weapons.push_back("RangedSlash");
+	weapons.push_back("FireRing");
+	loadScene(weapons);
 }
 
-void Scene_NewWeapon::loadScene()
+void Scene_NewWeapon::loadScene(const std::vector<std::string>& weapons)
 {
 	m_entityManager = EntityManager();
 
@@ -46,20 +57,13 @@ void Scene_NewWeapon::loadScene()
 	tAnimation.m_sprite.setScale(sf::Vector2f(2.f, 0.6f));
 	title->add<CTransform>(Vec2f(width() / 2, height() * 0.10f));
 
-	auto firstButton = m_entityManager.addEntity("button", "Option 1");
-	firstButton->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
-	auto& firstTransform = firstButton->add<CTransform>(Vec2f(width() / 2, height() * 0.35f));
-	firstButton->add<CState>("unselected");
-
-	auto secondButton = m_entityManager.addEntity("button", "Option 2");
-	secondButton->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
-	auto& secondTransform = secondButton->add<CTransform>(Vec2f(width() / 2, height() * 0.6f));
-	secondButton->add<CState>("unselected");
-
-	auto thirdButton = m_entityManager.addEntity("button", "Option 3");
-	thirdButton->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
-	auto& thirdTransform = thirdButton->add<CTransform>(Vec2f(width() / 2, height() * 0.85f));
-	thirdButton->add<CState>("unselected");
+	for (size_t i = 0; i < weapons.size(); i++)
+	{
+		auto button = m_entityManager.addEntity("button", weapons[i]);
+		button->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
+		auto& firstTransform = button->add<CTransform>(Vec2f(width() / 2, height() * (0.35f + 0.25*i)));
+		button->add<CState>("unselected");
+	}
 }
 
 void Scene_NewWeapon::update()
@@ -130,11 +134,11 @@ void Scene_NewWeapon::select()
 	{
 		if (!Utils::IsInside(m_mousePos, button)) continue;
 
-		if (button->name() == "Option 1" && m_game->changeScene("PLAY", nullptr))
+		if (button->name() == "MeeleSlash" && m_game->changeScene("PLAY", nullptr))
 			onExitScene();
-		else if (button->name() == "Option 2" && m_game->changeScene("PLAY", nullptr))
+		else if (button->name() == "RangedSlash" && m_game->changeScene("PLAY", nullptr))
 			onExitScene();
-		else if (button->name() == "Option 3" && m_game->changeScene("PLAY", nullptr))
+		else if (button->name() == "FireRing" && m_game->changeScene("PLAY", nullptr))
 			onExitScene();
 	}
 }
@@ -192,26 +196,63 @@ void Scene_NewWeapon::sRender()
 	window.draw(screenBackground);
 
 
-	for (auto& entity : m_entityManager.getEntities())
+	for (auto& entity : m_entityManager.getEntities("ui"))
 	{
-		if (!entity->has<CAnimation>()) continue;
-
 		auto& animation = entity->get<CAnimation>().animation;
 		auto& transform = entity->get<CTransform>();
 
 		animation.m_sprite.setPosition(transform.pos);
-		if (entity->tag() == "button")
-			animation.m_sprite.setScale({ transform.scale * 1.8f, transform.scale * 0.95f });
 		window.draw(animation.m_sprite);
 
-		auto buttonText = sf::Text(m_game->assets().getFont("FutureMillennium"));
+		auto buttonText = sf::Text(m_game->assets().getFont("ByteBounce"));
 		buttonText.setCharacterSize(200 * transform.scale);
 		buttonText.setString(entity->name());
-		buttonText.setOutlineColor(sf::Color(204, 226, 225));
-		buttonText.setOutlineThickness(5.0f * transform.scale);
+		buttonText.setOutlineColor(sf::Color(28, 30, 38));
+		buttonText.setOutlineThickness(2.0f * transform.scale);
 		auto bounds = buttonText.getLocalBounds();
 		buttonText.setOrigin(bounds.position + bounds.size / 2.f);
 		buttonText.setPosition(transform.pos);
 		window.draw(buttonText);
+	}
+
+	for (auto& entity : m_entityManager.getEntities("button"))
+	{
+		auto& animation = entity->get<CAnimation>().animation;
+		auto& transform = entity->get<CTransform>();
+
+		animation.m_sprite.setPosition(transform.pos);
+		animation.m_sprite.setScale({ 1.8f, 0.95f });
+		window.draw(animation.m_sprite);
+
+		auto buttonBounds = animation.m_sprite.getGlobalBounds();
+
+		WeaponData& weaponData = m_weaponMap.at(entity->name());
+		weaponData.animation.update();
+		weaponData.animation.m_sprite.setPosition(sf::Vector2f(
+			transform.pos.x - buttonBounds.size.x / 3, transform.pos.y));
+		weaponData.animation.m_sprite.setScale({ 3, 3 });
+		window.draw(weaponData.animation.m_sprite);
+
+		auto buttonText = sf::Text(m_game->assets().getFont("ByteBounce"));
+		buttonText.setCharacterSize(180);
+		buttonText.setString(weaponData.name);
+		buttonText.setOutlineColor(sf::Color(28, 30, 38));
+		buttonText.setOutlineThickness(2.0f);
+		auto bounds = buttonText.getLocalBounds();
+		buttonText.setOrigin(bounds.position + bounds.size / 2.f);
+		buttonText.setPosition(sf::Vector2f(
+			transform.pos.x + buttonBounds.size.x / 10, transform.pos.y - buttonBounds.size.y / 5));
+		window.draw(buttonText);
+
+		auto descriptText = sf::Text(m_game->assets().getFont("ByteBounce"));
+		descriptText.setCharacterSize(100);
+		descriptText.setString(weaponData.description);
+		descriptText.setOutlineColor(sf::Color(28, 30, 38));
+		descriptText.setOutlineThickness(2.0f);
+		bounds = descriptText.getLocalBounds();
+		descriptText.setOrigin(bounds.position + bounds.size / 2.f);
+		descriptText.setPosition(sf::Vector2f(
+			transform.pos.x + buttonBounds.size.x / 10, transform.pos.y + buttonBounds.size.y / 5));
+		window.draw(descriptText);
 	}
 }

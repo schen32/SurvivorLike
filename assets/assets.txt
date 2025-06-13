@@ -8,6 +8,9 @@ Texture TexButtonHover assets/GUI/Headless@2x.png
 Animation ButtonHover TexButtonHover 1 1 1 0
 
 Font FutureMillennium assets/0Fonts/FutureMillennium.ttf
+Font TechnoRace assets/0Fonts/TechnoRace.otf
+Font Toxigenesis assets/0Fonts/toxigenesis.otf
+Font ByteBounce assets/0Fonts/ByteBounce.ttf
 
 Texture TexStormheadIdle assets/stormhead/idle.png
 Animation StormheadIdle TexStormheadIdle 9 1 9 10
