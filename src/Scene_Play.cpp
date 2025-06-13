@@ -1,5 +1,6 @@
 #include "Scene_Play.h"
 #include "Scene_Menu.h"
+#include "Scene_Pause.h"
 #include "Physics.hpp"
 #include "Assets.hpp"
 #include "GameEngine.h"
@@ -289,7 +290,8 @@ void Scene_Play::update()
 
 	if (m_playerDied)
 	{
-		onPause();
+		onExitScene();
+		m_game->changeScene("MENU", std::make_shared<Scene_Menu>(m_game));
 	}
 }
 
@@ -873,7 +875,10 @@ void Scene_Play::sDoAction(const Action& action)
 		else if (action.m_name == "DOWN")
 			pInput.down = true;
 		else if (action.m_name == "ESCAPE")
-			onPause();
+		{
+			onExitScene();
+			m_game->changeScene("PAUSE", std::make_shared<Scene_Pause>(m_game));
+		}	
 		else if (action.m_name == "PAUSE")
 			m_paused = !m_paused;
 		else if (action.m_name == "DISPLAY_HITBOX")
@@ -1046,18 +1051,16 @@ void Scene_Play::onEnd()
 	m_game->quit();
 }
 
-void Scene_Play::onPause()
+void Scene_Play::onExitScene()
 {
 	auto& window = m_game->window();
 	window.setView(window.getDefaultView());
 
 	auto& bgm = m_game->assets().getMusic(m_musicName);
 	bgm.pause();
-
-	m_game->changeScene("MENU", nullptr);
 }
 
-void Scene_Play::onResume()
+void Scene_Play::onEnterScene()
 {
 	auto& window = m_game->window();
 	window.setView(m_cameraView);

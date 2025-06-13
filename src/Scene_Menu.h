@@ -25,8 +25,8 @@ protected:
 	void update();
 	void onEnd();
 	void sDoAction(const Action& action);
-	void onResume();
-	void onPause();
+	void onExitScene();
+	void onEnterScene();
 
 	void select();
 	void sHover();

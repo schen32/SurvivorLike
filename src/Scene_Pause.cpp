@@ -1,3 +1,4 @@
+#include "Scene_Pause.h"
 #include "Scene_Menu.h"
 #include "Scene_Play.h"
 #include "Assets.hpp"
@@ -8,64 +9,62 @@
 
 #include <iostream>
 
-Scene_Menu::Scene_Menu(GameEngine* gameEngine)
+Scene_Pause::Scene_Pause(GameEngine* gameEngine)
 	: Scene(gameEngine)
 {
 	init();
 }
 
-void Scene_Menu::init()
+void Scene_Pause::init()
 {
-	registerAction(sf::Keyboard::Scan::W, "UP");
+	/*registerAction(sf::Keyboard::Scan::W, "UP");
 	registerAction(sf::Keyboard::Scan::S, "DOWN");
 	registerAction(sf::Keyboard::Scan::D, "PLAY");
-	registerAction(sf::Keyboard::Scan::Escape, "QUIT");
+	registerAction(sf::Keyboard::Scan::Escape, "QUIT");*/
 
-    m_musicName = "Awakened";
-    auto& bgm = m_game->assets().getMusic(m_musicName);
-    bgm.setVolume(20);
-    bgm.setLooping(true);
-    bgm.play();
+	m_musicName = "Awakened";
+	auto& bgm = m_game->assets().getMusic(m_musicName);
+	bgm.setVolume(20);
+	bgm.setLooping(true);
+	bgm.play();
 
-	loadMenu();
+	/*m_pauseView.setViewport(sf::FloatRect({0.25f, 0.25f}, {0.5f, 0.5f}));
+	auto& window = m_game->window();
+	window.setView(m_pauseView);*/
+
+	loadScene();
 }
 
-void Scene_Menu::loadMenu()
+void Scene_Pause::loadScene()
 {
 	m_entityManager = EntityManager();
 
-	auto title = m_entityManager.addEntity("ui", "Alien Survivors");
+	auto title = m_entityManager.addEntity("ui", "Paused");
 	auto& tAnimation = title->add<CAnimation>(m_game->assets().getAnimation("ButtonHover"), true).animation;
 	tAnimation.m_sprite.setScale(sf::Vector2f(2.f, 0.8f));
 	title->add<CTransform>(Vec2f(width() / 2, height() * 0.2f));
 
-	auto playButton = m_entityManager.addEntity("button", "New Game");
+	auto playButton = m_entityManager.addEntity("button", "Resume");
 	playButton->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
 	auto& pbTransform = playButton->add<CTransform>(Vec2f(width() / 2, height() * 0.4f));
 	pbTransform.scale = 0.5f;
 	playButton->add<CState>("unselected");
 
-	auto continueButton = m_entityManager.addEntity("button", "Continue");
+	auto continueButton = m_entityManager.addEntity("button", "Quit");
 	continueButton->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
 	auto& cTransform = continueButton->add<CTransform>(Vec2f(width() / 2, height() * 0.55f));
 	cTransform.scale = 0.5f;
 	continueButton->add<CState>("unselected");
-
-	auto quitButton = m_entityManager.addEntity("button", "Quit");
-	quitButton->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
-	auto& qTransform = quitButton->add<CTransform>(Vec2f(width() / 2, height() * 0.70f));
-	qTransform.scale = 0.5f;
-	quitButton->add<CState>("unselected");
 }
 
-void Scene_Menu::update()
+void Scene_Pause::update()
 {
 	m_entityManager.update();
 	sHover();
 	sAnimation();
 }
 
-void Scene_Menu::sHover()
+void Scene_Pause::sHover()
 {
 	for (auto& button : m_entityManager.getEntities("button"))
 	{
@@ -77,7 +76,7 @@ void Scene_Menu::sHover()
 	}
 }
 
-void Scene_Menu::sAnimation()
+void Scene_Pause::sAnimation()
 {
 	for (auto& button : m_entityManager.getEntities("button"))
 	{
@@ -93,47 +92,47 @@ void Scene_Menu::sAnimation()
 		{
 			button->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
 		}
-
 	}
 }
 
-void Scene_Menu::onEnd()
+void Scene_Pause::onEnd()
 {
 	m_game->quit();
 }
 
-void Scene_Menu::onExitScene()
+void Scene_Pause::onExitScene()
 {
-    m_selectedMenuIndex = 0;
-    auto& bgm = m_game->assets().getMusic(m_musicName);
-    bgm.stop();
+	m_selectedIndex = 0;
+	auto& bgm = m_game->assets().getMusic(m_musicName);
+	bgm.stop();
+
+	auto& window = m_game->window();
+	window.setView(window.getDefaultView());
 }
 
-void Scene_Menu::onEnterScene()
+void Scene_Pause::onEnterScene()
 {
-    auto& bgm = m_game->assets().getMusic(m_musicName);
-    bgm.play();
+	auto& window = m_game->window();
+	window.setView(m_pauseView);
+
+	auto& bgm = m_game->assets().getMusic(m_musicName);
+	bgm.play();
 }
 
-void Scene_Menu::select()
+void Scene_Pause::select()
 {
 	for (auto& button : m_entityManager.getEntities("button"))
 	{
 		if (!Utils::IsInside(m_mousePos, button)) continue;
 
-		if (button->name() == "New Game" &&
-			m_game->changeScene("PLAY", std::make_shared<Scene_Play>(m_game)))
+		if (button->name() == "Resume" && m_game->changeScene("PLAY", nullptr))
 			onExitScene();
-		else if (button->name() == "Continue" &&
-			m_game->changeScene("PLAY", nullptr))
+		else if (button->name() == "Quit" && m_game->changeScene("MENU", std::make_shared<Scene_Menu>(m_game)))
 			onExitScene();
-		else if (button->name() == "Quit")
-			onEnd();
-			
 	}
 }
 
-void Scene_Menu::sDoAction(const Action& action)
+void Scene_Pause::sDoAction(const Action& action)
 {
 	if (action.m_type == "START")
 	{
@@ -143,12 +142,12 @@ void Scene_Menu::sDoAction(const Action& action)
 			{
 				if (m_game->changeScene("PLAY",
 					std::make_shared<Scene_Play>(m_game, m_levelPaths[m_selectedMenuIndex])))
-					onExitScene();
+					onPause();
 			}
 			else if (m_selectedMenuIndex == 1)
 			{
 				if (m_game->changeScene("PLAY", nullptr))
-					onExitScene();
+					onPause();
 			}
 		}
 		else if (action.m_name == "UP")
@@ -176,11 +175,11 @@ void Scene_Menu::sDoAction(const Action& action)
 	}
 }
 
-void Scene_Menu::sRender()
+void Scene_Pause::sRender()
 {
-    auto& window = m_game->window();
+	auto& window = m_game->window();
 	window.clear(sf::Color(204, 226, 225));
-    
+
 	for (auto& entity : m_entityManager.getEntities())
 	{
 		if (!entity->has<CAnimation>()) continue;

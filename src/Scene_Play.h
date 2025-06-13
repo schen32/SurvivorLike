@@ -33,8 +33,8 @@ protected:
 	void loadLevel(const std::string& filename);
 
 	void onEnd();
-	void onResume();
-	void onPause();
+	void onEnterScene();
+	void onExitScene();
 	void update();
 	void spawnPlayer();
 

@@ -181,7 +181,7 @@ bool GameEngine::changeScene(const std::string& sceneName, std::shared_ptr<Scene
 	m_currentScene = sceneName;
 	if (!scene)
 	{
-		currentScene()->onResume();
+		currentScene()->onEnterScene();
 	}
 	return true;
 }

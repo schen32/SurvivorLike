@@ -29,8 +29,8 @@ public:
 	virtual void update() = 0;
 	virtual void sDoAction(const Action& action) = 0;
 	virtual void sRender() = 0;
-	virtual void onResume() = 0;
-	virtual void onPause() = 0;
+	virtual void onExitScene() = 0;
+	virtual void onEnterScene() = 0;
 
 	virtual void doAction(const Action& action);
 	void simulate(const size_t frames);
