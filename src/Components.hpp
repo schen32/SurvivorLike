@@ -298,7 +298,7 @@ class CScore : public Component
 public:
 	int score = 0;
 	int prevScoreThreshold = 0;
-	int nextScoreThreshold = 200;
+	int nextScoreThreshold = 100;
 	int level = 0;
 
 	CScore() = default;

@@ -108,9 +108,6 @@ void Scene_Pause::onExitScene()
 	m_selectedIndex = 0;
 	auto& bgm = m_game->assets().getMusic(m_musicName);
 	bgm.stop();
-
-	auto& window = m_game->window();
-	window.setView(window.getDefaultView());
 }
 
 void Scene_Pause::onEnterScene()

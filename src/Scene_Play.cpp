@@ -298,9 +298,12 @@ void Scene_Play::sScore()
 	{
 		auto temp = pScore.prevScoreThreshold;
 		pScore.prevScoreThreshold = pScore.nextScoreThreshold;
-		pScore.nextScoreThreshold += temp;
+		pScore.nextScoreThreshold += std::max(temp, 100);
 
 		pScore.level++;
+
+		onExitScene();
+		m_game->changeScene("NEW_WEAPON", std::make_shared<Scene_NewWeapon>(m_game, player()));
 	}
 }
 
@@ -1052,9 +1055,6 @@ void Scene_Play::onEnd()
 
 void Scene_Play::onExitScene()
 {
-	auto& window = m_game->window();
-	window.setView(window.getDefaultView());
-
 	auto& bgm = m_game->assets().getMusic(m_musicName);
 	bgm.pause();
 }
@@ -1066,6 +1066,8 @@ void Scene_Play::onEnterScene()
 
 	auto& bgm = m_game->assets().getMusic(m_musicName);
 	bgm.play();
+
+	player()->add<CInput>();
 }
 
 void Scene_Play::sGui()

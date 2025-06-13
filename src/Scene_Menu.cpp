@@ -27,6 +27,9 @@ void Scene_Menu::init()
     bgm.setLooping(true);
     bgm.play();
 
+	auto& window = m_game->window();
+	window.setView(window.getDefaultView());
+
 	loadMenu();
 }
 
@@ -111,6 +114,9 @@ void Scene_Menu::onExitScene()
 
 void Scene_Menu::onEnterScene()
 {
+	auto& window = m_game->window();
+	window.setView(window.getDefaultView());
+
     auto& bgm = m_game->assets().getMusic(m_musicName);
     bgm.play();
 }
