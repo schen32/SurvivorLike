@@ -26,9 +26,9 @@ void GameEngine::init(const std::string& path)
 		std::cerr << "Could not open window." << std::endl;
 	}*/
 
-	//changeScene("MENU", std::make_shared<Scene_Menu>(this));
+	changeScene("MENU", std::make_shared<Scene_Menu>(this));
 	//changeScene("PLAY", std::make_shared<Scene_Play>(this));
-	changeScene("NEW_WEAPON", std::make_shared<Scene_NewWeapon>(this));
+	//changeScene("NEW_WEAPON", std::make_shared<Scene_NewWeapon>(this));
 }
 
 std::shared_ptr<Scene> GameEngine::currentScene()

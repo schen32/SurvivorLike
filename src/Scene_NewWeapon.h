@@ -22,8 +22,9 @@ protected:
 	std::string m_musicName;
 	Vec2f m_mousePos;
 	std::unordered_map<std::string, WeaponData>  m_weaponMap;
+	std::shared_ptr<Entity> m_player;
 
-	void init();
+	void init(std::shared_ptr<Entity> player);
 	void loadScene(const std::vector<std::string>& weapons);
 	void update();
 	void onEnd();

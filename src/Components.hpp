@@ -107,7 +107,7 @@ public:
 	bool down = false;
 	bool displayHitbox = false;
 	bool autoAim = true;
-	bool autoAttack = false;
+	bool autoAttack = true;
 	bool basicAttack = false;
 	bool specialAttack = false;
 	bool bulletAttack = false;

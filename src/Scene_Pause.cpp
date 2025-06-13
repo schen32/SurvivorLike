@@ -22,7 +22,7 @@ void Scene_Pause::init()
 	registerAction(sf::Keyboard::Scan::D, "PLAY");
 	registerAction(sf::Keyboard::Scan::Escape, "QUIT");*/
 
-	m_musicName = "Awakened";
+	m_musicName = "M.S.Solar";
 	auto& bgm = m_game->assets().getMusic(m_musicName);
 	bgm.setVolume(20);
 	bgm.setLooping(true);

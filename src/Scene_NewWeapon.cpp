@@ -7,21 +7,23 @@
 #include "Utils.hpp"
 
 #include <iostream>
+#include <random>
+#include <algorithm>
 
 Scene_NewWeapon::Scene_NewWeapon(GameEngine* gameEngine, std::shared_ptr<Entity> player)
 	: Scene(gameEngine)
 {
-	init();
+	init(player);
 }
 
-void Scene_NewWeapon::init()
+void Scene_NewWeapon::init(std::shared_ptr<Entity> player)
 {
 	/*registerAction(sf::Keyboard::Scan::W, "UP");
 	registerAction(sf::Keyboard::Scan::S, "DOWN");
 	registerAction(sf::Keyboard::Scan::D, "PLAY");
 	registerAction(sf::Keyboard::Scan::Escape, "QUIT");*/
 
-	m_musicName = "Awakened";
+	m_musicName = "Challenge2";
 	auto& bgm = m_game->assets().getMusic(m_musicName);
 	bgm.setVolume(20);
 	bgm.setLooping(true);
@@ -35,16 +37,39 @@ void Scene_NewWeapon::init()
 	window.setView(m_menuView);
 
 	m_weaponMap.insert({ "MeeleSlash",
-		{ m_game->assets().getAnimation("Slash1"), "Close Slash", "A meele-ranged slash"} });
+		{ m_game->assets().getAnimation("Slash1"), "Close Slash", "Meele-ranged slash"} });
 	m_weaponMap.insert({ "RangedSlash",
-		{m_game->assets().getAnimation("Slash1"), "Far Slash", "A ranged flying slash attack"} });
+		{m_game->assets().getAnimation("Slash1"), "Far Slash", "Ranged flying slash attack"} });
 	m_weaponMap.insert({ "FireRing",
-		{ m_game->assets().getAnimation("Ring1"), "Ring of Fire", "A ring of fire that protects you"} });
+		{ m_game->assets().getAnimation("Ring1"), "Ring of Fire", "Ring of fire that protects you"} });
+	m_weaponMap.insert({ "Whirlpool",
+		{ m_game->assets().getAnimation("Ring2"), "Whirlpool", "Whirlpool that sucks in enemies"} });
+	m_weaponMap.insert({ "Explosion",
+		{ m_game->assets().getAnimation("Explode1"), "Explosion", "Explosion attack with great knockback"} });
+	m_weaponMap.insert({ "LaserBullet",
+		{ m_game->assets().getAnimation("Bullet1"), "Laser Bullet", "Laser bullets with a high fire rate"} });
 
-	std::vector<std::string> weapons;
-	weapons.push_back("MeeleSlash");
-	weapons.push_back("RangedSlash");
-	weapons.push_back("FireRing");
+	m_player = player;
+	std::vector<std::string> playerWeapons;
+	if (!player->has<CBasicAttack>())
+		playerWeapons.push_back("MeeleSlash");
+	if (!player->has<CSpecialAttack>())
+		playerWeapons.push_back("RangedSlash");
+	if (!player->has<CRingAttack>())
+		playerWeapons.push_back("FireRing");
+	if (!player->has<CWhirlAttack>())
+		playerWeapons.push_back("Whirlpool");
+	if (!player->has<CExplodeAttack>())
+		playerWeapons.push_back("Explosion");
+	if (!player->has<CBulletAttack>())
+		playerWeapons.push_back("LaserBullet");
+
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::shuffle(playerWeapons.begin(), playerWeapons.end(), gen);
+
+	size_t count = std::min<size_t>(3, playerWeapons.size());
+	std::vector<std::string> weapons(playerWeapons.begin(), playerWeapons.begin() + count);
 	loadScene(weapons);
 }
 
@@ -133,13 +158,22 @@ void Scene_NewWeapon::select()
 	for (auto& button : m_entityManager.getEntities("button"))
 	{
 		if (!Utils::IsInside(m_mousePos, button)) continue;
+		if (!m_game->changeScene("PLAY", nullptr)) continue;
 
-		if (button->name() == "MeeleSlash" && m_game->changeScene("PLAY", nullptr))
-			onExitScene();
-		else if (button->name() == "RangedSlash" && m_game->changeScene("PLAY", nullptr))
-			onExitScene();
-		else if (button->name() == "FireRing" && m_game->changeScene("PLAY", nullptr))
-			onExitScene();
+		if (button->name() == "MeeleSlash")
+			m_player->add<CBasicAttack>();
+		else if (button->name() == "RangedSlash")
+			m_player->add<CSpecialAttack>();
+		else if (button->name() == "FireRing")
+			m_player->add<CRingAttack>();
+		else if (button->name() == "Whirlpool")
+			m_player->add<CWhirlAttack>();
+		else if (button->name() == "Explosion")
+			m_player->add<CExplodeAttack>();
+		else if (button->name() == "LaserBullet")
+			m_player->add<CBulletAttack>();
+
+		onExitScene();
 	}
 }
 

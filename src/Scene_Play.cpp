@@ -136,11 +136,6 @@ void Scene_Play::spawnPlayer()
 	p->add<CAttractor>(50.0f, 150.0f);
 
 	p->add<CBasicAttack>(m_currentFrame);
-	p->add<CSpecialAttack>(m_currentFrame);
-	p->add<CRingAttack>(m_currentFrame);
-	p->add<CExplodeAttack>(m_currentFrame);
-	p->add<CWhirlAttack>(m_currentFrame);
-	p->add<CBulletAttack>(m_currentFrame);
 }
 
 void Scene_Play::sSpawnEnemies()
