@@ -1,5 +1,4 @@
-#include "Scene_Pause.h"
-#include "Scene_Menu.h"
+#include "Scene_NewWeapon.h"
 #include "Scene_Play.h"
 #include "Assets.hpp"
 #include "GameEngine.h"
@@ -9,13 +8,13 @@
 
 #include <iostream>
 
-Scene_Pause::Scene_Pause(GameEngine* gameEngine)
+Scene_NewWeapon::Scene_NewWeapon(GameEngine* gameEngine, std::shared_ptr<Entity> player)
 	: Scene(gameEngine)
 {
 	init();
 }
 
-void Scene_Pause::init()
+void Scene_NewWeapon::init()
 {
 	/*registerAction(sf::Keyboard::Scan::W, "UP");
 	registerAction(sf::Keyboard::Scan::S, "DOWN");
@@ -30,44 +29,47 @@ void Scene_Pause::init()
 
 	auto& window = m_game->window();
 	sf::Vector2f windowSize = sf::Vector2f(width(), height());
-	m_pauseView.setCenter(windowSize / 2.0f);
-	m_pauseView.setSize(windowSize);
-	m_pauseView.setViewport(sf::FloatRect({0.25f, 0.25f}, {0.5f, 0.5f}));
-	window.setView(m_pauseView);
+	m_menuView.setCenter(windowSize / 2.0f);
+	m_menuView.setSize(windowSize);
+	m_menuView.setViewport(sf::FloatRect({ 0.2f, 0 }, { 0.6f, 1.0f }));
+	window.setView(m_menuView);
 
 	loadScene();
 }
 
-void Scene_Pause::loadScene()
+void Scene_NewWeapon::loadScene()
 {
 	m_entityManager = EntityManager();
 
-	auto title = m_entityManager.addEntity("ui", "Paused");
+	auto title = m_entityManager.addEntity("ui", "Choose New Weapon");
 	auto& tAnimation = title->add<CAnimation>(m_game->assets().getAnimation("ButtonHover"), true).animation;
-	tAnimation.m_sprite.setScale(sf::Vector2f(2.f, 0.8f));
-	title->add<CTransform>(Vec2f(width() / 2, height() * 0.2f));
+	tAnimation.m_sprite.setScale(sf::Vector2f(2.f, 0.6f));
+	title->add<CTransform>(Vec2f(width() / 2, height() * 0.10f));
 
-	auto playButton = m_entityManager.addEntity("button", "Resume");
-	playButton->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
-	auto& pbTransform = playButton->add<CTransform>(Vec2f(width() / 2, height() * 0.4f));
-	pbTransform.scale = 0.5f;
-	playButton->add<CState>("unselected");
+	auto firstButton = m_entityManager.addEntity("button", "Option 1");
+	firstButton->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
+	auto& firstTransform = firstButton->add<CTransform>(Vec2f(width() / 2, height() * 0.35f));
+	firstButton->add<CState>("unselected");
 
-	auto continueButton = m_entityManager.addEntity("button", "Quit");
-	continueButton->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
-	auto& cTransform = continueButton->add<CTransform>(Vec2f(width() / 2, height() * 0.55f));
-	cTransform.scale = 0.5f;
-	continueButton->add<CState>("unselected");
+	auto secondButton = m_entityManager.addEntity("button", "Option 2");
+	secondButton->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
+	auto& secondTransform = secondButton->add<CTransform>(Vec2f(width() / 2, height() * 0.6f));
+	secondButton->add<CState>("unselected");
+
+	auto thirdButton = m_entityManager.addEntity("button", "Option 3");
+	thirdButton->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
+	auto& thirdTransform = thirdButton->add<CTransform>(Vec2f(width() / 2, height() * 0.85f));
+	thirdButton->add<CState>("unselected");
 }
 
-void Scene_Pause::update()
+void Scene_NewWeapon::update()
 {
 	m_entityManager.update();
 	sHover();
 	sAnimation();
 }
 
-void Scene_Pause::sHover()
+void Scene_NewWeapon::sHover()
 {
 	for (auto& button : m_entityManager.getEntities("button"))
 	{
@@ -79,7 +81,7 @@ void Scene_Pause::sHover()
 	}
 }
 
-void Scene_Pause::sAnimation()
+void Scene_NewWeapon::sAnimation()
 {
 	for (auto& button : m_entityManager.getEntities("button"))
 	{
@@ -98,12 +100,12 @@ void Scene_Pause::sAnimation()
 	}
 }
 
-void Scene_Pause::onEnd()
+void Scene_NewWeapon::onEnd()
 {
 	m_game->quit();
 }
 
-void Scene_Pause::onExitScene()
+void Scene_NewWeapon::onExitScene()
 {
 	m_selectedIndex = 0;
 	auto& bgm = m_game->assets().getMusic(m_musicName);
@@ -113,29 +115,31 @@ void Scene_Pause::onExitScene()
 	window.setView(window.getDefaultView());
 }
 
-void Scene_Pause::onEnterScene()
+void Scene_NewWeapon::onEnterScene()
 {
 	auto& window = m_game->window();
-	window.setView(m_pauseView);
+	window.setView(m_menuView);
 
 	auto& bgm = m_game->assets().getMusic(m_musicName);
 	bgm.play();
 }
 
-void Scene_Pause::select()
+void Scene_NewWeapon::select()
 {
 	for (auto& button : m_entityManager.getEntities("button"))
 	{
 		if (!Utils::IsInside(m_mousePos, button)) continue;
 
-		if (button->name() == "Resume" && m_game->changeScene("PLAY", nullptr))
+		if (button->name() == "Option 1" && m_game->changeScene("PLAY", nullptr))
 			onExitScene();
-		else if (button->name() == "Quit" && m_game->changeScene("MENU", std::make_shared<Scene_Menu>(m_game)))
+		else if (button->name() == "Option 2" && m_game->changeScene("PLAY", nullptr))
+			onExitScene();
+		else if (button->name() == "Option 3" && m_game->changeScene("PLAY", nullptr))
 			onExitScene();
 	}
 }
 
-void Scene_Pause::sDoAction(const Action& action)
+void Scene_NewWeapon::sDoAction(const Action& action)
 {
 	if (action.m_type == "START")
 	{
@@ -178,7 +182,7 @@ void Scene_Pause::sDoAction(const Action& action)
 	}
 }
 
-void Scene_Pause::sRender()
+void Scene_NewWeapon::sRender()
 {
 	auto& window = m_game->window();
 
@@ -197,7 +201,7 @@ void Scene_Pause::sRender()
 
 		animation.m_sprite.setPosition(transform.pos);
 		if (entity->tag() == "button")
-			animation.m_sprite.setScale({ transform.scale, transform.scale });
+			animation.m_sprite.setScale({ transform.scale * 1.8f, transform.scale * 0.95f });
 		window.draw(animation.m_sprite);
 
 		auto buttonText = sf::Text(m_game->assets().getFont("FutureMillennium"));

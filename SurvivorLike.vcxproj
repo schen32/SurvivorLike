@@ -161,6 +161,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Scene_NewWeapon.cpp" />
     <ClCompile Include="src\Scene_Pause.cpp" />
     <ClCompile Include="src\Scene_Play.cpp" />
     <ClCompile Include="src\Scene_Menu.cpp" />
@@ -175,6 +176,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ParticleSystem.hpp" />
+    <ClInclude Include="src\Scene_NewWeapon.h" />
     <ClInclude Include="src\Scene_Pause.h" />
     <ClInclude Include="src\Scene_Play.h" />
     <ClInclude Include="src\Scene.h" />

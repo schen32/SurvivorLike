@@ -1,6 +1,7 @@
 #include "Scene_Play.h"
 #include "Scene_Menu.h"
 #include "Scene_Pause.h"
+#include "Scene_NewWeapon.h"
 #include "Physics.hpp"
 #include "Assets.hpp"
 #include "GameEngine.h"
@@ -880,7 +881,10 @@ void Scene_Play::sDoAction(const Action& action)
 			m_game->changeScene("PAUSE", std::make_shared<Scene_Pause>(m_game));
 		}	
 		else if (action.m_name == "PAUSE")
-			m_paused = !m_paused;
+		{
+			onExitScene();
+			m_game->changeScene("NEW_WEAPON", std::make_shared<Scene_NewWeapon>(m_game, player()));
+		}
 		else if (action.m_name == "DISPLAY_HITBOX")
 			pInput.displayHitbox = !pInput.displayHitbox;
 		else if (action.m_name == "LEFT_CLICK")
