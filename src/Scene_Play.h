@@ -46,6 +46,7 @@ protected:
 	void enemyDied(std::shared_ptr<Entity> enemy);
 
 	void spawnGem(const Vec2f& pos);
+	void spawnHeart(const Vec2f& pos);
 	void spawnTiles(const std::string& filename);
 	std::shared_ptr<Entity> player();
 	void sDoAction(const Action& action);

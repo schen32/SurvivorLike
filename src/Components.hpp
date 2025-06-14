@@ -305,7 +305,7 @@ public:
 	int score = 0;
 	int prevScoreThreshold = 0;
 	int nextScoreThreshold = 100;
-	int level = 0;
+	int level = 1;
 
 	CScore() = default;
 	CScore(int s) : score(s) {}

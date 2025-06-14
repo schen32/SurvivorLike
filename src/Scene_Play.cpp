@@ -143,6 +143,9 @@ void Scene_Play::spawnPlayer()
 
 void Scene_Play::sSpawnEnemies()
 {
+	if (m_entityManager.getEntities("enemy").size() > 500)
+		return;
+
 	spawnChainBot();
 	spawnBigChainBot();
 	spawnBotWheel();
@@ -270,6 +273,19 @@ void Scene_Play::spawnGem(const Vec2f& pos)
 	auto& gemAnimation = gem->add<CAnimation>(m_game->assets().getAnimation("Gem"), true);
 	gem->add<CBoundingBox>(gemAnimation.animation.m_size);
 	gem->add<CScore>(1);
+}
+
+void Scene_Play::spawnHeart(const Vec2f& pos)
+{
+	int spawnAngle = rand() % 360;
+	Vec2f spawnPoint = Vec2f(std::cos(spawnAngle), std::sin(spawnAngle)) * 10;
+
+	auto heart = m_entityManager.addEntity("heart", "Heart");
+
+	heart->add<CTransform>(pos + spawnPoint);
+	auto& gemAnimation = heart->add<CAnimation>(m_game->assets().getAnimation("Heart"), true);
+	heart->add<CBoundingBox>(gemAnimation.animation.m_size);
+	heart->add<CHealth>(5);
 }
 
 void Scene_Play::spawnTiles(const std::string& filename)
@@ -552,6 +568,21 @@ void Scene_Play::sCollision()
 			spawnDisappearingText("+" + std::to_string(gemScore), gem->get<CTransform>().pos);
 			playSound("CoinZap", 15);
 			gem->destroy();
+		}
+	}
+
+	for (auto& heart : m_entityManager.getEntities("heart"))
+	{
+		Vec2f overlap = Physics::GetOverlap(heart, player());
+		if (overlap.x > 0 && overlap.y > 0)
+		{
+			auto& pHealth = player()->get<CHealth>();
+			auto& hHealth = heart->get<CHealth>().health;
+			pHealth.health = std::min(pHealth.health + hHealth, pHealth.maxHealth);
+
+			spawnDisappearingText("+" + std::to_string(hHealth), heart->get<CTransform>().pos);
+			playSound("CoinZap", 15);
+			heart->destroy();
 		}
 	}
 }
@@ -848,6 +879,14 @@ void Scene_Play::sAttraction()
 				gem->get<CTransform>().velocity = Vec2f(0, 0);
 			}
 		}
+
+		for (auto& heart : m_entityManager.getEntities("heart"))
+		{
+			if (!applyAttraction(player(), heart))
+			{
+				heart->get<CTransform>().velocity = Vec2f(0, 0);
+			}
+		}
 	}	
 }
 
@@ -1053,6 +1092,11 @@ void Scene_Play::enemyDied(std::shared_ptr<Entity> enemy)
 	{
 		spawnGem(eTransform.pos);
 	}
+
+	if (rand() % 100 == 0)
+	{
+		spawnHeart(eTransform.pos);
+	}
 }
 
 void Scene_Play::sSound()
@@ -1117,6 +1161,16 @@ void Scene_Play::sRender()
 	window.clear(sf::Color(204, 226, 225));
 
 	for (auto& entity : m_entityManager.getEntities("gem"))
+	{
+		auto& transform = entity->get<CTransform>();
+		auto& animation = entity->get<CAnimation>().animation;
+
+		animation.m_sprite.setPosition(transform.pos);
+		renderShadow(entity);
+		window.draw(animation.m_sprite);
+	}
+
+	for (auto& entity : m_entityManager.getEntities("heart"))
 	{
 		auto& transform = entity->get<CTransform>();
 		auto& animation = entity->get<CAnimation>().animation;
