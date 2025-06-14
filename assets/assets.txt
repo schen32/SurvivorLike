@@ -79,3 +79,4 @@ Music TempleoftheLake assets/music/TempleoftheLake.mp3
 Music M.S.Solar assets/music/M.S.Solar.mp3
 Music ThePathofJustice assets/music/ThePathofJustice.mp3
 Music Challenge2 assets/music/Challenge2.mp3
+Music Battle3 assets/music/Battle3.mp3

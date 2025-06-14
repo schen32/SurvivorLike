@@ -7,7 +7,7 @@
 
 #include "EntityManager.hpp"
 
-class Scene_NewWeapon : public Scene
+class Scene_LevelWeapon : public Scene
 {
 protected:
 	struct WeaponData
@@ -36,7 +36,7 @@ protected:
 	void sHover();
 	void sAnimation();
 public:
-	Scene_NewWeapon() = default;
-	Scene_NewWeapon(GameEngine* gameEngine = nullptr, std::shared_ptr<Entity> player = nullptr);
+	Scene_LevelWeapon() = default;
+	Scene_LevelWeapon(GameEngine* gameEngine = nullptr, std::shared_ptr<Entity> player = nullptr);
 	void sRender();
 };

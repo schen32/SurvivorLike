@@ -2,6 +2,7 @@
 #include "Scene_Menu.h"
 #include "Scene_Pause.h"
 #include "Scene_NewWeapon.h"
+#include "Scene_LevelWeapon.h"
 #include "Physics.hpp"
 #include "Assets.hpp"
 #include "GameEngine.h"
@@ -25,7 +26,8 @@ Scene_Play::Scene_Play(GameEngine* gameEngine, const std::string& levelPath)
 
 void Scene_Play::init(const std::string& levelPath)
 {
-	registerAction(sf::Keyboard::Scan::P, "PAUSE");
+	registerAction(sf::Keyboard::Scan::P, "NEW_WEAPON");
+	registerAction(sf::Keyboard::Scan::O, "LEVEL_WEAPON");
 	registerAction(sf::Keyboard::Scan::Escape, "ESCAPE");
 	registerAction(sf::Keyboard::Scan::H, "DISPLAY_HITBOX");
 
@@ -56,6 +58,7 @@ void Scene_Play::init(const std::string& levelPath)
 	m_particleSystem.init(m_game->window().getSize());
 	m_cameraView.setSize(sf::Vector2f(width(), height()));
 	m_cameraView.zoom(0.5f);
+	m_game->window().setView(m_cameraView);
 
 	srand(static_cast<unsigned int>(time(nullptr)));
 	std::vector<std::string> bgms = { "Awakened", "CargoHold", "TempleoftheValley",
@@ -303,7 +306,10 @@ void Scene_Play::sScore()
 		pScore.level++;
 
 		onExitScene();
-		m_game->changeScene("NEW_WEAPON", std::make_shared<Scene_NewWeapon>(m_game, player()));
+		if (pScore.level % 5 == 1)
+			m_game->changeScene("NEW_WEAPON", std::make_shared<Scene_NewWeapon>(m_game, player()));
+		else
+			m_game->changeScene("LEVEL_WEAPON", std::make_shared<Scene_LevelWeapon>(m_game, player()));
 	}
 }
 
@@ -878,10 +884,15 @@ void Scene_Play::sDoAction(const Action& action)
 			onExitScene();
 			m_game->changeScene("PAUSE", std::make_shared<Scene_Pause>(m_game));
 		}	
-		else if (action.m_name == "PAUSE")
+		else if (action.m_name == "NEW_WEAPON")
 		{
 			onExitScene();
 			m_game->changeScene("NEW_WEAPON", std::make_shared<Scene_NewWeapon>(m_game, player()));
+		}
+		else if (action.m_name == "LEVEL_WEAPON")
+		{
+			onExitScene();
+			m_game->changeScene("LEVEL_WEAPON", std::make_shared<Scene_LevelWeapon>(m_game, player()));
 		}
 		else if (action.m_name == "DISPLAY_HITBOX")
 			pInput.displayHitbox = !pInput.displayHitbox;
