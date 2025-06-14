@@ -272,7 +272,7 @@ void Scene_NewWeapon::sRender()
 		auto bounds = buttonText.getLocalBounds();
 		buttonText.setOrigin(bounds.position + bounds.size / 2.f);
 		buttonText.setPosition(sf::Vector2f(
-			transform.pos.x + buttonBounds.size.x / 10, transform.pos.y - buttonBounds.size.y / 5));
+			transform.pos.x + buttonBounds.size.x / 10, transform.pos.y - buttonBounds.size.y / 8));
 		window.draw(buttonText);
 
 		auto descriptText = sf::Text(m_game->assets().getFont("ByteBounce"));
@@ -283,7 +283,7 @@ void Scene_NewWeapon::sRender()
 		bounds = descriptText.getLocalBounds();
 		descriptText.setOrigin(bounds.position + bounds.size / 2.f);
 		descriptText.setPosition(sf::Vector2f(
-			transform.pos.x + buttonBounds.size.x / 10, transform.pos.y + buttonBounds.size.y / 5));
+			transform.pos.x + buttonBounds.size.x / 10, transform.pos.y + buttonBounds.size.y / 8));
 		window.draw(descriptText);
 	}
 }

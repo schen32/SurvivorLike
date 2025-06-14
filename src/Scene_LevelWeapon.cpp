@@ -37,17 +37,17 @@ void Scene_LevelWeapon::init(std::shared_ptr<Entity> player)
 	window.setView(m_menuView);
 
 	m_weaponMap.insert({ "MeeleSlash",
-		{ m_game->assets().getAnimation("Slash1"), "Close Slash", "Level up this weapon"} });
+		{ m_game->assets().getAnimation("Slash1"), "Close Slash", "-cooldown +size, damage"} });
 	m_weaponMap.insert({ "RangedSlash",
-		{m_game->assets().getAnimation("Slash1"), "Far Slash", "Level up this weapon"} });
+		{m_game->assets().getAnimation("Slash1"), "Far Slash", "-cooldown +size, speed, damage"} });
 	m_weaponMap.insert({ "FireRing",
-		{ m_game->assets().getAnimation("Ring1"), "Ring of Fire", "Level up this weapon"} });
+		{ m_game->assets().getAnimation("Ring1"), "Ring of Fire", "-cooldown +size, damage"} });
 	m_weaponMap.insert({ "Whirlpool",
-		{ m_game->assets().getAnimation("Ring2"), "Whirlpool", "Level up this weapon"} });
+		{ m_game->assets().getAnimation("Ring2"), "Whirlpool", "-cooldown +size, damage"} });
 	m_weaponMap.insert({ "Explosion",
-		{ m_game->assets().getAnimation("Explode1"), "Explosion", "Level up this weapon"} });
+		{ m_game->assets().getAnimation("Explode1"), "Explosion", "-cooldown +size, damage"} });
 	m_weaponMap.insert({ "LaserBullet",
-		{ m_game->assets().getAnimation("Bullet1"), "Laser Bullet", "Level up this weapon"} });
+		{ m_game->assets().getAnimation("Bullet1"), "Laser Bullet", "-cooldown +size, speed, damage"} });
 
 	m_player = player;
 	std::vector<std::string> playerWeapons;
@@ -77,7 +77,7 @@ void Scene_LevelWeapon::loadScene(const std::vector<std::string>& weapons)
 {
 	m_entityManager = EntityManager();
 
-	auto title = m_entityManager.addEntity("ui", "Level up Weapon");
+	auto title = m_entityManager.addEntity("ui", "Choose Upgrade");
 	auto& tAnimation = title->add<CAnimation>(m_game->assets().getAnimation("ButtonHover"), true).animation;
 	tAnimation.m_sprite.setScale(sf::Vector2f(2.f, 0.6f));
 	title->add<CTransform>(Vec2f(width() / 2, height() * 0.10f));
@@ -319,7 +319,7 @@ void Scene_LevelWeapon::sRender()
 		auto bounds = buttonText.getLocalBounds();
 		buttonText.setOrigin(bounds.position + bounds.size / 2.f);
 		buttonText.setPosition(sf::Vector2f(
-			transform.pos.x + buttonBounds.size.x / 10, transform.pos.y - buttonBounds.size.y / 5));
+			transform.pos.x + buttonBounds.size.x / 10, transform.pos.y - buttonBounds.size.y / 8));
 		window.draw(buttonText);
 
 		auto descriptText = sf::Text(m_game->assets().getFont("ByteBounce"));
@@ -330,7 +330,7 @@ void Scene_LevelWeapon::sRender()
 		bounds = descriptText.getLocalBounds();
 		descriptText.setOrigin(bounds.position + bounds.size / 2.f);
 		descriptText.setPosition(sf::Vector2f(
-			transform.pos.x + buttonBounds.size.x / 10, transform.pos.y + buttonBounds.size.y / 5));
+			transform.pos.x + buttonBounds.size.x / 10, transform.pos.y + buttonBounds.size.y / 8));
 		window.draw(descriptText);
 	}
 }
