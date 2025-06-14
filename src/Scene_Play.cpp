@@ -47,7 +47,7 @@ void Scene_Play::init(const std::string& levelPath)
 	registerAction(sf::Keyboard::Scan::E, "WHIRL_ATTACK");
 	registerAction(sf::Keyboard::Scan::F, "BULLET_ATTACK");
 
-	m_playerConfig = { 0, 0, 0, 0, 3.0f, 0, ""};
+	m_playerConfig = { 0, 0, 0, 0, 2.0f, 0, ""};
 
 	m_gridText.setCharacterSize(100);
 	m_gridText.setFont(m_game->assets().getFont("FutureMillennium"));
@@ -151,54 +151,63 @@ void Scene_Play::sSpawnEnemies()
 
 void Scene_Play::spawnChainBot()
 {
+	auto& pLevel = player()->get<CScore>().level;
 	static int lastEnemySpawnTime = 0;
-	static const int enemySpawnInterval = 45;
+	int enemySpawnInterval = 180 * std::pow(0.90f, pLevel);
 	if (m_currentFrame - lastEnemySpawnTime > enemySpawnInterval)
 	{
 		lastEnemySpawnTime = m_currentFrame;
 
-		int spawnAngle = rand() % 360;
-		Vec2f spawnPoint = Vec2f(std::cos(spawnAngle), std::sin(spawnAngle)) * height() / 2;
+		for (int i = 0; i < 3 + pLevel; i++)
+		{
+			int spawnAngle = rand() % 360;
+			Vec2f spawnPoint = Vec2f(std::cos(spawnAngle), std::sin(spawnAngle)) * height() / 2;
 
-		auto enemy = m_entityManager.addEntity("enemy", "chainBot");
-		auto& eAnimation = enemy->add<CAnimation>(m_game->assets().getAnimation("ChainBotIdle"), true);
-		enemy->add<CTransform>(player()->get<CTransform>().pos + spawnPoint);
-		enemy->add<CBoundingBox>(eAnimation.animation.m_size / 2);
-		enemy->add<CHealth>(30);
-		enemy->add<CDamage>(10);
-		enemy->add<CFollow>(player(), 0.5f);
-		enemy->add<CScore>(1);
-		enemy->add<CState>("alive");
+			auto enemy = m_entityManager.addEntity("enemy", "chainBot");
+			auto& eAnimation = enemy->add<CAnimation>(m_game->assets().getAnimation("ChainBotIdle"), true);
+			enemy->add<CTransform>(player()->get<CTransform>().pos + spawnPoint);
+			enemy->add<CBoundingBox>(eAnimation.animation.m_size / 2);
+			enemy->add<CHealth>(30 + pLevel * 4);
+			enemy->add<CDamage>(10);
+			enemy->add<CFollow>(player(), 0.2f);
+			enemy->add<CScore>(1);
+			enemy->add<CState>("alive");
+		}
 	}
 }
 
 void Scene_Play::spawnBotWheel()
 {
+	auto& pLevel = player()->get<CScore>().level;
 	static int lastEnemySpawnTime = 0;
-	static const int enemySpawnInterval = 60;
+	int enemySpawnInterval = 240 * std::pow(0.90f, pLevel);;
 	if (m_currentFrame - lastEnemySpawnTime > enemySpawnInterval)
 	{
 		lastEnemySpawnTime = m_currentFrame;
 
-		int spawnAngle = rand() % 360;
-		Vec2f spawnPoint = Vec2f(std::cos(spawnAngle), std::sin(spawnAngle)) * height() / 2;
+		for (int i = 0; i < 4 + pLevel; i++)
+		{
+			int spawnAngle = rand() % 360;
+			Vec2f spawnPoint = Vec2f(std::cos(spawnAngle), std::sin(spawnAngle)) * height() / 2;
 
-		auto enemy = m_entityManager.addEntity("enemy", "botWheel");
-		auto& eAnimation = enemy->add<CAnimation>(m_game->assets().getAnimation("BotWheelRun"), true);
-		enemy->add<CTransform>(player()->get<CTransform>().pos + spawnPoint);
-		enemy->add<CBoundingBox>(eAnimation.animation.m_size / 2);
-		enemy->add<CHealth>(40);
-		enemy->add<CDamage>(10);
-		enemy->add<CFollow>(player(), 0.6f);
-		enemy->add<CScore>(2);
-		enemy->add<CState>("alive");
+			auto enemy = m_entityManager.addEntity("enemy", "botWheel");
+			auto& eAnimation = enemy->add<CAnimation>(m_game->assets().getAnimation("BotWheelRun"), true);
+			enemy->add<CTransform>(player()->get<CTransform>().pos + spawnPoint);
+			enemy->add<CBoundingBox>(eAnimation.animation.m_size / 2);
+			enemy->add<CHealth>(40 + pLevel * 5);
+			enemy->add<CDamage>(10);
+			enemy->add<CFollow>(player(), 0.3f);
+			enemy->add<CScore>(2);
+			enemy->add<CState>("alive");
+		}
 	}
 }
 
 void Scene_Play::spawnBigChainBot()
 {
+	auto& pLevel = player()->get<CScore>().level;
 	static int lastEnemySpawnTime = 0;
-	static const int enemySpawnInterval = 750;
+	int enemySpawnInterval = 750 * std::pow(0.90f, pLevel);
 	if (m_currentFrame - lastEnemySpawnTime > enemySpawnInterval)
 	{
 		lastEnemySpawnTime = m_currentFrame;
@@ -214,18 +223,19 @@ void Scene_Play::spawnBigChainBot()
 		eAnimation.animation.m_sprite.setScale(Vec2f(eTransform.scale, eTransform.scale));
 		
 		enemy->add<CBoundingBox>(eAnimation.animation.m_size / 2 * eTransform.scale);
-		enemy->add<CHealth>(200);
+		enemy->add<CHealth>(200 + pLevel * 40);
 		enemy->add<CDamage>(20);
-		enemy->add<CFollow>(player(), 0.3f);
-		enemy->add<CScore>(6);
+		enemy->add<CFollow>(player(), 0.1f);
+		enemy->add<CScore>(6 + pLevel * 2);
 		enemy->add<CState>("alive");
 	}
 }
 
 void Scene_Play::spawnBigBotWheel()
 {
+	auto& pLevel = player()->get<CScore>().level;
 	static int lastEnemySpawnTime = 0;
-	static const int enemySpawnInterval = 900;
+	int enemySpawnInterval = 900 * std::pow(0.90f, pLevel);
 	if (m_currentFrame - lastEnemySpawnTime > enemySpawnInterval)
 	{
 		lastEnemySpawnTime = m_currentFrame;
@@ -241,10 +251,10 @@ void Scene_Play::spawnBigBotWheel()
 		eAnimation.animation.m_sprite.setScale(Vec2f(eTransform.scale, eTransform.scale));
 
 		enemy->add<CBoundingBox>(eAnimation.animation.m_size / 2 * eTransform.scale);
-		enemy->add<CHealth>(250);
+		enemy->add<CHealth>(250 + pLevel * 50);
 		enemy->add<CDamage>(20);
-		enemy->add<CFollow>(player(), 0.4f);
-		enemy->add<CScore>(8);
+		enemy->add<CFollow>(player(), 0.2f);
+		enemy->add<CScore>(8 + pLevel * 2);
 		enemy->add<CState>("alive");
 	}
 }
@@ -301,7 +311,7 @@ void Scene_Play::sScore()
 	{
 		auto temp = pScore.prevScoreThreshold;
 		pScore.prevScoreThreshold = pScore.nextScoreThreshold;
-		pScore.nextScoreThreshold += std::max(temp, 100);
+		pScore.nextScoreThreshold += std::max(temp, 200);
 
 		pScore.level++;
 
@@ -661,8 +671,9 @@ void Scene_Play::spawnBasicAttack(const Vec2f& targetPos)
 	auto basicAttack = m_entityManager.addEntity("playerAttack", "basicAttack");
 
 	float attackAngle = std::atan2(attackDir.y, attackDir.x) * 180.0f / 3.14159f;
-	basicAttack->add<CTransform>(pTransform.pos + attackDir * pBasicAttack.distanceFromPlayer
+	auto& baTransform = basicAttack->add<CTransform>(pTransform.pos + attackDir * pBasicAttack.distanceFromPlayer
 		, Vec2f(0, 0), attackAngle);
+	baTransform.scale = pBasicAttack.scale;
 
 	auto& baAnimation = basicAttack->add<CAnimation>(m_game->assets().getAnimation("Slash1"), true).animation;
 	baAnimation.m_sprite.setScale({ pBasicAttack.scale, pBasicAttack.scale });
@@ -696,6 +707,7 @@ void Scene_Play::spawnSpecialAttack(const Vec2f& targetPos)
 	auto& saTransform = specialAttack->add<CTransform>(pTransform.pos + attackDir,
 		attackDir * pSpecialAttack.speed, attackAngle);
 	saTransform.accel = pSpecialAttack.decel;
+	saTransform.scale = pSpecialAttack.scale;
 
 	auto& saAnimation = specialAttack->add<CAnimation>(m_game->assets().getAnimation("Slash1"), true).animation;
 	saAnimation.m_sprite.setScale({ pSpecialAttack.scale, pSpecialAttack.scale });
@@ -782,7 +794,7 @@ void Scene_Play::spawnExplodeAttack(const Vec2f& targetPos)
 	ringTransform.scale = pExplodeAttack.scale;
 	auto& ringAnimation = explodeAttack->add<CAnimation>(m_game->assets().getAnimation("Explode1"), true).animation;
 
-	explodeAttack->add<CBoundingBox>(Vec2f(ringAnimation.m_size.x, ringAnimation.m_size.y) * pExplodeAttack.scale);
+	explodeAttack->add<CBoundingBox>(Vec2f(ringAnimation.m_size.x, ringAnimation.m_size.y) / 2 * pExplodeAttack.scale);
 	explodeAttack->add<CLifespan>(pExplodeAttack.duration, m_currentFrame);
 	explodeAttack->add<CHealth>(pExplodeAttack.health);
 	explodeAttack->add<CDamage>(pExplodeAttack.damage);

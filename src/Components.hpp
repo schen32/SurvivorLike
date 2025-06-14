@@ -130,6 +130,7 @@ public:
 	int damage = 10;
 	float knockMagnitude = 5.f;
 	int knockDuration = 30;
+	int level = 1;
 
 	CBasicAttack() = default;
 	CBasicAttack(int lat)
@@ -149,6 +150,7 @@ public:
 	int damage = 15;
 	float knockMagnitude = 5.f;
 	int knockDuration = 30;
+	int level = 1;
 
 	CSpecialAttack() = default;
 	CSpecialAttack(int lat)
@@ -168,6 +170,7 @@ public:
 	int damage = 10;
 	float knockMagnitude = 5.f;
 	int knockDuration = 30;
+	int level = 1;
 
 	CBulletAttack() = default;
 	CBulletAttack(int lat)
@@ -186,6 +189,7 @@ public:
 	int damage = 10;
 	float knockMagnitude = 5.f;
 	int knockDuration = 30;
+	int level = 1;
 
 	CRingAttack() = default;
 	CRingAttack(int lat)
@@ -204,6 +208,7 @@ public:
 	int damage = 20;
 	float knockMagnitude = 15.f;
 	int knockDuration = 50;
+	int level = 1;
 
 	CExplodeAttack() = default;
 	CExplodeAttack(int lat)
@@ -224,6 +229,7 @@ public:
 	float attractRadius = 150.0f;
 	float knockMagnitude = 0.f;
 	float knockDuration = 30;
+	int level = 1;
 
 	CWhirlAttack() = default;
 	CWhirlAttack(int lat)

@@ -51,17 +51,17 @@ void Scene_LevelWeapon::init(std::shared_ptr<Entity> player)
 
 	m_player = player;
 	std::vector<std::string> playerWeapons;
-	if (player->has<CBasicAttack>())
+	if (player->has<CBasicAttack>() && player->get<CBasicAttack>().level < 10)
 		playerWeapons.push_back("MeeleSlash");
-	if (player->has<CSpecialAttack>())
+	if (player->has<CSpecialAttack>() && player->get<CSpecialAttack>().level < 10)
 		playerWeapons.push_back("RangedSlash");
-	if (player->has<CRingAttack>())
+	if (player->has<CRingAttack>() && player->get<CRingAttack>().level < 10)
 		playerWeapons.push_back("FireRing");
-	if (player->has<CWhirlAttack>())
+	if (player->has<CWhirlAttack>() && player->get<CWhirlAttack>().level < 10)
 		playerWeapons.push_back("Whirlpool");
-	if (player->has<CExplodeAttack>())
+	if (player->has<CExplodeAttack>() && player->get<CExplodeAttack>().level < 10)
 		playerWeapons.push_back("Explosion");
-	if (player->has<CBulletAttack>())
+	if (player->has<CBulletAttack>() && player->get<CBulletAttack>().level < 10)
 		playerWeapons.push_back("LaserBullet");
 
 	std::random_device rd;
@@ -160,36 +160,61 @@ void Scene_LevelWeapon::select()
 		if (button->name() == "MeeleSlash")
 		{
 			auto& attack = m_player->get<CBasicAttack>();
-			attack.cooldown -= 10;
+			attack.cooldown -= 3;
+			attack.scale += 0.1f;
+			attack.duration += 3;
+			attack.damage += 5 * attack.level;
+			attack.level++;
 		}
 		else if (button->name() == "RangedSlash")
 		{
-			auto& attack = m_player->add<CSpecialAttack>();
-			attack.cooldown -= 10;
+			auto& attack = m_player->get<CSpecialAttack>();
+			attack.cooldown -= 15;
+			attack.scale += 0.1f;
+			attack.duration += 6;
+			attack.speed += 1;
+			attack.damage += 5 * attack.level;
+			attack.level++;
 		}
 			
 		else if (button->name() == "FireRing")
 		{
-			auto& attack = m_player->add<CRingAttack>();
-			attack.cooldown -= 10;
+			auto& attack = m_player->get<CRingAttack>();
+			attack.cooldown -= 20;
+			attack.scale += 0.2f;
+			attack.damage += 5 * attack.level;
+			attack.level++;
 		}
 			
 		else if (button->name() == "Whirlpool")
 		{
-			auto& attack = m_player->add<CWhirlAttack>();
-			attack.cooldown -= 10;
+			auto& attack = m_player->get<CWhirlAttack>();
+			attack.cooldown -= 25;
+			attack.scale += 0.2f;
+			attack.duration += 25;
+			attack.damage += 5 * attack.level;
+			attack.level++;
 		}
 			
 		else if (button->name() == "Explosion")
 		{
-			auto& attack = m_player->add<CExplodeAttack>();
-			attack.cooldown -= 10;
+			auto& attack = m_player->get<CExplodeAttack>();
+			attack.cooldown -= 6;
+			attack.scale += 0.2f;
+			attack.duration += 6;
+			attack.damage += 10 * attack.level;
+			attack.level++;
 		}
 			
 		else if (button->name() == "LaserBullet")
 		{
-			auto& attack = m_player->add<CBulletAttack>();
-			attack.cooldown -= 10;
+			auto& attack = m_player->get<CBulletAttack>();
+			attack.cooldown -= 3;
+			attack.scale += 0.2f;
+			attack.duration += 3;
+			attack.speed += 1;
+			attack.damage += 5 * attack.level;
+			attack.level++;
 		}
 
 		onExitScene();
