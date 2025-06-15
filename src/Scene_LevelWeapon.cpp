@@ -48,6 +48,10 @@ void Scene_LevelWeapon::init(std::shared_ptr<Entity> player)
 		{ m_game->assets().getAnimation("Explode1"), "Explosion", "-cooldown +size, damage"} });
 	m_weaponMap.insert({ "LaserBullet",
 		{ m_game->assets().getAnimation("Bullet1"), "Laser Bullet", "-cooldown +size, speed, damage"} });
+	m_weaponMap.insert({ "Attract",
+		{ m_game->assets().getAnimation("Gem"), "Attract", "+attraction radius"} });
+	m_weaponMap.insert({ "MoveSpeed",
+		{ m_game->assets().getAnimation("Gem"), "Move Speed", "+movement speed"} });
 
 	m_player = player;
 	std::vector<std::string> playerWeapons;
@@ -63,6 +67,10 @@ void Scene_LevelWeapon::init(std::shared_ptr<Entity> player)
 		playerWeapons.push_back("Explosion");
 	if (player->has<CBulletAttack>() && player->get<CBulletAttack>().level < 10)
 		playerWeapons.push_back("LaserBullet");
+	if (player->get<CAttractor>().radius < 1000.0f)
+		playerWeapons.push_back("Attract");
+	if (player->get<CTransform>().speed < 10.0f)
+		playerWeapons.push_back("MoveSpeed");
 
 	std::random_device rd;
 	std::mt19937 gen(rd());
@@ -201,6 +209,7 @@ void Scene_LevelWeapon::select()
 			attack.damage += 5 * attack.level;
 			attack.health += 100;
 			attack.attractRadius += 15.0f;
+			attack.attractStrength += 5.0f;
 			attack.level++;
 		}
 			
@@ -226,6 +235,17 @@ void Scene_LevelWeapon::select()
 			attack.damage += 5 * attack.level;
 			attack.health += 5;
 			attack.level++;
+		}
+		else if (button->name() == "Attract")
+		{
+			auto& attract = m_player->get<CAttractor>();
+			attract.radius += 50.0f;
+			attract.strength += 10.0f;
+		}
+		else if (button->name() == "MoveSpeed")
+		{
+			auto& transform = m_player->get<CTransform>();
+			transform.speed += 0.4f;
 		}
 
 		onExitScene();

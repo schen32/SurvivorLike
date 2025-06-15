@@ -22,6 +22,7 @@ public:
 	Vec2f velocity = { 0.0, 0.0 };
 	float angle = 0;
 	float accel = 0;
+	float speed = 0;
 
 	CTransform() = default;
 	CTransform(const Vec2f& p)

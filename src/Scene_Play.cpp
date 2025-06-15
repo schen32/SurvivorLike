@@ -124,7 +124,8 @@ void Scene_Play::spawnPlayer()
 	
 	auto& pAnimation = p->add<CAnimation>(m_game->assets().getAnimation("StormheadIdle"), true);
 	p->add<CBoundingBox>(Vec2f(pAnimation.animation.m_size.x / 4, pAnimation.animation.m_size.y / 4));
-	p->add<CTransform>(gridToMidPixel(m_playerConfig.X, m_playerConfig.Y, p));
+	auto& pTransform = p->add<CTransform>(gridToMidPixel(m_playerConfig.X, m_playerConfig.Y, p));
+	pTransform.speed = m_playerConfig.SPEED;
 	p->add<CHealth>(100);
 	p->add<CDamage>(10);
 	p->add<CInput>();
@@ -366,7 +367,7 @@ void Scene_Play::sMovement()
 	if (pTransform.velocity.x != 0.f || pTransform.velocity.y != 0.f)
 	{
 		player()->get<CState>().state = "running";
-		pTransform.velocity = pTransform.velocity.normalize() * m_playerConfig.SPEED;
+		pTransform.velocity = pTransform.velocity.normalize() * pTransform.speed;
 	}
 	else
 		player()->get<CState>().state = "idle";
