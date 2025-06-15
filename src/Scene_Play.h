@@ -21,13 +21,12 @@ protected:
 	std::string				 m_lastAction;
 	PlayerConfig             m_playerConfig;
 	const Vec2f              m_gridSize = { 64, 64 };
-	sf::Font				 m_fontText;
-	sf::Text                 m_gridText = sf::Text(m_fontText);
 	ParticleSystem			 m_particleSystem;
 	sf::View				 m_cameraView;
 	Vec2f					 m_mousePos;
 	bool					 m_playerDied = false;
 	std::string				 m_musicName;
+	sf::Clock				 m_playClock;
 
 	void init(const std::string& levelPath);
 	void loadLevel(const std::string& filename);

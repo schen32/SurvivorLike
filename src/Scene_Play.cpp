@@ -49,12 +49,6 @@ void Scene_Play::init(const std::string& levelPath)
 
 	m_playerConfig = { 0, 0, 0, 0, 2.0f, 0, ""};
 
-	m_gridText.setCharacterSize(100);
-	m_gridText.setFont(m_game->assets().getFont("FutureMillennium"));
-	m_gridText.setOutlineThickness(3.0f);
-	m_gridText.setOutlineColor(sf::Color(86, 106, 137));
-	m_gridText.setPosition({ 20, 10 });
-
 	m_particleSystem.init(m_game->window().getSize());
 	m_cameraView.setSize(sf::Vector2f(width(), height()));
 	m_cameraView.zoom(0.5f);
@@ -1269,12 +1263,42 @@ void Scene_Play::sRender()
 
 	window.setView(window.getDefaultView());
 
+	// timer UI
+	sf::Time elapsed = m_playClock.getElapsedTime();
+	int minutes = static_cast<int>(elapsed.asSeconds()) / 60;
+	int seconds = static_cast<int>(elapsed.asSeconds()) % 60;
+
+	std::ostringstream timeStream;
+	timeStream << std::setw(2) << std::setfill('0') << minutes
+		<< ":" << std::setw(2) << std::setfill('0') << seconds;
+
+	sf::Text timerText(m_game->assets().getFont("FutureMillennium"));
+	timerText.setCharacterSize(100);
+	timerText.setString(timeStream.str());
+	timerText.setOutlineThickness(3.0f);
+	timerText.setOutlineColor(sf::Color(86, 106, 137));
+
+	auto timerBounds = timerText.getLocalBounds();
+	timerText.setOrigin(timerBounds.size / 2.0f);
+	timerText.setPosition(sf::Vector2f(width() / 2.f, height() * 0.03f));
+
+	window.draw(timerText);
+	//
+	
+	// player score
+	sf::Text scoreText(m_game->assets().getFont("FutureMillennium"));
+	scoreText.setCharacterSize(100);
+	scoreText.setOutlineThickness(3.0f);
+	scoreText.setOutlineColor(sf::Color(86, 106, 137));
+	scoreText.setPosition({ width() * 0.02f, height() * 0.005f });
+
 	auto& pScore = player()->get<CScore>();
-	m_gridText.setString(std::to_string(pScore.score));
-	window.draw(m_gridText);
+	scoreText.setString(std::to_string(pScore.score));
+	window.draw(scoreText);
 
 	auto& pAnimation = player()->get<CAnimation>().animation;
 	auto& pTransform = player()->get<CTransform>();
+	//
 
 	// player health bar
 	float healthBarWidth = 500.f;
@@ -1298,16 +1322,16 @@ void Scene_Play::sRender()
 	//
 
 	// player health text
-	sf::Text scoreText(m_game->assets().getFont("FutureMillennium"));
-	scoreText.setCharacterSize(40.f);
-	scoreText.setOutlineThickness(1.0f);
-	scoreText.setOutlineColor(sf::Color(86, 106, 137));
-	scoreText.setString(std::to_string(pHealth.health) + " / " + std::to_string(pHealth.maxHealth));
-	sf::FloatRect bounds = scoreText.getLocalBounds();
-	scoreText.setOrigin({ bounds.position.x + bounds.size.x / 2.f, bounds.position.y + bounds.size.y / 2.f });
-	scoreText.setPosition(barPos);
+	sf::Text healthText(m_game->assets().getFont("FutureMillennium"));
+	healthText.setCharacterSize(40.f);
+	healthText.setOutlineThickness(1.0f);
+	healthText.setOutlineColor(sf::Color(86, 106, 137));
+	healthText.setString(std::to_string(pHealth.health) + " / " + std::to_string(pHealth.maxHealth));
+	sf::FloatRect bounds = healthText.getLocalBounds();
+	healthText.setOrigin({ bounds.position.x + bounds.size.x / 2.f, bounds.position.y + bounds.size.y / 2.f });
+	healthText.setPosition(barPos);
 
-	window.draw(scoreText);
+	window.draw(healthText);
 	//
 
 	// circle score UI
@@ -1343,14 +1367,15 @@ void Scene_Play::sRender()
 
 	// player score text
 	sf::Text pieText(m_game->assets().getFont("FutureMillennium"));
-	scoreText.setOutlineThickness(1.0f);
-	scoreText.setOutlineColor(sf::Color(86, 106, 137));
-	scoreText.setString(std::to_string(static_cast<int>(percent * 100)) + "%");
-	bounds = scoreText.getLocalBounds();
-	scoreText.setOrigin({ bounds.position.x + bounds.size.x / 2.f, bounds.position.y + bounds.size.y / 2.f });
-	scoreText.setPosition(center);
+	pieText.setCharacterSize(60.0f);
+	pieText.setOutlineThickness(1.0f);
+	pieText.setOutlineColor(sf::Color(86, 106, 137));
+	pieText.setString(std::to_string(static_cast<int>(percent * 100)) + "%");
+	bounds = pieText.getLocalBounds();
+	pieText.setOrigin({ bounds.position.x + bounds.size.x / 2.f, bounds.position.y + bounds.size.y / 2.f });
+	pieText.setPosition(center);
 
-	window.draw(scoreText);
+	window.draw(pieText);
 
 	window.setView(m_cameraView);
 }
