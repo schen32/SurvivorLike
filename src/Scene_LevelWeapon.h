@@ -15,6 +15,7 @@ protected:
 		Animation animation;
 		std::string name;
 		std::string description;
+		int level = 0;
 	};
 
 	size_t m_selectedIndex = 0;

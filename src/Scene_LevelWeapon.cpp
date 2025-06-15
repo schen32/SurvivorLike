@@ -49,28 +49,52 @@ void Scene_LevelWeapon::init(std::shared_ptr<Entity> player)
 	m_weaponMap.insert({ "LaserBullet",
 		{ m_game->assets().getAnimation("Bullet1"), "Laser Bullet", "-cooldown +size, speed, damage"} });
 	m_weaponMap.insert({ "Attract",
-		{ m_game->assets().getAnimation("Gem"), "Attract", "+attraction radius"} });
+		{ m_game->assets().getAnimation("Gem"), "Attract", "+item attraction radius"} });
 	m_weaponMap.insert({ "MoveSpeed",
-		{ m_game->assets().getAnimation("Gem"), "Move Speed", "+movement speed"} });
+		{ m_game->assets().getAnimation("Gem"), "Move Speed", "+player movement speed"} });
 
 	m_player = player;
 	std::vector<std::string> playerWeapons;
 	if (player->has<CBasicAttack>() && player->get<CBasicAttack>().level < 10)
+	{
 		playerWeapons.push_back("MeeleSlash");
+		m_weaponMap.at("MeeleSlash").level = player->get<CBasicAttack>().level;
+	}
 	if (player->has<CSpecialAttack>() && player->get<CSpecialAttack>().level < 10)
+	{
 		playerWeapons.push_back("RangedSlash");
+		m_weaponMap.at("RangedSlash").level = player->get<CSpecialAttack>().level;
+	}
 	if (player->has<CRingAttack>() && player->get<CRingAttack>().level < 10)
+	{
 		playerWeapons.push_back("FireRing");
+		m_weaponMap.at("FireRing").level = player->get<CRingAttack>().level;
+	}
 	if (player->has<CWhirlAttack>() && player->get<CWhirlAttack>().level < 10)
+	{
 		playerWeapons.push_back("Whirlpool");
+		m_weaponMap.at("Whirlpool").level = player->get<CWhirlAttack>().level;
+	}
 	if (player->has<CExplodeAttack>() && player->get<CExplodeAttack>().level < 10)
+	{
 		playerWeapons.push_back("Explosion");
+		m_weaponMap.at("Explosion").level = player->get<CExplodeAttack>().level;
+	}
 	if (player->has<CBulletAttack>() && player->get<CBulletAttack>().level < 10)
+	{
 		playerWeapons.push_back("LaserBullet");
+		m_weaponMap.at("LaserBullet").level = player->get<CBulletAttack>().level;
+	}
 	if (player->get<CAttractor>().radius < 1000.0f)
+	{
 		playerWeapons.push_back("Attract");
+		m_weaponMap.at("Attract").level = player->get<CAttractor>().level;
+	}
 	if (player->get<CTransform>().speed < 10.0f)
+	{
 		playerWeapons.push_back("MoveSpeed");
+		m_weaponMap.at("MoveSpeed").level = player->get<CTransform>().level;
+	}	
 
 	std::random_device rd;
 	std::mt19937 gen(rd());
@@ -241,11 +265,13 @@ void Scene_LevelWeapon::select()
 			auto& attract = m_player->get<CAttractor>();
 			attract.radius += 50.0f;
 			attract.strength += 10.0f;
+			attract.level++;
 		}
 		else if (button->name() == "MoveSpeed")
 		{
 			auto& transform = m_player->get<CTransform>();
 			transform.speed += 0.4f;
+			transform.level++;
 		}
 
 		onExitScene();
@@ -348,10 +374,21 @@ void Scene_LevelWeapon::sRender()
 		buttonText.setOutlineThickness(2.0f);
 		buttonText.setOutlineColor(sf::Color(86, 106, 137));
 		auto bounds = buttonText.getLocalBounds();
-		buttonText.setOrigin(bounds.position + bounds.size / 2.f);
+		buttonText.setOrigin(bounds.size / 2.f);
 		buttonText.setPosition(sf::Vector2f(
-			transform.pos.x + buttonBounds.size.x / 10, transform.pos.y - buttonBounds.size.y / 8));
+			transform.pos.x + buttonBounds.size.x / 10, transform.pos.y - buttonBounds.size.y / 2));
 		window.draw(buttonText);
+
+		auto levelText = sf::Text(m_game->assets().getFont("ByteBounce"));
+		levelText.setCharacterSize(100);
+		levelText.setString("Lvl. " + std::to_string(weaponData.level) + " > " + std::to_string(weaponData.level + 1));
+		levelText.setOutlineThickness(2.0f);
+		levelText.setOutlineColor(sf::Color(86, 106, 137));
+		bounds = levelText.getLocalBounds();
+		levelText.setOrigin(bounds.size / 2.f);
+		levelText.setPosition(sf::Vector2f(
+			transform.pos.x + buttonBounds.size.x / 10, transform.pos.y - buttonBounds.size.y / 16));
+		window.draw(levelText);
 
 		auto descriptText = sf::Text(m_game->assets().getFont("ByteBounce"));
 		descriptText.setCharacterSize(100);
@@ -359,7 +396,7 @@ void Scene_LevelWeapon::sRender()
 		descriptText.setOutlineThickness(2.0f);
 		descriptText.setOutlineColor(sf::Color(86, 106, 137));
 		bounds = descriptText.getLocalBounds();
-		descriptText.setOrigin(bounds.position + bounds.size / 2.f);
+		descriptText.setOrigin(bounds.size / 2.f);
 		descriptText.setPosition(sf::Vector2f(
 			transform.pos.x + buttonBounds.size.x / 10, transform.pos.y + buttonBounds.size.y / 8));
 		window.draw(descriptText);

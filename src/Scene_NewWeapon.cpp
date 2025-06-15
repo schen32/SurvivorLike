@@ -37,17 +37,17 @@ void Scene_NewWeapon::init(std::shared_ptr<Entity> player)
 	window.setView(m_menuView);
 
 	m_weaponMap.insert({ "MeeleSlash",
-		{ m_game->assets().getAnimation("Slash1"), "Close Slash", "Meele-ranged slash"} });
+		{ m_game->assets().getAnimation("Slash1"), "Close Slash", "The way of the blade"} });
 	m_weaponMap.insert({ "RangedSlash",
-		{m_game->assets().getAnimation("Slash1"), "Far Slash", "Ranged flying slash attack"} });
+		{m_game->assets().getAnimation("Slash1"), "Far Slash", "Flying blade of air"} });
 	m_weaponMap.insert({ "FireRing",
-		{ m_game->assets().getAnimation("Ring1"), "Ring of Fire", "Ring of fire that protects you"} });
+		{ m_game->assets().getAnimation("Ring1"), "Ring of Fire", "The fire will protect you"} });
 	m_weaponMap.insert({ "Whirlpool",
-		{ m_game->assets().getAnimation("Ring2"), "Whirlpool", "Whirlpool that sucks in enemies"} });
+		{ m_game->assets().getAnimation("Ring2"), "Whirlpool", "The eye of the storm consumes all"} });
 	m_weaponMap.insert({ "Explosion",
-		{ m_game->assets().getAnimation("Explode1"), "Explosion", "Explosion attack with great knockback"} });
+		{ m_game->assets().getAnimation("Explode1"), "Explosion", "3, 2, 1... Bang"} });
 	m_weaponMap.insert({ "LaserBullet",
-		{ m_game->assets().getAnimation("Bullet1"), "Laser Bullet", "Laser bullets with a high fire rate"} });
+		{ m_game->assets().getAnimation("Bullet1"), "Laser Bullet", "Good old pew pew"} });
 
 	m_player = player;
 	std::vector<std::string> playerWeapons;

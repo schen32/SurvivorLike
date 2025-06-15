@@ -1300,7 +1300,7 @@ void Scene_Play::sRender()
 	float healthBarHeight = 50.f;
 	auto& pHealth = player()->get<CHealth>();
 	float hpPercent = static_cast<float>(pHealth.health) / pHealth.maxHealth;
-	sf::Vector2f barPos = sf::Vector2f(width() / 2, height() - 150);
+	sf::Vector2f barPos = sf::Vector2f(width() / 2, height() * 0.9f);
 	// Background (transparent black)
 	sf::RectangleShape bgBar(sf::Vector2f(healthBarWidth, healthBarHeight));
 	bgBar.setOrigin(sf::Vector2f(healthBarWidth, healthBarHeight) / 2.f);
@@ -1321,13 +1321,25 @@ void Scene_Play::sRender()
 	healthText.setCharacterSize(40.f);
 	healthText.setOutlineThickness(1.0f);
 	healthText.setOutlineColor(sf::Color(86, 106, 137));
-	healthText.setString(std::to_string(pHealth.health) + " / " + std::to_string(pHealth.maxHealth));
+	healthText.setString(std::to_string(pHealth.health) + " / " + std::to_string(pHealth.maxHealth) + "HP");
 	sf::FloatRect bounds = healthText.getLocalBounds();
-	healthText.setOrigin({ bounds.position.x + bounds.size.x / 2.f, bounds.position.y + bounds.size.y / 2.f });
+	healthText.setOrigin(sf::Vector2f(bounds.size.x / 2.0f, bounds.size.y));
 	healthText.setPosition(barPos);
 
 	window.draw(healthText);
 	//
+
+	// player level text
+	sf::Text levelText(m_game->assets().getFont("FutureMillennium"));
+	levelText.setCharacterSize(40.f);
+	levelText.setOutlineThickness(1.0f);
+	levelText.setOutlineColor(sf::Color(86, 106, 137));
+	levelText.setString("Lvl. " + std::to_string(pScore.level));
+	bounds = levelText.getLocalBounds();
+	levelText.setOrigin(sf::Vector2f(bounds.size.x / 2.0f, bounds.size.y));
+	levelText.setPosition(sf::Vector2f(width() * 0.5f, height() * 0.94f));
+
+	window.draw(levelText);
 
 	// circle score UI
 	float percent = (pScore.score - pScore.prevScoreThreshold) /

@@ -23,6 +23,7 @@ public:
 	float angle = 0;
 	float accel = 0;
 	float speed = 0;
+	int level = 1;
 
 	CTransform() = default;
 	CTransform(const Vec2f& p)
@@ -243,6 +244,7 @@ class CAttractor : public Component
 public:
 	float strength = 0;
 	float radius = 0;
+	int level = 1;
 
 	CAttractor() = default;
 	CAttractor(float s, float r) : strength(s), radius(r) {}
