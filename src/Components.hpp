@@ -125,7 +125,7 @@ public:
 	int lastAttackTime = 0;
 	float scale = 1.0f;
 	int duration = 15;
-	int health = 200;
+	int health = 100;
 	int distanceFromPlayer = 30;
 	int damage = 10;
 	float knockMagnitude = 5.f;
@@ -185,7 +185,7 @@ public:
 	int lastAttackTime = 0;
 	float scale = 2.0f;
 	int duration = 300;
-	int health = 10000;
+	int health = 1000;
 	int damage = 10;
 	float knockMagnitude = 5.f;
 	int knockDuration = 30;
@@ -204,7 +204,7 @@ public:
 	int lastAttackTime = 0;
 	float scale = 2.0f;
 	int duration = 25;
-	int health = 1000;
+	int health = 100;
 	int damage = 20;
 	float knockMagnitude = 15.f;
 	int knockDuration = 50;
@@ -223,7 +223,7 @@ public:
 	int lastAttackTime = 0;
 	float scale = 2.0f;
 	int duration = 300;
-	int health = 2000;
+	int health = 1000;
 	int damage = 5;
 	float attractStrength = 50.0f;
 	float attractRadius = 150.0f;

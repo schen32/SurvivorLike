@@ -165,7 +165,7 @@ void Scene_Play::spawnChainBot()
 			auto& eAnimation = enemy->add<CAnimation>(m_game->assets().getAnimation("ChainBotIdle"), true);
 			enemy->add<CTransform>(player()->get<CTransform>().pos + spawnPoint);
 			enemy->add<CBoundingBox>(eAnimation.animation.m_size / 2);
-			enemy->add<CHealth>(30 + pLevel * 4);
+			enemy->add<CHealth>(30 + pLevel * 10);
 			enemy->add<CDamage>(10);
 			enemy->add<CFollow>(player(), 0.2f);
 			enemy->add<CScore>(1);
@@ -192,7 +192,7 @@ void Scene_Play::spawnBotWheel()
 			auto& eAnimation = enemy->add<CAnimation>(m_game->assets().getAnimation("BotWheelRun"), true);
 			enemy->add<CTransform>(player()->get<CTransform>().pos + spawnPoint);
 			enemy->add<CBoundingBox>(eAnimation.animation.m_size / 2);
-			enemy->add<CHealth>(40 + pLevel * 5);
+			enemy->add<CHealth>(40 + pLevel * 12);
 			enemy->add<CDamage>(10);
 			enemy->add<CFollow>(player(), 0.3f);
 			enemy->add<CScore>(2);
@@ -221,7 +221,7 @@ void Scene_Play::spawnBigChainBot()
 		eAnimation.animation.m_sprite.setScale(Vec2f(eTransform.scale, eTransform.scale));
 		
 		enemy->add<CBoundingBox>(eAnimation.animation.m_size / 2 * eTransform.scale);
-		enemy->add<CHealth>(200 + pLevel * 40);
+		enemy->add<CHealth>(200 + pLevel * 100);
 		enemy->add<CDamage>(20);
 		enemy->add<CFollow>(player(), 0.1f);
 		enemy->add<CScore>(6 + pLevel * 2);
@@ -249,7 +249,7 @@ void Scene_Play::spawnBigBotWheel()
 		eAnimation.animation.m_sprite.setScale(Vec2f(eTransform.scale, eTransform.scale));
 
 		enemy->add<CBoundingBox>(eAnimation.animation.m_size / 2 * eTransform.scale);
-		enemy->add<CHealth>(250 + pLevel * 50);
+		enemy->add<CHealth>(250 + pLevel * 120);
 		enemy->add<CDamage>(20);
 		enemy->add<CFollow>(player(), 0.2f);
 		enemy->add<CScore>(8 + pLevel * 2);

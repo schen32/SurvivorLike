@@ -164,6 +164,8 @@ void Scene_LevelWeapon::select()
 			attack.scale += 0.1f;
 			attack.duration += 3;
 			attack.damage += 5 * attack.level;
+			attack.health += 10;
+			attack.knockMagnitude += 0.5f;
 			attack.level++;
 		}
 		else if (button->name() == "RangedSlash")
@@ -174,6 +176,8 @@ void Scene_LevelWeapon::select()
 			attack.duration += 6;
 			attack.speed += 1;
 			attack.damage += 5 * attack.level;
+			attack.health += 15;
+			attack.knockMagnitude += 0.5f;
 			attack.level++;
 		}
 			
@@ -183,6 +187,8 @@ void Scene_LevelWeapon::select()
 			attack.cooldown -= 20;
 			attack.scale += 0.2f;
 			attack.damage += 5 * attack.level;
+			attack.health += 100;
+			attack.knockMagnitude += 0.5f;
 			attack.level++;
 		}
 			
@@ -193,6 +199,8 @@ void Scene_LevelWeapon::select()
 			attack.scale += 0.2f;
 			attack.duration += 25;
 			attack.damage += 5 * attack.level;
+			attack.health += 100;
+			attack.attractRadius += 15.0f;
 			attack.level++;
 		}
 			
@@ -203,6 +211,8 @@ void Scene_LevelWeapon::select()
 			attack.scale += 0.2f;
 			attack.duration += 6;
 			attack.damage += 10 * attack.level;
+			attack.health += 10;
+			attack.knockMagnitude += 1.5f;
 			attack.level++;
 		}
 			
@@ -214,6 +224,7 @@ void Scene_LevelWeapon::select()
 			attack.duration += 3;
 			attack.speed += 1;
 			attack.damage += 5 * attack.level;
+			attack.health += 5;
 			attack.level++;
 		}
 
