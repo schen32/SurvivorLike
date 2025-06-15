@@ -161,6 +161,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Scene_GameOver.cpp" />
     <ClCompile Include="src\Scene_LevelWeapon.cpp" />
     <ClCompile Include="src\Scene_NewWeapon.cpp" />
     <ClCompile Include="src\Scene_Pause.cpp" />
@@ -177,6 +178,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ParticleSystem.hpp" />
+    <ClInclude Include="src\Scene_GameOver.h" />
     <ClInclude Include="src\Scene_LevelWeapon.h" />
     <ClInclude Include="src\Scene_NewWeapon.h" />
     <ClInclude Include="src\Scene_Pause.h" />

@@ -1,6 +1,7 @@
 #include "Scene_Play.h"
 #include "Scene_Menu.h"
 #include "Scene_Pause.h"
+#include "Scene_GameOver.h"
 #include "Scene_NewWeapon.h"
 #include "Scene_LevelWeapon.h"
 #include "Physics.hpp"
@@ -310,7 +311,7 @@ void Scene_Play::update()
 	if (m_playerDied)
 	{
 		onExitScene();
-		m_game->changeScene("MENU", std::make_shared<Scene_Menu>(m_game));
+		m_game->changeScene("GAME_OVER", std::make_shared<Scene_GameOver>(m_game));
 	}
 }
 
@@ -1001,16 +1002,8 @@ void Scene_Play::sAnimation()
 
 		if (!eAnimation.repeat && eAnimation.animation.hasEnded())
 		{
-			if (!m_playerDied && entity->id() == player()->id())
-			{
-				m_playerDied = true;
-				return;
-			}
-			else
-			{
-				entity->destroy();
-				continue;
-			}
+			entity->destroy();
+			continue;
 		}
 
 		if (entity->tag() == "player")
@@ -1029,7 +1022,6 @@ void Scene_Play::sAnimation()
 			{
 				player()->add<CAnimation>(m_game->assets().getAnimation("StormheadDeath"), false);
 				m_playerDied = true;
-				return;
 			}
 		}
 
@@ -1049,6 +1041,7 @@ void Scene_Play::sAnimation()
 				else if (eState == "dead" && entity->get<CAnimation>().animation.m_name != "ChainBotDeath")
 				{
 					auto& eAnimation = entity->add<CAnimation>(m_game->assets().getAnimation("ChainBotDeath"), false);
+					eAnimation.animation.m_sprite.setColor(sf::Color::Green);
 					enemyDied(entity);
 				}
 			}
@@ -1066,6 +1059,7 @@ void Scene_Play::sAnimation()
 				else if (eState == "dead" && entity->get<CAnimation>().animation.m_name != "BotWheelDead")
 				{
 					auto& eAnimation = entity->add<CAnimation>(m_game->assets().getAnimation("BotWheelDead"), false);
+					eAnimation.animation.m_sprite.setColor(sf::Color::Green);
 					enemyDied(entity);
 				}
 			}
