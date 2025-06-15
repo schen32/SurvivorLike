@@ -283,10 +283,10 @@ void Scene_LevelWeapon::sRender()
 		window.draw(animation.m_sprite);
 
 		auto buttonText = sf::Text(m_game->assets().getFont("ByteBounce"));
-		buttonText.setCharacterSize(200 * transform.scale);
+		buttonText.setCharacterSize(250 * transform.scale);
 		buttonText.setString(entity->name());
-		buttonText.setOutlineColor(sf::Color(28, 30, 38));
 		buttonText.setOutlineThickness(2.0f * transform.scale);
+		buttonText.setOutlineColor(sf::Color(86, 106, 137));
 		auto bounds = buttonText.getLocalBounds();
 		buttonText.setOrigin(bounds.position + bounds.size / 2.f);
 		buttonText.setPosition(transform.pos);
@@ -312,10 +312,10 @@ void Scene_LevelWeapon::sRender()
 		window.draw(weaponData.animation.m_sprite);
 
 		auto buttonText = sf::Text(m_game->assets().getFont("ByteBounce"));
-		buttonText.setCharacterSize(180);
+		buttonText.setCharacterSize(200);
 		buttonText.setString(weaponData.name);
-		buttonText.setOutlineColor(sf::Color(28, 30, 38));
 		buttonText.setOutlineThickness(2.0f);
+		buttonText.setOutlineColor(sf::Color(86, 106, 137));
 		auto bounds = buttonText.getLocalBounds();
 		buttonText.setOrigin(bounds.position + bounds.size / 2.f);
 		buttonText.setPosition(sf::Vector2f(
@@ -325,8 +325,8 @@ void Scene_LevelWeapon::sRender()
 		auto descriptText = sf::Text(m_game->assets().getFont("ByteBounce"));
 		descriptText.setCharacterSize(100);
 		descriptText.setString(weaponData.description);
-		descriptText.setOutlineColor(sf::Color(28, 30, 38));
 		descriptText.setOutlineThickness(2.0f);
+		descriptText.setOutlineColor(sf::Color(86, 106, 137));
 		bounds = descriptText.getLocalBounds();
 		descriptText.setOrigin(bounds.position + bounds.size / 2.f);
 		descriptText.setPosition(sf::Vector2f(

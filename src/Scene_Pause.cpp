@@ -44,7 +44,7 @@ void Scene_Pause::loadScene()
 
 	auto title = m_entityManager.addEntity("ui", "Paused");
 	auto& tAnimation = title->add<CAnimation>(m_game->assets().getAnimation("ButtonHover"), true).animation;
-	tAnimation.m_sprite.setScale(sf::Vector2f(2.f, 0.8f));
+	tAnimation.m_sprite.setScale(sf::Vector2f(1.2f, 0.8f));
 	title->add<CTransform>(Vec2f(width() / 2, height() * 0.2f));
 
 	auto playButton = m_entityManager.addEntity("button", "Resume");
@@ -200,8 +200,8 @@ void Scene_Pause::sRender()
 		auto buttonText = sf::Text(m_game->assets().getFont("FutureMillennium"));
 		buttonText.setCharacterSize(200 * transform.scale);
 		buttonText.setString(entity->name());
-		buttonText.setOutlineColor(sf::Color(204, 226, 225));
-		buttonText.setOutlineThickness(5.0f * transform.scale);
+		buttonText.setOutlineThickness(2.0f * transform.scale);
+		buttonText.setOutlineColor(sf::Color(86, 106, 137));
 		auto bounds = buttonText.getLocalBounds();
 		buttonText.setOrigin(bounds.position + bounds.size / 2.f);
 		buttonText.setPosition(transform.pos);
