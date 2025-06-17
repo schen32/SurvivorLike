@@ -7,10 +7,9 @@
 
 #include "EntityManager.hpp"
 
-class Scene_Menu : public Scene
+class Scene_Option : public Scene
 {
 protected:
-	std::string m_musicName;
 	Vec2f m_mousePos;
 
 	void init();
@@ -25,7 +24,7 @@ protected:
 	void sHover();
 	void sAnimation();
 public:
-	Scene_Menu() = default;
-	Scene_Menu(GameEngine* gameEngine = nullptr);
+	Scene_Option() = default;
+	Scene_Option(GameEngine* gameEngine = nullptr);
 	void sRender();
 };

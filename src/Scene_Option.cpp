@@ -1,76 +1,55 @@
 #include "Scene_Menu.h"
-#include "Scene_Play.h"
 #include "Scene_Option.h"
 #include "Assets.hpp"
 #include "GameEngine.h"
 #include "Components.hpp"
+#include "Entity.hpp"
 #include "Action.hpp"
 #include "Utils.hpp"
 
 #include <iostream>
 
-Scene_Menu::Scene_Menu(GameEngine* gameEngine)
+Scene_Option::Scene_Option(GameEngine* gameEngine)
 	: Scene(gameEngine)
 {
 	init();
 }
 
-void Scene_Menu::init()
+void Scene_Option::init()
 {
-    m_musicName = "Awakened";
-    auto& bgm = m_game->assets().getMusic(m_musicName);
-    bgm.setVolume(20);
-    bgm.setLooping(true);
-    bgm.play();
-
-	auto& window = m_game->window();
-	window.setView(window.getDefaultView());
-
 	loadMenu();
 }
 
-void Scene_Menu::loadMenu()
+void Scene_Option::loadMenu()
 {
 	m_entityManager = EntityManager();
 
-	auto title = m_entityManager.addEntity("ui", "Alien Survivors");
+	auto title = m_entityManager.addEntity("ui", "Options");
 	auto& tAnimation = title->add<CAnimation>(m_game->assets().getAnimation("ButtonHover"), true).animation;
 	tAnimation.m_sprite.setScale(sf::Vector2f(1.6f, 0.8f));
 	title->add<CTransform>(Vec2f(width() / 2, height() * 0.2f));
 
-	auto playButton = m_entityManager.addEntity("button", "New Game");
-	playButton->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
-	auto& pbTransform = playButton->add<CTransform>(Vec2f(width() / 2, height() * 0.4f));
-	pbTransform.scale = 0.5f;
-	playButton->add<CState>("unselected");
+	auto fullButton = m_entityManager.addEntity("button", "Windowed");
+	fullButton->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
+	auto& fTransform = fullButton->add<CTransform>(Vec2f(width() / 2, height() * 0.4f));
+	fTransform.scale = 0.5f;
+	fullButton->add<CState>("unselected");
 
-	auto continueButton = m_entityManager.addEntity("button", "Continue");
-	continueButton->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
-	auto& cTransform = continueButton->add<CTransform>(Vec2f(width() / 2, height() * 0.55f));
-	cTransform.scale = 0.5f;
-	continueButton->add<CState>("unselected");
-
-	auto optionButton = m_entityManager.addEntity("button", "Options");
-	optionButton->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
-	auto& oTransform = optionButton->add<CTransform>(Vec2f(width() / 2, height() * 0.70f));
-	oTransform.scale = 0.5f;
-	optionButton->add<CState>("unselected");
-
-	auto quitButton = m_entityManager.addEntity("button", "Quit");
-	quitButton->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
-	auto& qTransform = quitButton->add<CTransform>(Vec2f(width() / 2, height() * 0.85f));
-	qTransform.scale = 0.5f;
-	quitButton->add<CState>("unselected");
+	auto backButton = m_entityManager.addEntity("button", "Back");
+	backButton->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
+	auto& bTransform = backButton->add<CTransform>(Vec2f(width() / 2, height() * 0.55f));
+	bTransform.scale = 0.5f;
+	backButton->add<CState>("unselected");
 }
 
-void Scene_Menu::update()
+void Scene_Option::update()
 {
 	m_entityManager.update();
 	sHover();
 	sAnimation();
 }
 
-void Scene_Menu::sHover()
+void Scene_Option::sHover()
 {
 	for (auto& button : m_entityManager.getEntities("button"))
 	{
@@ -82,7 +61,7 @@ void Scene_Menu::sHover()
 	}
 }
 
-void Scene_Menu::sAnimation()
+void Scene_Option::sAnimation()
 {
 	for (auto& button : m_entityManager.getEntities("button"))
 	{
@@ -102,49 +81,58 @@ void Scene_Menu::sAnimation()
 	}
 }
 
-void Scene_Menu::onEnd()
+void Scene_Option::onEnd()
 {
 	m_game->quit();
 }
 
-void Scene_Menu::onExitScene()
+void Scene_Option::onExitScene()
 {
-    auto& bgm = m_game->assets().getMusic(m_musicName);
-    bgm.stop();
+
 }
 
-void Scene_Menu::onEnterScene()
+void Scene_Option::onEnterScene()
 {
-	auto& window = m_game->window();
-	window.setView(window.getDefaultView());
+
 }
 
-void Scene_Menu::select()
+void Scene_Option::select()
 {
 	for (auto& button : m_entityManager.getEntities("button"))
 	{
 		if (!Utils::IsInside(m_mousePos, button)) continue;
 
-		if (button->name() == "New Game" &&
-			m_game->changeScene("PLAY", std::make_shared<Scene_Play>(m_game)))
-			onExitScene();
-		else if (button->name() == "Continue" &&
-			m_game->changeScene("PLAY", nullptr))
-			onExitScene();
-		else if (button->name() == "Options")
+		if (button->name() == "Fullscreen")
 		{
-			if (m_game->changeScene("OPTION", nullptr))
-				continue;
+			auto& m_window = m_game->window();
+			// Close and recreate the window in fullscreen
+			m_window.close();
+			auto desktop = sf::VideoMode::getDesktopMode();
+			m_window.create(desktop, "Alien Survivor", sf::Style::None);
+			m_game->m_isFullscreen = true;
+			m_window.setFramerateLimit(60);
 
-			m_game->changeScene("OPTION", std::make_shared<Scene_Option>(m_game));
-		}	
-		else if (button->name() == "Quit")
-			onEnd();
-			
+			button->m_name = "Windowed";
+		}
+		else if (button->name() == "Windowed")
+		{
+			auto& m_window = m_game->window();
+			// Close and recreate the window in fullscreen
+			m_window.close();
+			auto desktop = sf::VideoMode::getDesktopMode();
+			m_window.create(desktop, "Alien Survivor", sf::Style::Default);
+			m_game->m_isFullscreen = false;
+			m_window.setFramerateLimit(60);
+
+			button->m_name = "Fullscreen";
+		}
+		else if (button->name() == "Back" &&
+			m_game->changeScene("MENU", nullptr))
+			onExitScene();
 	}
 }
 
-void Scene_Menu::sDoAction(const Action& action)
+void Scene_Option::sDoAction(const Action& action)
 {
 	if (action.m_type == "START")
 	{
@@ -187,11 +175,11 @@ void Scene_Menu::sDoAction(const Action& action)
 	}
 }
 
-void Scene_Menu::sRender()
+void Scene_Option::sRender()
 {
-    auto& window = m_game->window();
+	auto& window = m_game->window();
 	window.clear(sf::Color(204, 226, 225));
-    
+
 	for (auto& entity : m_entityManager.getEntities())
 	{
 		if (!entity->has<CAnimation>()) continue;
@@ -201,7 +189,7 @@ void Scene_Menu::sRender()
 
 		animation.m_sprite.setPosition(transform.pos);
 		if (entity->tag() == "button")
-			animation.m_sprite.setScale({ transform.scale, transform.scale });
+			animation.m_sprite.setScale({ transform.scale * 1.2f, transform.scale });
 		window.draw(animation.m_sprite);
 
 		auto buttonText = sf::Text(m_game->assets().getFont("FutureMillennium"));

@@ -57,6 +57,9 @@
     <ClCompile Include="src\Scene_GameOver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Scene_Option.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imconfig.h">
@@ -141,6 +144,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene_GameOver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene_Option.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

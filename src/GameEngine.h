@@ -30,6 +30,7 @@ protected:
 	std::shared_ptr<Scene> currentScene();
 
 public:
+	bool m_isFullscreen = true;
 
 	GameEngine(const std::string& path);
 	bool changeScene(const std::string& sceneName,

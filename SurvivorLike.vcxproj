@@ -164,6 +164,7 @@
     <ClCompile Include="src\Scene_GameOver.cpp" />
     <ClCompile Include="src\Scene_LevelWeapon.cpp" />
     <ClCompile Include="src\Scene_NewWeapon.cpp" />
+    <ClCompile Include="src\Scene_Option.cpp" />
     <ClCompile Include="src\Scene_Pause.cpp" />
     <ClCompile Include="src\Scene_Play.cpp" />
     <ClCompile Include="src\Scene_Menu.cpp" />
@@ -181,6 +182,7 @@
     <ClInclude Include="src\Scene_GameOver.h" />
     <ClInclude Include="src\Scene_LevelWeapon.h" />
     <ClInclude Include="src\Scene_NewWeapon.h" />
+    <ClInclude Include="src\Scene_Option.h" />
     <ClInclude Include="src\Scene_Pause.h" />
     <ClInclude Include="src\Scene_Play.h" />
     <ClInclude Include="src\Scene.h" />
