@@ -51,7 +51,7 @@ void Scene_LevelWeapon::init(std::shared_ptr<Entity> player)
 	m_weaponMap.insert({ "Attract",
 		{ m_game->assets().getAnimation("Gem"), "Attract", "+item attraction radius"} });
 	m_weaponMap.insert({ "MoveSpeed",
-		{ m_game->assets().getAnimation("Gem"), "Move Speed", "+player movement speed"} });
+		{ m_game->assets().getAnimation("Character"), "Move Speed", "+player movement speed"} });
 
 	m_player = player;
 	std::vector<std::string> playerWeapons;

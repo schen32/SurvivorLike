@@ -52,6 +52,8 @@ Texture TexGem assets/items/icon_gem.png
 Animation Gem TexGem 1 1 1 0
 Texture TexHeart assets/items/icon_heart.png
 Animation Heart TexHeart 1 1 1 0
+Texture TexCharacter assets/items/icon_character.png
+Animation Character TexCharacter 1 1 1 0
 
 Sound Whoosh1 assets/sounds/Whoosh_1-1.wav
 Sound Whoosh4 assets/sounds/Whoosh_4-1.wav
