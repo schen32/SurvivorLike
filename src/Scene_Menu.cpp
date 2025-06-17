@@ -1,6 +1,5 @@
 #include "Scene_Menu.h"
 #include "Scene_Play.h"
-#include "Scene_Option.h"
 #include "Assets.hpp"
 #include "GameEngine.h"
 #include "Components.hpp"
@@ -17,12 +16,6 @@ Scene_Menu::Scene_Menu(GameEngine* gameEngine)
 
 void Scene_Menu::init()
 {
-    m_musicName = "Awakened";
-    auto& bgm = m_game->assets().getMusic(m_musicName);
-    bgm.setVolume(20);
-    bgm.setLooping(true);
-    bgm.play();
-
 	auto& window = m_game->window();
 	window.setView(window.getDefaultView());
 
@@ -33,32 +26,20 @@ void Scene_Menu::loadMenu()
 {
 	m_entityManager = EntityManager();
 
-	auto title = m_entityManager.addEntity("ui", "Alien Survivors");
+	auto title = m_entityManager.addEntity("ui", "Game Engine");
 	auto& tAnimation = title->add<CAnimation>(m_game->assets().getAnimation("ButtonHover"), true).animation;
 	tAnimation.m_sprite.setScale(sf::Vector2f(1.6f, 0.8f));
 	title->add<CTransform>(Vec2f(width() / 2, height() * 0.2f));
 
-	auto playButton = m_entityManager.addEntity("button", "New Game");
+	auto playButton = m_entityManager.addEntity("button", "Start");
 	playButton->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
 	auto& pbTransform = playButton->add<CTransform>(Vec2f(width() / 2, height() * 0.4f));
 	pbTransform.scale = 0.5f;
 	playButton->add<CState>("unselected");
 
-	auto continueButton = m_entityManager.addEntity("button", "Continue");
-	continueButton->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
-	auto& cTransform = continueButton->add<CTransform>(Vec2f(width() / 2, height() * 0.55f));
-	cTransform.scale = 0.5f;
-	continueButton->add<CState>("unselected");
-
-	auto optionButton = m_entityManager.addEntity("button", "Options");
-	optionButton->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
-	auto& oTransform = optionButton->add<CTransform>(Vec2f(width() / 2, height() * 0.70f));
-	oTransform.scale = 0.5f;
-	optionButton->add<CState>("unselected");
-
 	auto quitButton = m_entityManager.addEntity("button", "Quit");
 	quitButton->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
-	auto& qTransform = quitButton->add<CTransform>(Vec2f(width() / 2, height() * 0.85f));
+	auto& qTransform = quitButton->add<CTransform>(Vec2f(width() / 2, height() * 0.55f));
 	qTransform.scale = 0.5f;
 	quitButton->add<CState>("unselected");
 }
@@ -98,7 +79,6 @@ void Scene_Menu::sAnimation()
 		{
 			button->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
 		}
-
 	}
 }
 
@@ -109,8 +89,6 @@ void Scene_Menu::onEnd()
 
 void Scene_Menu::onExitScene()
 {
-    auto& bgm = m_game->assets().getMusic(m_musicName);
-    bgm.stop();
 }
 
 void Scene_Menu::onEnterScene()
@@ -125,22 +103,11 @@ void Scene_Menu::select()
 	{
 		if (!Utils::IsInside(m_mousePos, button)) continue;
 
-		if (button->name() == "New Game" &&
+		if (button->name() == "Start" &&
 			m_game->changeScene("PLAY", std::make_shared<Scene_Play>(m_game)))
 			onExitScene();
-		else if (button->name() == "Continue" &&
-			m_game->changeScene("PLAY", nullptr))
-			onExitScene();
-		else if (button->name() == "Options")
-		{
-			if (m_game->changeScene("OPTION", nullptr))
-				continue;
-
-			m_game->changeScene("OPTION", std::make_shared<Scene_Option>(m_game));
-		}	
 		else if (button->name() == "Quit")
 			onEnd();
-			
 	}
 }
 

@@ -14,8 +14,7 @@ class Physics
 public:
 	Physics() = default;
 
-	Vec2f static GetOverlap(std::shared_ptr<Entity> a,
-		std::shared_ptr<Entity> b)
+	Vec2f static GetOverlap(std::shared_ptr<Entity> a, std::shared_ptr<Entity> b)
 	{
 		if (!(a->has<CBoundingBox>() && b->has<CBoundingBox>()))
 		{
@@ -36,8 +35,7 @@ public:
 		return Vec2f(xOverlap, yOverlap);
 	}
 
-	Vec2f static GetPreviousOverlap(std::shared_ptr<Entity> a,
-		std::shared_ptr<Entity> b)
+	Vec2f static GetPreviousOverlap(std::shared_ptr<Entity> a, std::shared_ptr<Entity> b)
 	{
 		if (!(a->has<CBoundingBox>() && b->has<CBoundingBox>()))
 		{
@@ -56,5 +54,19 @@ public:
 		float xOverlap = aBB.halfSize.x + bBB.halfSize.x - delta.x;
 		float yOverlap = aBB.halfSize.y + bBB.halfSize.y - delta.y;
 		return Vec2f(xOverlap, yOverlap);
+	}
+
+	bool static IsInside(const Vec2f& pos, std::shared_ptr<Entity> entity)
+	{
+		auto ePosition = entity->get<CTransform>().pos;
+		auto eSize = entity->get<CAnimation>().animation.m_size;
+		eSize *= entity->get<CTransform>().scale;
+
+		if (ePosition.x - eSize.x / 2 <= pos.x && pos.x <= ePosition.x + eSize.x / 2 &&
+			ePosition.y - eSize.y / 2 <= pos.y && pos.y <= ePosition.y + eSize.y / 2)
+		{
+			return true;
+		}
+		return false;
 	}
 };

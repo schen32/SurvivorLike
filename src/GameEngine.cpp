@@ -2,9 +2,6 @@
 #include "Assets.hpp"
 #include "Scene_Menu.h"
 #include "Scene_Play.h"
-#include "Scene_GameOver.h"
-#include "Scene_NewWeapon.h"
-#include "Timer.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -18,8 +15,8 @@ void GameEngine::init(const std::string& path)
 {
 	m_assets.loadFromFile(path);
 
-	sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
-	m_window.create(desktop, "Alien Survivor", sf::Style::None);
+	auto videoMode = sf::VideoMode({ 1920, 1080 });
+	m_window.create(videoMode, "Game Engine", sf::Style::Default);
 	m_window.setFramerateLimit(60);
 
 	/*if (!ImGui::SFML::Init(m_window))
@@ -28,8 +25,6 @@ void GameEngine::init(const std::string& path)
 	}*/
 
 	changeScene("MENU", std::make_shared<Scene_Menu>(this));
-	//changeScene("PLAY", std::make_shared<Scene_Play>(this));
-	//changeScene("NEW_WEAPON", std::make_shared<Scene_NewWeapon>(this));
 }
 
 std::shared_ptr<Scene> GameEngine::currentScene()
@@ -68,13 +63,6 @@ void GameEngine::sUserInput()
 		if (event->is<sf::Event::Closed>())
 		{
 			quit();
-		}
-		// catch the resize events
-		else if (const auto* resized = event->getIf<sf::Event::Resized>())
-		{
-			// update the view to the new size of the window
-			sf::FloatRect visibleArea({ 0.f, 0.f }, sf::Vector2f(resized->size));
-			m_window.setView(sf::View(visibleArea));
 		}
 
 		if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())

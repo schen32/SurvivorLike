@@ -30,10 +30,6 @@ protected:
 	std::shared_ptr<Scene> currentScene();
 
 public:
-	bool m_isFullscreen = true;
-	sf::Texture m_screenTexture;
-	sf::Sprite m_screenSprite = sf::Sprite(m_screenTexture);
-
 	GameEngine(const std::string& path);
 	bool changeScene(const std::string& sceneName,
 		std::shared_ptr<Scene> scene, bool endCurrentScene = false);
