@@ -28,19 +28,17 @@ void Scene_Menu::loadMenu()
 
 	auto title = m_entityManager.addEntity("ui", "Game Engine");
 	auto& tAnimation = title->add<CAnimation>(m_game->assets().getAnimation("ButtonHover"), true).animation;
-	tAnimation.m_sprite.setScale(sf::Vector2f(1.6f, 0.8f));
-	title->add<CTransform>(Vec2f(width() / 2, height() * 0.2f));
+	tAnimation.m_sprite.setScale(sf::Vector2f(2.f, 1.2f));
+	title->add<CTransform>(Vec2f(width() / 2, height() * 0.15f));
 
 	auto playButton = m_entityManager.addEntity("button", "Start");
 	playButton->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
 	auto& pbTransform = playButton->add<CTransform>(Vec2f(width() / 2, height() * 0.4f));
-	pbTransform.scale = 0.5f;
 	playButton->add<CState>("unselected");
 
 	auto quitButton = m_entityManager.addEntity("button", "Quit");
 	quitButton->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
-	auto& qTransform = quitButton->add<CTransform>(Vec2f(width() / 2, height() * 0.55f));
-	qTransform.scale = 0.5f;
+	auto& qTransform = quitButton->add<CTransform>(Vec2f(width() / 2, height() * 0.6f));
 	quitButton->add<CState>("unselected");
 }
 
@@ -89,6 +87,7 @@ void Scene_Menu::onEnd()
 
 void Scene_Menu::onExitScene()
 {
+
 }
 
 void Scene_Menu::onEnterScene()
@@ -103,9 +102,8 @@ void Scene_Menu::select()
 	{
 		if (!Utils::IsInside(m_mousePos, button)) continue;
 
-		if (button->name() == "Start" &&
-			m_game->changeScene("PLAY", std::make_shared<Scene_Play>(m_game)))
-			onExitScene();
+		if (button->name() == "Start")
+			m_game->changeScene("PLAY", std::make_shared<Scene_Play>(m_game));
 		else if (button->name() == "Quit")
 			onEnd();
 	}
@@ -167,14 +165,17 @@ void Scene_Menu::sRender()
 		auto& transform = entity->get<CTransform>();
 
 		animation.m_sprite.setPosition(transform.pos);
-		if (entity->tag() == "button")
-			animation.m_sprite.setScale({ transform.scale, transform.scale });
 		window.draw(animation.m_sprite);
 
 		auto buttonText = sf::Text(m_game->assets().getFont("FutureMillennium"));
-		buttonText.setCharacterSize(200 * transform.scale);
+
+		if (entity->tag() == "ui")
+			buttonText.setCharacterSize(150);
+		else if (entity->tag() == "button")
+			buttonText.setCharacterSize(100);
+
 		buttonText.setString(entity->name());
-		buttonText.setOutlineThickness(2.0f * transform.scale);
+		buttonText.setOutlineThickness(2.0f);
 		buttonText.setOutlineColor(sf::Color(86, 106, 137));
 		auto bounds = buttonText.getLocalBounds();
 		buttonText.setOrigin(bounds.position + bounds.size / 2.f);

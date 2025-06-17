@@ -73,7 +73,7 @@ void Scene_Play::spawnPlayer()
 	m_playerDied = false;
 	
 	auto& pAnimation = p->add<CAnimation>(m_game->assets().getAnimation("StormheadIdle"), true);
-	auto& pTransform = p->add<CTransform>(gridToMidPixel(3, 4, p));
+	auto& pTransform = p->add<CTransform>();
 	p->add<CInput>();
 }
 
@@ -91,7 +91,6 @@ void Scene_Play::update()
 
 	if (m_playerDied)
 	{
-		onExitScene();
 		m_game->changeScene("MENU", std::make_shared<Scene_Menu>(m_game));
 	}
 }
@@ -188,7 +187,6 @@ void Scene_Play::sDoAction(const Action& action)
 			pInput.down = true;
 		else if (action.m_name == "ESCAPE")
 		{
-			onExitScene();
 			m_game->changeScene("MENU", std::make_shared<Scene_Menu>(m_game));
 		}	
 		else if (action.m_name == "LEFT_CLICK")
@@ -247,14 +245,13 @@ void Scene_Play::onEnd()
 
 void Scene_Play::onExitScene()
 {
+
 }
 
 void Scene_Play::onEnterScene()
 {
 	auto& window = m_game->window();
 	window.setView(m_cameraView);
-
-	player()->add<CInput>();
 }
 
 void Scene_Play::sGui()
@@ -267,6 +264,9 @@ void Scene_Play::sRender()
 	auto& window = m_game->window();
 	window.clear(sf::Color(204, 226, 225));
 
+	sf::CircleShape circle(100.0f);
+	window.draw(circle);
+
 	for (auto& entity : m_entityManager.getEntities())
 	{
 		if (!entity->has<CAnimation>()) continue;
@@ -277,7 +277,4 @@ void Scene_Play::sRender()
 		animation.m_sprite.setPosition(transform.pos);
 		window.draw(animation.m_sprite);
 	}
-
-	sf::CircleShape circle(50.0f);
-	window.draw(circle);
 }

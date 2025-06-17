@@ -17,12 +17,12 @@ class GameEngine
 protected:
 	sf::RenderWindow m_window;
 	Assets m_assets;
-	std::string m_currentScene;
+	std::string m_currentScene = "";
+	std::string m_nextScene = "";
 	SceneMap m_sceneMap;
 	size_t m_simulationSpeed = 1;
 	sf::Clock m_deltaClock;
 	bool m_running = true;
-	bool m_sceneChanged = false;
 
 	void init(const std::string& path);
 	void update();

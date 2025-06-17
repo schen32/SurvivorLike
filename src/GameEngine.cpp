@@ -169,8 +169,8 @@ bool GameEngine::changeScene(const std::string& sceneName, std::shared_ptr<Scene
 	{
 		m_sceneMap.erase(m_sceneMap.find(m_currentScene));
 	}
-	m_currentScene = sceneName;
-	m_sceneChanged = true;
+
+	m_nextScene = sceneName;
 	return true;
 }
 
@@ -194,16 +194,20 @@ void GameEngine::update()
 	if (!isRunning()) return;
 	if (m_sceneMap.empty()) return;
 
-	if (m_sceneChanged)
+	if (!m_nextScene.empty())
 	{
+		if (!m_currentScene.empty())
+			currentScene()->onExitScene();
+
+		m_currentScene = m_nextScene;
+		m_nextScene = "";
+
 		currentScene()->onEnterScene();
-		m_sceneChanged = false;
 	}
 
 	sUserInput();
-	std::shared_ptr<Scene> curScene = currentScene();
-	curScene->simulate(m_simulationSpeed);
-	curScene->sRender();
+	currentScene()->simulate(m_simulationSpeed);
+	currentScene()->sRender();
 
 	//ImGui::SFML::Render(m_window);
 	m_window.display();
