@@ -324,12 +324,7 @@ void Scene_LevelWeapon::sDoAction(const Action& action)
 void Scene_LevelWeapon::sRender()
 {
 	auto& window = m_game->window();
-
-	// Draw a solid background over just that portion
-	sf::RectangleShape screenBackground(sf::Vector2f(width(), height()));
-	screenBackground.setFillColor(sf::Color(204, 226, 225));
-	window.draw(screenBackground);
-
+	window.clear(sf::Color(204, 226, 225));
 
 	for (auto& entity : m_entityManager.getEntities("ui"))
 	{
