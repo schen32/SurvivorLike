@@ -9,9 +9,10 @@
 
 #include <iostream>
 
-Scene_GameOver::Scene_GameOver(GameEngine* gameEngine)
+Scene_GameOver::Scene_GameOver(GameEngine* gameEngine, std::shared_ptr<Entity> player)
 	: Scene(gameEngine)
 {
+	m_player = player;
 	init();
 }
 
@@ -58,6 +59,11 @@ void Scene_GameOver::loadScene()
 	auto& cTransform = continueButton->add<CTransform>(Vec2f(width() / 2, height() * 0.55f));
 	cTransform.scale = 0.5f;
 	continueButton->add<CState>("unselected");
+
+	auto score = m_entityManager.addEntity("ui", "Score");
+	auto& sAnimation = score->add<CAnimation>(m_game->assets().getAnimation("ButtonHover"), true).animation;
+	sAnimation.m_sprite.setScale(sf::Vector2f(1.4f, 1.0f));
+	score->add<CTransform>(Vec2f(width() / 2, height() * 0.8f));
 }
 
 void Scene_GameOver::update()
@@ -199,12 +205,17 @@ void Scene_GameOver::sRender()
 
 		auto buttonText = sf::Text(m_game->assets().getFont("FutureMillennium"));
 		buttonText.setCharacterSize(200 * transform.scale);
+
 		buttonText.setString(entity->name());
+		if (entity->name() == "Score")
+			buttonText.setString("Score: " + std::to_string(m_player->get<CScore>().score));
+
 		buttonText.setOutlineThickness(2.0f * transform.scale);
 		buttonText.setOutlineColor(sf::Color(86, 106, 137));
 		auto bounds = buttonText.getLocalBounds();
 		buttonText.setOrigin(bounds.position + bounds.size / 2.f);
 		buttonText.setPosition(transform.pos);
+		
 		window.draw(buttonText);
 	}
 }

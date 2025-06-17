@@ -312,7 +312,7 @@ void Scene_Play::update()
 	if (m_playerDied)
 	{
 		onExitScene();
-		m_game->changeScene("GAME_OVER", std::make_shared<Scene_GameOver>(m_game));
+		m_game->changeScene("GAME_OVER", std::make_shared<Scene_GameOver>(m_game, player()));
 	}
 }
 

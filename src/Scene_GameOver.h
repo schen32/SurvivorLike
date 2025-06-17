@@ -14,6 +14,7 @@ protected:
 	sf::View m_pauseView;
 	std::string m_musicName;
 	Vec2f m_mousePos;
+	std::shared_ptr<Entity> m_player;
 
 	void init();
 	void loadScene();
@@ -28,6 +29,6 @@ protected:
 	void sAnimation();
 public:
 	Scene_GameOver() = default;
-	Scene_GameOver(GameEngine* gameEngine = nullptr);
+	Scene_GameOver(GameEngine* gameEngine = nullptr, std::shared_ptr<Entity> player = nullptr);
 	void sRender();
 };

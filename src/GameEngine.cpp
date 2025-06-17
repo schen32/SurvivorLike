@@ -2,6 +2,7 @@
 #include "Assets.hpp"
 #include "Scene_Menu.h"
 #include "Scene_Play.h"
+#include "Scene_GameOver.h"
 #include "Scene_NewWeapon.h"
 #include "Timer.hpp"
 
