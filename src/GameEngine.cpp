@@ -46,6 +46,17 @@ void GameEngine::run()
 {
 	while (isRunning())
 	{
+		if (!m_nextScene.empty())
+		{
+			if (!m_currentScene.empty())
+				currentScene()->onExitScene();
+
+			m_currentScene = m_nextScene;
+			m_nextScene = "";
+
+			currentScene()->onEnterScene();
+		}
+
 		//ImGui::SFML::Update(m_window, m_deltaClock.restart());
 		update();
 	}
@@ -67,8 +78,8 @@ void GameEngine::sUserInput()
 
 		if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
 		{
-			if (currentScene()->getActionMap().find(keyPressed->scancode) ==
-				currentScene()->getActionMap().end())
+			if (currentScene()->getKeyActionMap().find(keyPressed->scancode) ==
+				currentScene()->getKeyActionMap().end())
 			{
 				continue;
 			}
@@ -76,7 +87,7 @@ void GameEngine::sUserInput()
 			(
 				Action
 				(
-				currentScene()->getActionMap().at(keyPressed->scancode),
+				currentScene()->getKeyActionMap().at(keyPressed->scancode),
 				"START"
 				)
 			);
@@ -84,8 +95,8 @@ void GameEngine::sUserInput()
 
 		if (const auto* keyReleased = event->getIf<sf::Event::KeyReleased>())
 		{
-			if (currentScene()->getActionMap().find(keyReleased->scancode) ==
-				currentScene()->getActionMap().end())
+			if (currentScene()->getKeyActionMap().find(keyReleased->scancode) ==
+				currentScene()->getKeyActionMap().end())
 			{
 				continue;
 			}
@@ -93,7 +104,7 @@ void GameEngine::sUserInput()
 			(
 				Action
 				(
-					currentScene()->getActionMap().at(keyReleased->scancode),
+					currentScene()->getKeyActionMap().at(keyReleased->scancode),
 					"END"
 				)
 			);
@@ -101,48 +112,36 @@ void GameEngine::sUserInput()
 
 		if (const auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>())
 		{
-			switch (mousePressed->button)
+			if (currentScene()->getMouseActionMap().find(mousePressed->button) ==
+				currentScene()->getMouseActionMap().end())
 			{
-			case sf::Mouse::Button::Left:
-			{
-				currentScene()->doAction(Action("LEFT_CLICK", "START", mousePressed->position));
-				break;
+				continue;
 			}
-			case sf::Mouse::Button::Middle:
-			{
-				currentScene()->doAction(Action("MIDDLE_CLICK", "START", mousePressed->position));
-				break;
-			}
-			case sf::Mouse::Button::Right:
-			{
-				currentScene()->doAction(Action("RIGHT_CLICK", "START", mousePressed->position));
-				break;
-			}
-			default: break;
-			}
+			currentScene()->doAction
+			(
+				Action
+				(
+					currentScene()->getMouseActionMap().at(mousePressed->button),
+					"START", mousePressed->position
+				)
+			);
 		}
 
 		if (const auto* mouseReleased = event->getIf<sf::Event::MouseButtonReleased>())
 		{
-			switch (mouseReleased->button)
+			if (currentScene()->getMouseActionMap().find(mouseReleased->button) ==
+				currentScene()->getMouseActionMap().end())
 			{
-			case sf::Mouse::Button::Left:
-			{
-				currentScene()->doAction(Action("LEFT_CLICK", "END", mouseReleased->position));
-				break;
+				continue;
 			}
-			case sf::Mouse::Button::Middle:
-			{
-				currentScene()->doAction(Action("MIDDLE_CLICK", "END", mouseReleased->position));
-				break;
-			}
-			case sf::Mouse::Button::Right:
-			{
-				currentScene()->doAction(Action("RIGHT_CLICK", "END", mouseReleased->position));
-				break;
-			}
-			default: break;
-			}
+			currentScene()->doAction
+			(
+				Action
+				(
+					currentScene()->getMouseActionMap().at(mouseReleased->button),
+					"END", mouseReleased->position
+				)
+			);
 		}
 
 		if (const auto* mouseMoved = event->getIf<sf::Event::MouseMoved>())
@@ -193,17 +192,6 @@ void GameEngine::update()
 {
 	if (!isRunning()) return;
 	if (m_sceneMap.empty()) return;
-
-	if (!m_nextScene.empty())
-	{
-		if (!m_currentScene.empty())
-			currentScene()->onExitScene();
-
-		m_currentScene = m_nextScene;
-		m_nextScene = "";
-
-		currentScene()->onEnterScene();
-	}
 
 	sUserInput();
 	currentScene()->simulate(m_simulationSpeed);

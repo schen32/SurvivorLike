@@ -23,16 +23,19 @@ Scene_Play::Scene_Play(GameEngine* gameEngine, const std::string& levelPath)
 
 void Scene_Play::init(const std::string& levelPath)
 {
-	registerAction(sf::Keyboard::Scan::Escape, "ESCAPE");
+	registerMouseAction(sf::Mouse::Button::Left, "LEFT_CLICK");
+	registerMouseAction(sf::Mouse::Button::Right, "RIGHT_CLICK");
 
-	registerAction(sf::Keyboard::Scan::A, "LEFT");
-	registerAction(sf::Keyboard::Scan::D, "RIGHT");
-	registerAction(sf::Keyboard::Scan::W, "UP");
-	registerAction(sf::Keyboard::Scan::S, "DOWN");
-	registerAction(sf::Keyboard::Scan::Left, "LEFT");
-	registerAction(sf::Keyboard::Scan::Right, "RIGHT");
-	registerAction(sf::Keyboard::Scan::Up, "UP");
-	registerAction(sf::Keyboard::Scan::Down, "DOWN");
+	registerKeyAction(sf::Keyboard::Scan::Escape, "ESCAPE");
+
+	registerKeyAction(sf::Keyboard::Scan::A, "LEFT");
+	registerKeyAction(sf::Keyboard::Scan::D, "RIGHT");
+	registerKeyAction(sf::Keyboard::Scan::W, "UP");
+	registerKeyAction(sf::Keyboard::Scan::S, "DOWN");
+	registerKeyAction(sf::Keyboard::Scan::Left, "LEFT");
+	registerKeyAction(sf::Keyboard::Scan::Right, "RIGHT");
+	registerKeyAction(sf::Keyboard::Scan::Up, "UP");
+	registerKeyAction(sf::Keyboard::Scan::Down, "DOWN");
 
 	m_cameraView.setSize(sf::Vector2f(width(), height()));
 	m_cameraView.zoom(1.0f);

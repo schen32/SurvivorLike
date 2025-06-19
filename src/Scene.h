@@ -7,14 +7,16 @@
 
 class GameEngine;
 
-using ActionMap = std::unordered_map<sf::Keyboard::Scan, std::string>;
+using KeyActionMap = std::unordered_map<sf::Keyboard::Scan, std::string>;
+using MouseActionMap = std::unordered_map<sf::Mouse::Button, std::string>;
 
 class Scene
 {
 protected:
 	GameEngine* m_game = nullptr;
 	EntityManager m_entityManager;
-	ActionMap m_actionMap;
+	KeyActionMap m_keyActionMap;
+	MouseActionMap m_mouseActionMap;
 	bool m_paused = false;
 	bool m_hasEnded = false;
 	size_t m_currentFrame = 0;
@@ -34,14 +36,17 @@ public:
 
 	virtual void doAction(const Action& action);
 	void simulate(const size_t frames);
-	void registerAction(sf::Keyboard::Scan inputKey, const std::string& actionName);
+	void registerKeyAction(sf::Keyboard::Scan inputKey, const std::string& actionName);
+	void registerMouseAction(sf::Mouse::Button inputButton, const std::string& actionName);
 
 	size_t width() const;
 	size_t height() const;
 	size_t currentFrame() const;
 
 	bool hasEnded() const;
-	const ActionMap& getActionMap() const;
+	const KeyActionMap& getKeyActionMap() const;
+	const MouseActionMap& getMouseActionMap() const;
 
 	void playSound(const std::string& name, float volume);
+	void playVariablePitchSound(const std::string& name, float volume);
 };

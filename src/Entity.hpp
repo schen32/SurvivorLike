@@ -22,13 +22,13 @@ class Entity
 
 	ComponentTuple m_components;
 	bool m_active = true;
-	std::string m_tag = "default";
 	size_t m_id = 0;
 
 	Entity(const std::string& tag, const std::string& name, const size_t& id)
 		: m_tag(tag), m_name(name), m_id(id) {}
 
 public:
+	std::string m_tag = "default";
 	std::string m_name = "name";
 
 	bool isActive() const

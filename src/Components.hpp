@@ -18,7 +18,7 @@ class CTransform : public Component
 public:
 	Vec2f pos = { 0.0, 0.0 };
 	Vec2f prevPos = { 0.0, 0.0 };
-	float scale = 1.0f;
+	Vec2f scale = { 1.0f, 1.0f };
 	Vec2f velocity = { 0.0, 0.0 };
 	float angle = 0;
 
@@ -47,8 +47,6 @@ class CHealth : public Component
 public:
 	int health = 0;
 	int maxHealth = 0;
-	int lastTakenDamage = 0;
-	int invulTime = 10;
 
 	CHealth() = default;
 	CHealth(int h) : health(h), maxHealth(h) {}

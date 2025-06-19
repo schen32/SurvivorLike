@@ -19,6 +19,9 @@ void Scene_Menu::init()
 	auto& window = m_game->window();
 	window.setView(window.getDefaultView());
 
+	registerMouseAction(sf::Mouse::Button::Left, "LEFT_CLICK");
+	registerMouseAction(sf::Mouse::Button::Right, "RIGHT_CLICK");
+
 	loadMenu();
 }
 
@@ -28,8 +31,9 @@ void Scene_Menu::loadMenu()
 
 	auto title = m_entityManager.addEntity("ui", "Game Engine");
 	auto& tAnimation = title->add<CAnimation>(m_game->assets().getAnimation("ButtonHover"), true).animation;
-	tAnimation.m_sprite.setScale(sf::Vector2f(2.f, 1.2f));
-	title->add<CTransform>(Vec2f(width() / 2, height() * 0.15f));
+	//tAnimation.m_sprite.setScale(sf::Vector2f(2.f, 1.2f));
+	auto& tTransform = title->add<CTransform>(Vec2f(width() / 2, height() * 0.15f));
+	tTransform.scale = Vec2f(2.f, 1.2f);
 
 	auto playButton = m_entityManager.addEntity("button", "Start");
 	playButton->add<CAnimation>(m_game->assets().getAnimation("Button"), true);
@@ -113,31 +117,6 @@ void Scene_Menu::sDoAction(const Action& action)
 {
 	if (action.m_type == "START")
 	{
-		/*if (action.m_name == "PLAY")
-		{
-			if (m_selectedMenuIndex == 0)
-			{
-				if (m_game->changeScene("PLAY",
-					std::make_shared<Scene_Play>(m_game, m_levelPaths[m_selectedMenuIndex])))
-					onExitScene();
-			}
-			else if (m_selectedMenuIndex == 1)
-			{
-				if (m_game->changeScene("PLAY", nullptr))
-					onExitScene();
-			}
-		}
-		else if (action.m_name == "UP")
-		{
-			if (m_selectedMenuIndex > 0)
-				--m_selectedMenuIndex;
-			else
-				m_selectedMenuIndex = m_menuStrings.size() - 1;
-		}
-		else if (action.m_name == "DOWN")
-		{
-			m_selectedMenuIndex = (m_selectedMenuIndex + 1) % m_menuStrings.size();
-		}*/
 		if (action.m_name == "QUIT")
 		{
 			onEnd();
@@ -165,6 +144,7 @@ void Scene_Menu::sRender()
 		auto& transform = entity->get<CTransform>();
 
 		animation.m_sprite.setPosition(transform.pos);
+		animation.m_sprite.setScale(transform.scale);
 		window.draw(animation.m_sprite);
 
 		auto buttonText = sf::Text(m_game->assets().getFont("FutureMillennium"));
@@ -178,8 +158,8 @@ void Scene_Menu::sRender()
 		buttonText.setOutlineThickness(2.0f);
 		buttonText.setOutlineColor(sf::Color(86, 106, 137));
 		auto bounds = buttonText.getLocalBounds();
-		buttonText.setOrigin(bounds.position + bounds.size / 2.f);
-		buttonText.setPosition(transform.pos);
+		buttonText.setOrigin(bounds.size / 2.f);
+		buttonText.setPosition(transform.pos - bounds.position);
 		window.draw(buttonText);
 	}
 }

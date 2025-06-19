@@ -24,14 +24,24 @@ size_t Scene::currentFrame() const
 	return m_currentFrame;
 }
 
-const ActionMap& Scene::getActionMap() const
+const KeyActionMap& Scene::getKeyActionMap() const
 {
-	return m_actionMap;
+	return m_keyActionMap;
 }
 
-void Scene::registerAction(sf::Keyboard::Scan keyCode, const std::string& name)
+const MouseActionMap& Scene::getMouseActionMap() const
 {
-	m_actionMap[keyCode] = name;
+	return m_mouseActionMap;
+}
+
+void Scene::registerKeyAction(sf::Keyboard::Scan keyCode, const std::string& name)
+{
+	m_keyActionMap[keyCode] = name;
+}
+
+void Scene::registerMouseAction(sf::Mouse::Button mouseButton, const std::string& name)
+{
+	m_mouseActionMap[mouseButton] = name;
 }
 
 bool Scene::hasEnded() const
@@ -54,6 +64,13 @@ void Scene::doAction(const Action& action)
 }
 
 void Scene::playSound(const std::string& name, float volume)
+{
+	auto& sound = m_game->assets().getSound(name);
+	sound.setVolume(volume);
+	sound.play();
+}
+
+void Scene::playVariablePitchSound(const std::string& name, float volume)
 {
 	auto& sound = m_game->assets().getSound(name);
 	float pitch = 0.8f + static_cast<float>(rand()) / RAND_MAX * 0.4f; // range [0.8, 1.2]

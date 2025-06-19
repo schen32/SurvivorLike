@@ -11,9 +11,12 @@ public:
 
 	bool static IsInside(const Vec2f& pos, std::shared_ptr<Entity> entity)
 	{
-		auto ePosition = entity->get<CTransform>().pos;
+		auto eTransform = entity->get<CTransform>();
+		auto ePosition = eTransform.pos;
+		auto eScale = eTransform.scale;
 		auto eSize = entity->get<CAnimation>().animation.m_size;
-		eSize *= entity->get<CTransform>().scale;
+		eSize.x *= eScale.x;
+		eSize.y *= eScale.y;
 
 		if (ePosition.x - eSize.x / 2 <= pos.x && pos.x <= ePosition.x + eSize.x / 2 &&
 			ePosition.y - eSize.y / 2 <= pos.y && pos.y <= ePosition.y + eSize.y / 2)
