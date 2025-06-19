@@ -164,11 +164,6 @@
     <ClCompile Include="src\Scene_Menu.cpp" />
     <ClCompile Include="src\Scene.cpp" />
     <ClCompile Include="src\GameEngine.cpp" />
-    <ClCompile Include="imgui\imgui-SFML.cpp" />
-    <ClCompile Include="imgui\imgui.cpp" />
-    <ClCompile Include="imgui\imgui_draw.cpp" />
-    <ClCompile Include="imgui\imgui_tables.cpp" />
-    <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Scene_Play.cpp" />
   </ItemGroup>
@@ -185,27 +180,8 @@
     <ClInclude Include="src\Components.hpp" />
     <ClInclude Include="src\Entity.hpp" />
     <ClInclude Include="src\EntityManager.hpp" />
-    <ClInclude Include="imgui\imconfig-SFML.h" />
-    <ClInclude Include="imgui\imconfig.h" />
-    <ClInclude Include="imgui\imgui-SFML.h" />
-    <ClInclude Include="imgui\imgui-SFML_export.h" />
-    <ClInclude Include="imgui\imgui.h" />
-    <ClInclude Include="imgui\imgui_internal.h" />
-    <ClInclude Include="imgui\imstb_rectpack.h" />
-    <ClInclude Include="imgui\imstb_textedit.h" />
-    <ClInclude Include="imgui\imstb_truetype.h" />
     <ClInclude Include="src\Utils.hpp" />
     <ClInclude Include="src\Vec2.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="assets\assets.txt" />
-    <Text Include="assets\play.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <Font Include="assets\fonts\FutureMillennium.ttf" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="assets\1Biker\Biker_idle.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
