@@ -31,7 +31,6 @@ void Scene_Menu::loadMenu()
 
 	auto title = m_entityManager.addEntity("ui", "Game Engine");
 	auto& tAnimation = title->add<CAnimation>(m_game->assets().getAnimation("ButtonHover"), true).animation;
-	//tAnimation.m_sprite.setScale(sf::Vector2f(2.f, 1.2f));
 	auto& tTransform = title->add<CTransform>(Vec2f(width() / 2, height() * 0.15f));
 	tTransform.scale = Vec2f(2.f, 1.2f);
 

@@ -161,7 +161,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\Scene_Play.cpp" />
     <ClCompile Include="src\Scene_Menu.cpp" />
     <ClCompile Include="src\Scene.cpp" />
     <ClCompile Include="src\GameEngine.cpp" />
@@ -171,6 +170,7 @@
     <ClCompile Include="imgui\imgui_tables.cpp" />
     <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Scene_Play.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ParticleSystem.hpp" />
@@ -202,7 +202,7 @@
     <Text Include="assets\play.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Font Include="assets\0Fonts\FutureMillennium.ttf" />
+    <Font Include="assets\fonts\FutureMillennium.ttf" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="assets\1Biker\Biker_idle.png" />

@@ -122,7 +122,7 @@
     <Text Include="assets\play.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Font Include="assets\0Fonts\FutureMillennium.ttf" />
+    <Font Include="assets\fonts\FutureMillennium.ttf" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="assets\1Biker\Biker_idle.png">

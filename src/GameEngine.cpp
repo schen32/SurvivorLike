@@ -52,7 +52,7 @@ void GameEngine::run()
 				currentScene()->onExitScene();
 
 			m_currentScene = m_nextScene;
-			m_nextScene = "";
+			m_nextScene.clear();
 
 			currentScene()->onEnterScene();
 		}

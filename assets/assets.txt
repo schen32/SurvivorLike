@@ -3,7 +3,7 @@ Animation Button TexButton 1 1 1 0
 Texture TexButtonHover assets/GUI/Headless.png
 Animation ButtonHover TexButtonHover 1 1 1 0
 
-Font FutureMillennium assets/0Fonts/FutureMillennium.ttf
+Font FutureMillennium assets/fonts/FutureMillennium.ttf
 
 Texture TexStormheadIdle assets/stormhead/idle.png
 Animation StormheadIdle TexStormheadIdle 9 1 9 10
@@ -12,10 +12,5 @@ Animation StormheadRun TexStormheadRun 10 1 10 5
 Texture TexStormheadDeath assets/stormhead/death.png
 Animation StormheadDeath TexStormheadDeath 9 1 9 10
 
-Sound PlasticZap assets/sounds/DSGNMisc_HIT-Plastic_Zap_HY_PC-001.wav
-Sound SwordSlash assets/sounds/DSGNMisc_MELEE-Sword_Slash_HY_PC-005.wav
-Sound HighWhoosh assets/sounds/DSGNMisc_PROJECTILE-High_Whoosh_HY_PC-005.wav
-Sound LaserPebble assets/sounds/DSGNMisc_HIT-Laser_Pebble_HY_PC-003.wav
-Sound NoiseSweeper assets/sounds/DSGNMisc_MOVEMENT-Noise_Sweeper_HY_PC-001.wav
 Sound BubbleStep assets/sounds/DSGNMisc_STEP-Bubble_Step_HY_PC-001.wav
 Sound BubblierStep assets/sounds/DSGNMisc_STEP-Bubblier_Step_HY_PC-001.wav
